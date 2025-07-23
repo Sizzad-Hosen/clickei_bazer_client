@@ -19,7 +19,7 @@ interface DashboardLayoutProps {
 const navItems = [
   { href: "/dashboard", label: "Dashboard Home", icon: Home },
   { href: "/dashboard/services", label: "Services", icon: Box },
-  { href: "/dashboard/create-services", label: "Create Service", icon: PlusCircle },
+  { href: "/dashboard/services/create-services", label: "Create Service", icon: PlusCircle },
   { href: "/dashboard/categories", label: "Categories", icon: Layers },
   { href: "/dashboard/create-categories", label: "Create Category", icon: PlusCircle },
   { href: "/dashboard/subcategories", label: "Subcategories", icon: Layers },

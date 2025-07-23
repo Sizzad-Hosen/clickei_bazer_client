@@ -1,5 +1,4 @@
-import { CreateServicePage } from '@/pages/Services/CreateService'
-import React from 'react'
+import { CreateServicePage } from "@/pages/Services/CreateService"
 
 const CreateService = () => {
   return (
