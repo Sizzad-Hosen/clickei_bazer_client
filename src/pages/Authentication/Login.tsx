@@ -76,7 +76,7 @@ const LoginPage = () => {
               onClick={() => router.push("/register")}
               className="text-primary underline"
             >
-              Login
+             Register
             </button>
           </p>
         </CardContent>
