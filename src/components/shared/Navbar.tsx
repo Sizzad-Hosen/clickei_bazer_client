@@ -5,10 +5,13 @@ import { Button } from "@/components/ui/button";
 import { MapPin, Search, User } from "lucide-react";
 import Link from "next/link";
 import { useAppSelector } from "@/redux/hook";
-import { selectCurrentUser } from "@/redux/features/auth/authSlices";
+import { logout, selectCurrentUser } from "@/redux/features/auth/authSlices";
+import { useDispatch } from "react-redux";
 
 export const Navbar = () => {
   const user = useAppSelector(selectCurrentUser);
+const dispatch = useDispatch();
+
 
   console.log("Current User:", user);
 
@@ -64,6 +67,16 @@ export const Navbar = () => {
               <User className="w-4 h-4" /> Login
             </Link>
           </Button>
+
+
+          <Button
+            onClick={() => dispatch(logout())}
+            variant="default"
+            className="text-xs sm:text-sm md:text-base px-3 py-1 text-black bg-white hover:bg-gray-100"
+          >
+            <User className="w-4 h-4" /> Logout
+          </Button>
+
         </div>
       </div>
 
