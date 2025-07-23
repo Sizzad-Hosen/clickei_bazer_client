@@ -9,14 +9,17 @@ import {
   PURGE,
   REGISTER,
 } from 'redux-persist';
+
 import storage from 'redux-persist/lib/storage';
 import { persistStore } from 'redux-persist';
+
 import { baseApi } from './api/baseApi';
+import authReducer from './features/auth/authSlices'; 
 
 const persistConfig = {
   key: 'auth',
   storage,
-  whitelist: ['token', 'user']
+  whitelist: ['token', 'user'],
 };
 
 const persistedAuthReducer = persistReducer(persistConfig, authReducer);
@@ -44,7 +47,3 @@ persistor.subscribe(() => {
 
 export type RootState = ReturnType<typeof store.getState>;
 export type AppDispatch = typeof store.dispatch;
-
-function authReducer(state: unknown, action: Action): unknown {
-    throw new Error('Function not implemented.');
-}

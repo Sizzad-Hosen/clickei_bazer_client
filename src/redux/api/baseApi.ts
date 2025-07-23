@@ -40,12 +40,16 @@ console.log('Refresh result:', refreshResult);
       if (data?.accessToken) {
         const user = (api.getState() as RootState).auth.user;
         
-        api.dispatch(
-          setUser({
-            user,
-            token: data.accessToken,
-          })
-        );
+        if (user) {
+          api.dispatch(
+            setUser({
+              user,
+              token: data.accessToken,
+            })
+          );
+        } else {
+          api.dispatch(logout());
+        }
 
         // Retry original request with new token
         result = await baseQuery(args, api, extraOptions);
