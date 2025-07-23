@@ -1,52 +1,59 @@
-'use client';
-
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { cn } from "@/lib/utils";
-import { HTMLInputTypeAttribute } from "react";
+// components/form/FormInput.tsx
+import React, { useState } from "react";
+import { Eye, EyeOff } from "lucide-react";
 
 interface FormInputProps {
   label: string;
   name: string;
+  type: string;
   placeholder?: string;
-  type?: HTMLInputTypeAttribute;
-  value?: string;
-  onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  error?: string;
+  touched?: boolean;
+  value: string;
+  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   required?: boolean;
-  disabled?: boolean;
-  className?: string;
 }
 
-export const FormInput = ({
+export const FormInput: React.FC<FormInputProps> = ({
   label,
   name,
+  type,
   placeholder,
-  type = "text",
   value,
+  error,
   onChange,
-  required = false,
-  disabled = false,
-  className,
-}: FormInputProps) => {
+  touched,
+  required,
+}) => {
+  const [showPassword, setShowPassword] = useState(false);
+  const isPassword = type === "password";
+
   return (
-    <div className="grid w-full items-center gap-1.5">
-      <Label htmlFor={name} className="text-sm font-medium text-muted-foreground">
+    <div className="space-y-1">
+      <label htmlFor={name} className="block text-sm font-medium text-gray-700">
         {label}
-      </Label>
-      <Input
-        id={name}
-        name={name}
-        placeholder={placeholder}
-        type={type}
-        value={value}
-        onChange={onChange}
-        required={required}
-        disabled={disabled}
-        className={cn(
-          "border border-input bg-background text-foreground rounded-xl px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary",
-          className
+      </label>
+      <div className="relative">
+        <input
+          id={name}
+          name={name}
+          type={isPassword && showPassword ? "text" : type}
+          placeholder={placeholder}
+          value={value}
+          onChange={onChange}
+          required={required}
+          className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+        />
+        {isPassword && (
+          <button
+            type="button"
+            onClick={() => setShowPassword(!showPassword)}
+            className="absolute right-3 top-2.5 text-gray-500 hover:text-gray-700"
+          >
+            {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+          </button>
         )}
-      />
+      </div>
     </div>
   );
 };

@@ -1,5 +1,6 @@
 import Footer from "../shared/Footer";
-import Navbar from "../shared/Navbar";
+import { Navbar } from "../shared/Navbar";
+
 import Sidebar from "../shared/Sidebar";
 
 

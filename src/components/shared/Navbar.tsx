@@ -1,15 +1,22 @@
+'use client';
+
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { MapPin, Search, User } from "lucide-react";
 import Link from "next/link";
+import { useAppSelector } from "@/redux/hook";
+import { selectCurrentUser } from "@/redux/features/auth/authSlices";
 
-export default function Navbar() {
+export const Navbar = () => {
+  const user = useAppSelector(selectCurrentUser);
+
+  console.log("Current User:", user);
+
   return (
     <header className="relative z-10">
-      {/* Top Navbar with Gradient */}
       <div className="flex flex-col md:flex-row items-center justify-between px-4 py-3 shadow-md border-b border-transparent gap-3 md:gap-0 bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500 text-white">
         {/* Logo & Menu */}
-        <div className="flex items-center justify-between w-full md:w-auto">
+        <div className="flex items-center justify-between mr-2 w-full md:w-auto">
           <div className="flex items-center gap-2">
             <button className="md:hidden">
               <span className="text-2xl text-white">☰</span>
@@ -49,7 +56,10 @@ export default function Navbar() {
             <span className="text-xs sm:text-sm">Dhaka</span>
           </div>
 
-          <Button variant="secondary" className="text-xs sm:text-sm md:text-base px-3 py-1 text-black bg-white hover:bg-gray-100">
+          <Button
+            variant="secondary"
+            className="text-xs sm:text-sm md:text-base px-3 py-1 text-black bg-white hover:bg-gray-100"
+          >
             <Link href="/login" className="flex items-center gap-1">
               <User className="w-4 h-4" /> Login
             </Link>
@@ -61,4 +71,6 @@ export default function Navbar() {
       <div className="h-1 w-full bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500" />
     </header>
   );
-}
+};
+
+export default Navbar;

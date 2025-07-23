@@ -1,58 +1,74 @@
 'use client';
 
-import React, { useState } from "react";
+import React, { useState, ChangeEvent, FormEvent } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useRouter } from "next/navigation";
 import { FormInput } from "@/components/form/FromInput";
 import { toast } from "sonner";
 import { useCreateUserMutation } from "@/redux/features/Users/userApi";
-import { Eye, EyeOff } from "lucide-react";
 
-const RegisterPage = () => {
+interface FormState {
+  name: string;
+  email: string;
+  password: string;
+  phone: string;
+}
+
+const RegisterPage: React.FC = () => {
   const router = useRouter();
   const [register, { isLoading }] = useCreateUserMutation();
 
-  const [form, setForm] = useState({
+  const [form, setForm] = useState<FormState>({
     name: "",
     email: "",
     password: "",
     phone: "",
   });
 
-  const [errors, setErrors] = useState<{ [key: string]: string }>({});
-  const [touched, setTouched] = useState<{ [key: string]: boolean }>({});
-  const [showPassword, setShowPassword] = useState(false);
+  const [errors, setErrors] = useState<Partial<Record<keyof FormState, string>>>({});
+  const [touched, setTouched] = useState<Partial<Record<keyof FormState, boolean>>>({});
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setForm((prev) => ({ ...prev, [name]: value }));
 
-    // mark field as touched and validate
-    setTouched((prev) => ({ ...prev, [name]: true }));
+    setForm(prev => ({
+      ...prev,
+      [name]: value,
+    }));
+
+    setTouched(prev => ({
+      ...prev,
+      [name]: true,
+    }));
+
     if (!value.trim()) {
-      setErrors((prev) => ({ ...prev, [name]: `${name} is required` }));
+      setErrors(prev => ({
+        ...prev,
+        [name]: `${capitalize(name)} is required`,
+      }));
     } else {
-      setErrors((prev) => {
+      setErrors(prev => {
         const newErrors = { ...prev };
-        delete newErrors[name];
+        delete newErrors[name as keyof FormState];
         return newErrors;
       });
     }
   };
 
   const validateForm = () => {
-    const newErrors: { [key: string]: string } = {};
-    for (const key in form) {
-      if (!form[key as keyof typeof form].trim()) {
-        newErrors[key] = `${key} is required`;
+    const newErrors: Partial<Record<keyof FormState, string>> = {};
+    (Object.keys(form) as (keyof FormState)[]).forEach((key) => {
+      if (!form[key].trim()) {
+        newErrors[key] = `${capitalize(key)} is required`;
       }
-    }
+    });
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     if (!validateForm()) {
       toast.error("Please fill out all required fields");
@@ -60,7 +76,7 @@ const RegisterPage = () => {
     }
 
     try {
-      const res = await register(form).unwrap();
+      await register(form).unwrap();
       toast.success("Registration successful!");
       router.push("/login");
     } catch (err: any) {
@@ -69,6 +85,9 @@ const RegisterPage = () => {
       toast.error(errorMsg);
     }
   };
+
+  // Utility to capitalize first letter
+  const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-muted">
@@ -81,14 +100,14 @@ const RegisterPage = () => {
             <FormInput
               label="Full Name"
               name="name"
+              type="text" 
               placeholder="John Doe"
               value={form.name}
               onChange={handleChange}
               required
+              error={errors.name}
+              touched={touched.name}
             />
-            {touched.name && errors.name && (
-              <p className="text-sm text-red-500 -mt-3">{errors.name}</p>
-            )}
 
             <FormInput
               label="Email Address"
@@ -98,10 +117,9 @@ const RegisterPage = () => {
               value={form.email}
               onChange={handleChange}
               required
+              error={errors.email}
+              touched={touched.email}
             />
-            {touched.email && errors.email && (
-              <p className="text-sm text-red-500 -mt-3">{errors.email}</p>
-            )}
 
             <FormInput
               label="Phone Number"
@@ -111,32 +129,21 @@ const RegisterPage = () => {
               value={form.phone}
               onChange={handleChange}
               required
+              error={errors.phone}
+              touched={touched.phone}
             />
-            {touched.phone && errors.phone && (
-              <p className="text-sm text-red-500 -mt-3">{errors.phone}</p>
-            )}
 
-            <div className="relative">
-              <FormInput
-                label="Password"
-                name="password"
-                type={showPassword ? "text" : "password"}
-                placeholder="••••••••"
-                value={form.password}
-                onChange={handleChange}
-                required
-              />
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-9 text-gray-500"
-              >
-                {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-              </button>
-            </div>
-            {touched.password && errors.password && (
-              <p className="text-sm text-red-500 -mt-3">{errors.password}</p>
-            )}
+            <FormInput
+              label="Password"
+              name="password"
+              type="password"
+              placeholder="••••••••"
+              value={form.password}
+              onChange={handleChange}
+              required
+              error={errors.password}
+              touched={touched.password}
+            />
 
             <Button type="submit" className="w-full" disabled={isLoading}>
               {isLoading ? "Registering..." : "Register"}
