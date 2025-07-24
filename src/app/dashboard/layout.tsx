@@ -25,7 +25,7 @@ const navItems = [
   { href: "/dashboard/subCategories", label: "SubCategories", icon: Layers },
   { href: "/dashboard/subCategories/create-subCategory", label: "Create SubCategory", icon: PlusCircle },
   { href: "/dashboard/products", label: "Products", icon: Package },
-  { href: "/dashboard/create-product", label: "Create Product", icon: PlusCircle },
+  { href: "/dashboard/products/create-product", label: "Create Product", icon: PlusCircle },
   { href: "/dashboard/orders", label: "Orders", icon: ShoppingCart },
   { href: "/dashboard/users", label: "Users", icon: Users },
   { href: "/dashboard/notification", label: "Notifications", icon: Bell },

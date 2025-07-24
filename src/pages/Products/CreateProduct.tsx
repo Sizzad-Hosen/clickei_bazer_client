@@ -11,23 +11,21 @@ import {
 } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 
-import { useAddProductMutation } from '@/redux/features/Products/productApi';
 import { useGetAllServicesQuery } from '@/redux/features/Services/serviceApi';
 import { useGetAllCategoriesQuery } from '@/redux/features/Categories/categoryApi';
 import { useGetAllSubCategoriesQuery } from '@/redux/features/SubCategories/subCategoryApi';
+import { useAddProductMutation } from '@/redux/features/Products/productApi';
 
 const CreateProductPage = () => {
   const router = useRouter();
-  const [addProduct] = useAddProductMutation();
   const { data: serviceData } = useGetAllServicesQuery({});
   const { data: categoryData } = useGetAllCategoriesQuery({});
   const { data: subCategoryData } = useGetAllSubCategoriesQuery({});
-
+const [addProduct]= useAddProductMutation()
   const [form, setForm] = useState({
     title: '',
     name: '',
     description: '',
-    images: [''],
     price: '',
     quantity: '',
     serviceId: '',
@@ -35,6 +33,8 @@ const CreateProductPage = () => {
     subCategoryId: '',
     isPublished: false,
   });
+
+  const [files, setFiles] = useState<File[]>([]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -44,14 +44,10 @@ const CreateProductPage = () => {
     setForm({ ...form, [field]: value });
   };
 
-  const handleImageChange = (index: number, value: string) => {
-    const updatedImages = [...form.images];
-    updatedImages[index] = value;
-    setForm({ ...form, images: updatedImages });
-  };
-
-  const handleAddImageField = () => {
-    setForm({ ...form, images: [...form.images, ''] });
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      setFiles(Array.from(e.target.files));
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -63,12 +59,25 @@ const CreateProductPage = () => {
       quantity: Number(form.quantity),
     };
 
+    const formData = new FormData();
+
+    formData.append('data', JSON.stringify(payload));
+
+    files.forEach((file) => {
+      formData.append('file', file);
+    });
+
     try {
-      await addProduct(payload).unwrap();
+     await addProduct(formData).unwrap();
+   
+
       toast.success('Product created successfully!');
+
       router.push('/dashboard/products');
-    } catch (error) {
-      toast.error('Failed to create product');
+      
+    } catch (err) {
+      console.error(err);
+      toast.error('Something went wrong while creating the product');
     }
   };
 
@@ -103,28 +112,10 @@ const CreateProductPage = () => {
             name="description"
             value={form.description}
             onChange={handleChange}
-            className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring"
-            placeholder="Enter description"
+            className="w-full px-4 py-2 border rounded-md"
+            placeholder="Enter product description"
             required
           />
-        </div>
-
-        <div>
-          <Label>Images</Label>
-          {form.images.map((url, idx) => (
-            <input
-              key={idx}
-              type="text"
-              value={url}
-              onChange={(e) => handleImageChange(idx, e.target.value)}
-              placeholder={`Image URL ${idx + 1}`}
-              className="w-full mb-2 px-4 py-2 border rounded-md"
-              required
-            />
-          ))}
-          <Button type="button" variant="outline" onClick={handleAddImageField}>
-            + Add Image
-          </Button>
         </div>
 
         <FormInput
@@ -146,6 +137,19 @@ const CreateProductPage = () => {
           placeholder="Enter quantity"
           required
         />
+
+        {/* File Upload */}
+        <div>
+          <Label>Upload Images</Label>
+          <input
+            type="file"
+            multiple
+            accept="image/*"
+            onChange={handleFileChange}
+            className="w-full px-4 py-2 border rounded-md"
+            required
+          />
+        </div>
 
         {/* Service Select */}
         <div>

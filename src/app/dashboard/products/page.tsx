@@ -1,9 +1,10 @@
-import ProductsPage from '@/pages/Products/Products'
+import ProductsListPage from '@/pages/Products/Products'
+
 import React from 'react'
 
 const Products = () => {
   return (
-  <ProductsPage></ProductsPage>
+<ProductsListPage></ProductsListPage>
   )
 }
 
