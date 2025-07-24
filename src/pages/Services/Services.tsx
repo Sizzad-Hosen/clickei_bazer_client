@@ -12,13 +12,13 @@ import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
-  DialogTrigger,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogFooter,
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
+import { Pencil, Trash2 } from 'lucide-react'; // ✅ Icon library used by ShadCN
 
 const ServicePage = () => {
   const router = useRouter();
@@ -29,7 +29,6 @@ const ServicePage = () => {
   const { data, isLoading, isError } = useGetAllServicesQuery({});
   const services = Array.isArray(data) ? data : data?.data || [];
 
-  // Modal state
   const [isOpen, setIsOpen] = useState(false);
   const [selectedService, setSelectedService] = useState<any>(null);
   const [formData, setFormData] = useState({ name: '' });
@@ -45,9 +44,7 @@ const ServicePage = () => {
   };
 
   const handleDelete = async (id: string) => {
-    const confirmed = confirm('Are you sure you want to delete this service?');
-    if (!confirmed) return;
-
+  
     try {
       await deleteService(id).unwrap();
       toast.success('Service deleted successfully');
@@ -79,28 +76,33 @@ const ServicePage = () => {
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         {services?.map((service: any) => (
-          <Card key={service._id} className="rounded-2xl shadow-md p-4">
-            <CardHeader className="text-lg font-semibold">
-              {service?.name}
-            </CardHeader>
-            <CardContent className="space-y-2">
-              <div className="flex gap-2">
-                <Button
-                  size="sm"
-                  onClick={() => openEditModal(service)}
-                >
-                  Edit
-                </Button>
-                <Button
-                  size="sm"
-                  variant="destructive"
-                  onClick={() => handleDelete(service._id)}
-                >
-                  Delete
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+    <Card
+  key={service._id}
+  className="rounded-2xl border border-gray-200 bg-gradient-to-br from-white via-gray-50 to-gray-100 shadow-lg transition hover:shadow-xl"
+>
+  <CardHeader className="text-lg font-semibold text-primary">
+    {service?.name}
+  </CardHeader>
+  <CardContent className="flex justify-end gap-2">
+    <Button
+      variant="outline"
+      size="icon"
+      className="border-gray-300 hover:bg-primary/10"
+      onClick={() => openEditModal(service)}
+    >
+      <Pencil className="w-4 h-4 text-gray-700" />
+    </Button>
+    <Button
+      variant="outline"
+      size="icon"
+      className="border-gray-300 hover:bg-red-50"
+      onClick={() => handleDelete(service._id)}
+    >
+      <Trash2 className="w-4 h-4 text-red-500" />
+    </Button>
+  </CardContent>
+</Card>
+
         ))}
       </div>
 
