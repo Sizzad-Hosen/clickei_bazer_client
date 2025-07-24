@@ -2,18 +2,19 @@ import { baseApi } from "@/redux/api/baseApi";
 
 const categoryApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
-    addService: builder.mutation({
+    addCategory: builder.mutation({
       query: (userInfo) => ({
         url: '/categories/create-category',
         method: 'POST',
         body: userInfo,
       }),
     }),
-    getAllServices: builder.query({
+    
+    getAllCategories: builder.query({
       query: () => '/categories',
       providesTags: ['Categories'],
     }),
-    deleteService: builder.mutation({
+    deleteCategory: builder.mutation({
       query: (id) => ({
         url: `/categories/${id}`,
         method: 'DELETE',
@@ -21,7 +22,7 @@ const categoryApi = baseApi.injectEndpoints({
       invalidatesTags: ['Categories'],
     }),
 
-updateService: builder.mutation({
+updateCategory: builder.mutation({
   query: ({ id, ...data }) => ({
     url: `/categories/${id}`,
     method: 'PUT',
@@ -36,4 +37,4 @@ updateService: builder.mutation({
   }),
 });
 
-export const { useAddServiceMutation ,useGetAllServicesQuery , useDeleteServiceMutation , useUpdateServiceMutation} = categoryApi;
+export const { useAddCategoryMutation, useDeleteCategoryMutation, useGetAllCategoriesQuery , useUpdateCategoryMutation } = categoryApi;

@@ -1,9 +1,8 @@
-import CategoriesPage from '@/pages/Categories/Categories'
-import React from 'react'
+import CategoriesPage from "@/pages/Categories/CreateCategories"
 
 const Categories = () => {
   return (
-  <CategoriesPage></CategoriesPage>
+ <CategoriesPage></CategoriesPage>
   )
 }
 
