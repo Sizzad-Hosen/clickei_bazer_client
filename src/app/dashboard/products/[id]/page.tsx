@@ -1,37 +1,29 @@
 'use client';
 
 import React from 'react';
+import { use, useState } from 'react';
 import { useDeleteProductMutation, useGetSingleProductQuery } from '@/redux/features/Products/productApi';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
-import Link from 'next/link';
 import { toast } from 'sonner';
+import { EditProductModal } from '@/components/Products/EditProductModal';
 
-interface Props {
-  params: Promise<{ id: string }>;
-}
-
-const ProductDetailsPage = ({ params }: Props) => {
-  const unwrappedParams = React.use(params); // unwrap Promise here
-  const { id } = unwrappedParams;
-
+const ProductDetailsPage = ({ params }: { params: Promise<{ id: string }> }) => {
+  const { id } = use(params); // ✅ unwrap `params` using React.use
   const router = useRouter();
 
   const { data: product, isLoading, isError } = useGetSingleProductQuery(id);
+  const productExists = product?.data || product;
 
-  const productExists = product?.data
-  
-  console.log('Product Details:', product);
-
+  const [isEditOpen, setIsEditOpen] = useState(false);
   const [deleteProduct, { isLoading: isDeleting }] = useDeleteProductMutation();
 
   if (isLoading) return <p className="text-center">Loading product...</p>;
-  if (isError || !product) return <p className="text-center text-red-500">Failed to load product.</p>;
+  if (isError || !productExists) return <p className="text-center text-red-500">Failed to load product.</p>;
 
   const handleDelete = async () => {
     if (!confirm('Are you sure you want to delete this product?')) return;
-
     try {
       await deleteProduct(id).unwrap();
       toast.success('Product deleted successfully!');
@@ -64,14 +56,17 @@ const ProductDetailsPage = ({ params }: Props) => {
       <p className="mb-4"><strong>Published:</strong> {productExists.isPublished ? 'Yes' : 'No'}</p>
 
       <div className="flex gap-4">
-        <Link href={`/dashboard/products/edit/${productExists._id}`}>
-          <Button>Edit</Button>
-        </Link>
-
+        <Button onClick={() => setIsEditOpen(true)}>Edit</Button>
         <Button variant="destructive" onClick={handleDelete} disabled={isDeleting}>
           {isDeleting ? 'Deleting...' : 'Delete'}
         </Button>
       </div>
+
+      <EditProductModal
+        product={productExists}
+        isOpen={isEditOpen}
+        onClose={() => setIsEditOpen(false)}
+      />
     </div>
   );
 };
