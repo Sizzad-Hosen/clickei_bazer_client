@@ -1,9 +1,8 @@
-import SubCategoriesPage from '@/pages/SubCategories/SubCategories'
-import React from 'react'
+import SubcategoriesPage from "@/pages/SubCategories/SubCategories"
 
 const SubCategories = () => {
   return (
-  <SubCategoriesPage></SubCategoriesPage>
+<SubcategoriesPage></SubcategoriesPage>
   )
 }
 
