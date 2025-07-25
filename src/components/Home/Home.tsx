@@ -1,8 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import Footer from '../shared/Footer';
-import { Navbar } from '../shared/Navbar';
 import Sidebar from '../shared/Sidebar';
 import { useGetAllProductsQuery } from '@/redux/features/Products/productApi';
 import ProductCard from '../Products/ProductCard';
@@ -24,8 +22,7 @@ const products = productRes?.data?.data && Array.isArray(productRes.data.data)
 
   return (
     <div className="min-h-screen flex flex-col">
-      {/* Navbar */}
-      <Navbar />
+  
 
       {/* Main Layout */}
       <div className="flex flex-1">
@@ -69,8 +66,6 @@ const products = productRes?.data?.data && Array.isArray(productRes.data.data)
         </main>
       </div>
 
-      {/* Footer */}
-      <Footer />
     </div>
   );
 };

@@ -10,7 +10,7 @@ import { useDispatch } from "react-redux";
 
 export const Navbar = () => {
   const user = useAppSelector(selectCurrentUser);
-const dispatch = useDispatch();
+  const dispatch = useDispatch();
 
 
   console.log("Current User:", user);
@@ -25,7 +25,11 @@ const dispatch = useDispatch();
               <span className="text-2xl text-white">☰</span>
             </button>
             <span className="font-bold text-lg sm:text-xl tracking-wide">
-              CLICKEIBAZZER
+              <Link href="/" className="text-white">
+
+
+                CLICKEIBAZZER
+              </Link>
             </span>
           </div>
         </div>

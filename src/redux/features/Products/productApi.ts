@@ -35,10 +35,14 @@ updateProduct: builder.mutation({
   invalidatesTags: ['Products'],
 }),
 
+  getAllProductsBySubcategoryId: builder.query({
 
+      query: (subcategoryId: string) => `/subCategories/allProductsBySubId/${subcategoryId}`,
+
+    }),
 
 
   }),
 });
 
-export const { useAddProductMutation, useDeleteProductMutation, useGetAllProductsQuery, useUpdateProductMutation, useGetSingleProductQuery} = productApi;
+export const { useAddProductMutation, useDeleteProductMutation,useGetAllProductsBySubcategoryIdQuery, useGetAllProductsQuery, useUpdateProductMutation, useGetSingleProductQuery} = productApi;

@@ -31,9 +31,6 @@ updateSubCategory: builder.mutation({
   invalidatesTags: ['SubCategories'],
 }),
 
-
-
-
   }),
 });
 

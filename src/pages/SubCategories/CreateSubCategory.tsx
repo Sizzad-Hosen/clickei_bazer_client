@@ -56,7 +56,7 @@ const CreateSubcategoryPage = () => {
     try {
       await addSubcategory(form).unwrap();
       toast.success('Subcategory created successfully');
-      router.push('/dashboard/subcategories');
+      router.push('/dashboard/subCategories');
     } catch (error) {
       toast.error('Failed to create subcategory');
     }
