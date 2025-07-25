@@ -6,13 +6,14 @@ import { useGetAllProductsBySubcategoryIdQuery } from '@/redux/features/Products
 import ProductCard from '@/components/Products/ProductCard';
 import Sidebar from '@/components/shared/Sidebar';
 import { Button } from '@/components/ui/button';
+import CartDrawer from '@/components/Carts/CartDrawer'; // ✅ Make sure the path is correct
 
 const ProductListBySubcategory = () => {
-
   const params = useParams();
   const subcategoryId = params ? params['subcategoryId'] : undefined;
-  
+
   const [page, setPage] = useState(1);
+  const [cartOpen, setCartOpen] = useState(false); // ✅ drawer state
   const limit = 10;
 
   const {
@@ -28,6 +29,9 @@ const ProductListBySubcategory = () => {
 
   const products = productRes?.data?.products || [];
   const meta = productRes?.data?.meta;
+
+  const openCart = () => setCartOpen(true);
+  const closeCart = () => setCartOpen(false);
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -45,7 +49,7 @@ const ProductListBySubcategory = () => {
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {products.map((product: any) => (
-              <ProductCard key={product._id} product={product} />
+              <ProductCard key={product._id} product={product} onOpenCart={openCart} />
             ))}
           </div>
 
@@ -57,7 +61,9 @@ const ProductListBySubcategory = () => {
             >
               Previous
             </Button>
-            <span className="text-gray-600 font-medium">Page {page} of {meta?.totalPages || 1}</span>
+            <span className="text-gray-600 font-medium">
+              Page {page} of {meta?.totalPages || 1}
+            </span>
             <Button
               onClick={() => {
                 if (page < meta?.totalPages) setPage((prev) => prev + 1);
@@ -69,6 +75,9 @@ const ProductListBySubcategory = () => {
           </div>
         </main>
       </div>
+
+      {/* ✅ Drawer visible globally */}
+      <CartDrawer open={cartOpen} onClose={closeCart} />
     </div>
   );
 };

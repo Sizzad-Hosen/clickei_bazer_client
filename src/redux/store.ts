@@ -14,6 +14,7 @@ import storage from 'redux-persist/lib/storage';
 import { persistStore } from 'redux-persist';
 
 import { baseApi } from './api/baseApi';
+
 import authReducer from './features/auth/authSlices'; 
 
 const persistConfig = {
@@ -27,6 +28,7 @@ const persistedAuthReducer = persistReducer(persistConfig, authReducer);
 export const store = configureStore({
   reducer: {
     [baseApi.reducerPath]: baseApi.reducer,
+ 
     auth: persistedAuthReducer,
   },
   middleware: (getDefaultMiddleware) =>
@@ -34,16 +36,12 @@ export const store = configureStore({
       serializableCheck: {
         ignoredActions: [FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER],
       },
-    }).concat(baseApi.middleware),
+    })
+    .concat(baseApi.middleware)
+   
 });
 
 export const persistor = persistStore(store);
-
-// Add debug logging
-persistor.subscribe(() => {
-  const { bootstrapped } = persistor.getState();
-  console.log('Persistor bootstrapped:', bootstrapped);
-});
 
 export type RootState = ReturnType<typeof store.getState>;
 export type AppDispatch = typeof store.dispatch;

@@ -6,7 +6,7 @@ const addToCartApi = baseApi.injectEndpoints({
     addCart: builder.mutation({
 
       query: (userInfo) => ({
-        url: '//carts/add',
+        url: '/carts/add',
         method: 'POST',
         body: userInfo,
       }),
@@ -17,18 +17,17 @@ const addToCartApi = baseApi.injectEndpoints({
       providesTags: ['Carts'],
     }),
 
-    deleteCart: builder.mutation({
-      query: () => ({
-        url: `/categories/remove`,
-        method: 'DELETE',
-      }),
-      invalidatesTags: ['Carts'],
-    }),
+    removeCart: builder.mutation<void, string>({
+  query: (id) => ({
+    url: `/carts/remove/${id}`,
+    method: 'DELETE',
+  }),
+}),
 
 updateCartsQuantity: builder.mutation({
-  query: ({data }) => ({
-    url: `/carts/update`,
-    method: 'PUT',
+  query: ({data}) => ({
+    url: `/carts/update/${data.id}`,
+    method: 'POST',
     body: data,
   }),
   invalidatesTags: ['Carts'],
@@ -40,4 +39,4 @@ updateCartsQuantity: builder.mutation({
   }),
 });
 
-export const { useAddCartMutation, useDeleteCartMutation, useGetAllCartsQuery,useUpdateCartsQuantityMutation} = addToCartApi
+export const { useAddCartMutation, useRemoveCartMutation, useGetAllCartsQuery,useUpdateCartsQuantityMutation} = addToCartApi
