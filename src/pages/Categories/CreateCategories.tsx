@@ -2,23 +2,12 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import {
-  useGetAllCategoriesQuery,
-  useDeleteCategoryMutation,
-  useUpdateCategoryMutation,
-} from '@/redux/features/Categories/categoryApi';
-import { useGetAllServicesQuery } from '@/redux/features/Services/serviceApi';
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Pencil, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
-import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
+
+import { useGetAllServicesQuery } from '@/redux/features/Services/serviceApi';
+
+import { FormInput } from '@/components/form/FromInput';
+import { Button } from '@/components/ui/button';
 import {
   Select,
   SelectContent,
@@ -26,106 +15,59 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { FormInput } from '@/components/form/FromInput';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { useAddCategoryMutation } from '@/redux/features/Categories/categoryApi';
 
-
-const CategoriesPage = () => {
+const CreateCategoryPage = () => {
   const router = useRouter();
-
-  const { data: categoryData, isLoading, isError, refetch } = useGetAllCategoriesQuery({});
+  const [createCategory] = useAddCategoryMutation();
   const { data: serviceData } = useGetAllServicesQuery({});
-  const [deleteCategory] = useDeleteCategoryMutation();
-  const [updateCategory] = useUpdateCategoryMutation();
 
-  const categories = Array.isArray(categoryData) ? categoryData : categoryData?.data || [];
   const services = Array.isArray(serviceData) ? serviceData : serviceData?.data || [];
 
-  // Modal state
-  const [isOpen, setIsOpen] = useState(false);
-  const [selectedCategory, setSelectedCategory] = useState<any>(null);
-  const [formData, setFormData] = useState({ name: '', serviceId: '' });
-
-  const openEditModal = (category: any) => {
-    console.log('Open modal for category:', category);
-    setSelectedCategory(category);
-    setFormData({
-      name: category.name || '',
-      // Make sure serviceId is a string
-      serviceId: category.serviceId ? category.serviceId.toString() : '',
-    });
-    setIsOpen(true);
-  };
+  const [formData, setFormData] = useState({
+    name: '',
+    serviceId: '',
+  });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
   const handleServiceChange = (value: string) => {
-    console.log('Service selected:', value);
     setFormData({ ...formData, serviceId: value });
   };
+const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
 
-  const handleDelete = async (id: string) => {
-   
-    try {
-      await deleteCategory(id).unwrap();
-      toast.success('Category deleted successfully!');
-      refetch();
-    } catch (error) {
-      toast.error('Failed to delete category');
-    }
-  };
+  if (!formData.name || !formData.serviceId) {
+    toast.error('Please fill in all fields');
+    return;
+  }
 
-  const handleSave = async () => {
-    console.log('Saving form data:', formData);
-    try {
-      await updateCategory({
-        id: selectedCategory._id,
-        name: formData.name,
-        serviceId: formData.serviceId,
-      }).unwrap();
-      toast.success('Category updated!');
-      setIsOpen(false);
-      refetch();
-    } catch (error) {
-      toast.error('Failed to update category');
+  try {
+    await createCategory(formData).unwrap(); // ✅ send flat object directly
+
+    toast.success('Category created successfully!');
+    setFormData({ name: '', serviceId: '' });
+    router.push('/dashboard/categories');
+  } catch (error: any) {
+    if (error?.data?.errorSources) {
+      error.data.errorSources.forEach((err: any) => {
+        toast.error(`${err.path.replace('body.', '')}: ${err.message}`);
+      });
+    } else {
+      toast.error('Failed to create category');
     }
-  };
+  }
+};
 
   return (
-    <div className="max-w-5xl mx-auto py-10 px-4">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">All Categories</h1>
-      </div>
-
-      {isLoading && <p>Loading...</p>}
-      {isError && <p>Failed to load categories</p>}
-      {categories.length === 0 && <p>No categories found.</p>}
-
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        {categories.map((category: any) => (
-          <Card key={category._id} className="rounded-2xl border shadow-sm p-4 bg-muted/50">
-            <CardHeader className="text-lg font-semibold">{category.name}</CardHeader>
-            <CardContent className="flex gap-2">
-              <Button size="sm" variant="outline" onClick={() => openEditModal(category)}>
-                <Pencil className="w-4 h-4" />
-              </Button>
-              <Button size="sm" variant="outline" onClick={() => handleDelete(category._id)}>
-                <Trash2 className="w-4 h-4 text-red-500" />
-              </Button>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-
-      {/* Edit Modal */}
-      <Dialog open={isOpen} onOpenChange={setIsOpen}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>Edit Category</DialogTitle>
-          </DialogHeader>
-
-          <div className="space-y-4 py-4">
+    <div className="max-w-xl mx-auto py-10 px-4">
+      <Card className="rounded-2xl border shadow-sm p-6 bg-muted/50">
+        <CardHeader className="text-xl font-semibold mb-4">Create New Category</CardHeader>
+        <CardContent>
+          <form onSubmit={handleSubmit} className="space-y-5">
             <FormInput
               label="Category Name"
               name="name"
@@ -142,7 +84,7 @@ const CategoriesPage = () => {
               </label>
               <Select
                 onValueChange={handleServiceChange}
-                value={formData.serviceId || ''}
+                value={formData.serviceId}
               >
                 <SelectTrigger className="w-full">
                   <SelectValue placeholder="Select a service" />
@@ -156,15 +98,15 @@ const CategoriesPage = () => {
                 </SelectContent>
               </Select>
             </div>
-          </div>
 
-          <DialogFooter>
-            <Button onClick={handleSave}>Save</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+            <Button type="submit" className="w-full">
+              Create Category
+            </Button>
+          </form>
+        </CardContent>
+      </Card>
     </div>
   );
 };
 
-export default CategoriesPage;
+export default CreateCategoryPage;

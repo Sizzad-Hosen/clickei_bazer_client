@@ -1,8 +1,8 @@
-import CategoriesPage from "@/pages/Categories/CreateCategories"
+import CategoriesPage from "@/pages/Categories/Categories"
 
 const Categories = () => {
   return (
- <CategoriesPage></CategoriesPage>
+<CategoriesPage></CategoriesPage>
   )
 }
 
