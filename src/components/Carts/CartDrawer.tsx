@@ -10,15 +10,12 @@ import {
 import { Button } from '@/components/ui/button';
 import Image from 'next/image';
 import {
-
   useGetAllCartsQuery,
   useRemoveCartMutation,
   useUpdateCartsQuantityMutation,
-
- 
-
 } from '@/redux/features/AddToCart/addToCartApi';
 import { toast } from 'sonner';
+import { useEffect, useState } from 'react';
 
 export default function CartDrawer({
   open,
@@ -31,31 +28,54 @@ export default function CartDrawer({
   const [updateQty] = useUpdateCartsQuantityMutation();
   const [removeItem] = useRemoveCartMutation();
 
-  const cartData = data?.data;
-console.log('Cart Data:', cartData);
-  const cartItems = Array.isArray(cartData?.items) ? cartData.items : [];
-  const totalAmount = cartData?.totalAmount || 0;
-  const totalQuantity = cartData?.totalQuantity || 0;
+  // ✅ Local cart state
+  const [localCart, setLocalCart] = useState<any[]>([]);
+  const [totalAmount, setTotalAmount] = useState(0);
+  const [totalQuantity, setTotalQuantity] = useState(0);
 
-  const handleRemoveItemFromCart = async (id: string) => {
+  // ✅ Sync local cart with backend data
+  useEffect(() => {
+    if (data?.data?.items) {
+      setLocalCart(data.data.items);
+      calculateTotals(data.data.items);
+    }
+  }, [data]);
+
+  // ✅ Recalculate totals when cart changes
+  const calculateTotals = (items: any[]) => {
+    const quantity = items.reduce((sum, item) => sum + item.quantity, 0);
+    const amount = items.reduce((sum, item) => sum + item.quantity * item.price, 0);
+    setTotalQuantity(quantity);
+    setTotalAmount(amount);
+  };
+
+  const handleRemoveItemFromCart = async (productId: string) => {
     try {
-      await removeItem(id).unwrap();
+      await removeItem(productId).unwrap();
+
+      const updatedCart = localCart.filter(item => item.productId !== productId);
+      setLocalCart(updatedCart);
+      calculateTotals(updatedCart);
+
       toast.success('Item removed from cart');
     } catch (error) {
       toast.error('Failed to remove item from cart');
-      console.error(error);
     }
   };
 
-  const handleUpdateQuantity = async (id: string, newQuantity: number) => {
+  const handleUpdateQuantity = async (productId: string, newQuantity: number) => {
     try {
+      await updateQty({ data: { id: productId, quantity: newQuantity } }).unwrap();
 
-    await updateQty({ data: { id, quantity: newQuantity } }).unwrap();
+      const updatedCart = localCart.map(item =>
+        item.productId === productId ? { ...item, quantity: newQuantity } : item
+      );
+      setLocalCart(updatedCart);
+      calculateTotals(updatedCart);
 
       toast.success('Quantity updated');
     } catch (error) {
       toast.error('Failed to update quantity');
-      console.error(error);
     }
   };
 
@@ -70,57 +90,65 @@ console.log('Cart Data:', cartData);
         <div className="p-4 space-y-4 overflow-auto max-h-[70vh]">
           {isLoading ? (
             <p className="text-gray-500">Loading cart...</p>
-          ) : cartItems.length === 0 ? (
+          ) : localCart.length === 0 ? (
             <p className="text-gray-500 italic">Your cart is empty.</p>
           ) : (
-            cartItems.map((item: any) => (
-              <div
-                key={item._id}
-                className="flex gap-3 items-center border-b pb-3"
-              >
-                <Image
-                  src={item?.images?.[0] || '/placeholder.png'}
-                  alt={item?.title || 'Product'}
-                  width={80}
-                  height={80}
-                  className="rounded"
-                />
-                <div className="flex-1">
-                  <p className="font-medium">{item.title}</p>
-                  <p className="text-sm">
-                    ৳{item.price} x {item.quantity}
-                  </p>
-                  <div className="flex items-center gap-2 mt-1">
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() =>
-                        handleUpdateQuantity(item.productId, Math.max(item.quantity - 1, 1))
-                      }
-                    >
-                      -
-                    </Button>
-                    <span>{item.quantity}</span>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() =>
-                        handleUpdateQuantity(item.productId, item.quantity + 1)
-                      }
-                    >
-                      +
-                    </Button>
-                  </div>
-                </div>
-                <Button
-                  variant="destructive"
-                  size="icon"
-                  onClick={() => handleRemoveItemFromCart(item.productId)}
+            localCart.map((item: any, index: number) => {
+              const imageSrc =
+                typeof item?.image === 'string' &&
+                (item.image.startsWith('http') || item.image.startsWith('/'))
+                  ? item.image
+                  : '/placeholder.png';
+
+              return (
+                <div
+                  key={`${item.productId}-${index}`}
+                  className="flex gap-3 items-center border-b pb-3"
                 >
-                  ×
-                </Button>
-              </div>
-            ))
+                  <Image
+                    src={imageSrc}
+                    alt={item?.title || 'Product'}
+                    width={80}
+                    height={80}
+                    className="rounded object-cover"
+                  />
+                  <div className="flex-1">
+                    <p className="font-medium">{item.title}</p>
+                    <p className="text-sm">
+                      ৳{item.price} x {item.quantity}
+                    </p>
+                    <div className="flex items-center gap-2 mt-1">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() =>
+                          handleUpdateQuantity(item.productId, Math.max(1, item.quantity - 1))
+                        }
+                      >
+                        -
+                      </Button>
+                      <span>{item.quantity}</span>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() =>
+                          handleUpdateQuantity(item.productId, item.quantity + 1)
+                        }
+                      >
+                        +
+                      </Button>
+                    </div>
+                  </div>
+                  <Button
+                    variant="destructive"
+                    size="icon"
+                    onClick={() => handleRemoveItemFromCart(item.productId)}
+                  >
+                    ×
+                  </Button>
+                </div>
+              );
+            })
           )}
         </div>
 
