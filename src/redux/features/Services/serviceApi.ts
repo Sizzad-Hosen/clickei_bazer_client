@@ -30,10 +30,13 @@ updateService: builder.mutation({
   invalidatesTags: ['Services'],
 }),
 
-
+serviceFullTree: builder.query({
+  query: (id: string) => `/services/${id}/categories-subcategories-products`,
+  providesTags: ['Services'],
+}),
 
 
   }),
 });
 
-export const { useAddServiceMutation ,useGetAllServicesQuery , useDeleteServiceMutation , useUpdateServiceMutation} = servicesApi;
+export const { useAddServiceMutation ,useGetAllServicesQuery , useDeleteServiceMutation , useUpdateServiceMutation, useLazyServiceFullTreeQuery} = servicesApi;
