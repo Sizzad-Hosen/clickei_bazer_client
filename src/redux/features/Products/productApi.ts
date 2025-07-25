@@ -1,7 +1,9 @@
 import { baseApi } from "@/redux/api/baseApi";
 
 const productApi = baseApi.injectEndpoints({
+   overrideExisting: true,
   endpoints: (builder) => ({
+
     addProduct: builder.mutation({
       query: (userInfo) => ({
         url: '/products/create-product',
@@ -9,6 +11,8 @@ const productApi = baseApi.injectEndpoints({
         body: userInfo,
       }),
     }),
+
+    
     getAllProducts: builder.query({
       query: () => '/products',
       providesTags: ['Products'],
@@ -35,14 +39,16 @@ updateProduct: builder.mutation({
   invalidatesTags: ['Products'],
 }),
 
-  getAllProductsBySubcategoryId: builder.query({
 
-      query: (subcategoryId: string) => `/subCategories/allProductsBySubId/${subcategoryId}`,
+getAllProductsBySubcategoryId: builder.query({
+  query: ({ subcategoryId, page = 1, limit = 10 }) =>
+    `/subCategories/allProductsBySubId/${subcategoryId}?page=${page}&limit=${limit}`,
+}),
 
-    }),
 
 
   }),
 });
+
 
 export const { useAddProductMutation, useDeleteProductMutation,useGetAllProductsBySubcategoryIdQuery, useGetAllProductsQuery, useUpdateProductMutation, useGetSingleProductQuery} = productApi;

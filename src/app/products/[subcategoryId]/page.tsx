@@ -1,35 +1,36 @@
 'use client';
 
 import { useParams } from 'next/navigation';
-import { useGetAllProductsBySubcategoryIdQuery, useGetAllProductsQuery } from '@/redux/features/Products/productApi';
-import Sidebar from '@/components/shared/Sidebar';
+import { useState } from 'react';
+import { useGetAllProductsBySubcategoryIdQuery } from '@/redux/features/Products/productApi';
 import ProductCard from '@/components/Products/ProductCard';
+import Sidebar from '@/components/shared/Sidebar';
+import { Button } from '@/components/ui/button';
 
 const ProductListBySubcategory = () => {
 
-  const { subcategoryId } = useParams();
-
-
-console.log('Subcategory ID:', subcategoryId);
+  const params = useParams();
+  const subcategoryId = params ? params['subcategoryId'] : undefined;
+  
+  const [page, setPage] = useState(1);
+  const limit = 10;
 
   const {
     data: productRes,
     isLoading,
     error,
-  } = useGetAllProductsBySubcategoryIdQuery(subcategoryId as string, {
-    skip: !subcategoryId,
-  });
+  } = useGetAllProductsBySubcategoryIdQuery(
+    { subcategoryId: subcategoryId?.toString(), page, limit },
+    {
+      skip: !subcategoryId,
+    }
+  );
 
-  const products =
-    productRes?.data && Array.isArray(productRes.data)
-      ? productRes.data
-      : [];
-
-      console.log('Products:', products);
+  const products = productRes?.data?.products || [];
+  const meta = productRes?.data?.meta;
 
   return (
     <div className="min-h-screen flex flex-col">
-     
       <div className="flex flex-1">
         <Sidebar onSelectSubcategory={() => {}} />
 
@@ -38,7 +39,6 @@ console.log('Subcategory ID:', subcategoryId);
 
           {isLoading && <p>Loading products...</p>}
           {error && <p className="text-red-500">Error loading products</p>}
-
           {!isLoading && products.length === 0 && (
             <p className="text-gray-500 italic">No products found.</p>
           )}
@@ -48,9 +48,27 @@ console.log('Subcategory ID:', subcategoryId);
               <ProductCard key={product._id} product={product} />
             ))}
           </div>
+
+          {/* Pagination Controls */}
+          <div className="mt-6 flex justify-center items-center gap-4">
+            <Button
+              onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
+              disabled={page === 1}
+            >
+              Previous
+            </Button>
+            <span className="text-gray-600 font-medium">Page {page} of {meta?.totalPages || 1}</span>
+            <Button
+              onClick={() => {
+                if (page < meta?.totalPages) setPage((prev) => prev + 1);
+              }}
+              disabled={page === meta?.totalPages}
+            >
+              Next
+            </Button>
+          </div>
         </main>
       </div>
-   
     </div>
   );
 };
