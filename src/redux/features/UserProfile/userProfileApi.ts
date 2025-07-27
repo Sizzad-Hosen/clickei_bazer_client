@@ -3,23 +3,28 @@ import { baseApi } from "@/redux/api/baseApi";
 const userProfileApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
 
-    // ✅ Add customer
-    addProfile: builder.mutation({
-      query: (userInfo) => ({
-        url: '/customers/create-customer',
-        method: 'POST',
-        body: userInfo,
-      }),
-      invalidatesTags: ['Profile'],
-    }),
+   
+addProfile: builder.mutation({
+  query: (formData) => ({
+    url: '/customers/create-customer',
+    method: 'POST',
+    body: formData,
+  }),
 
-    // ✅ Get customer by ID
+  transformResponse: (response) => response,
+  invalidatesTags: ['Profile'],
+}),
+
     getSingelProfile: builder.query({
-      query: (id) => `/customers/${id}`,  // ✅ corrected string template
+      query: (id) => `/customers/${id}`, 
       providesTags: ['Profile'],
     }),
 
-    // ✅ Delete customer
+    getCustomerDetails: builder.query({
+      query: () => `/customers/customerDetails`, 
+      providesTags: ['Profile'],
+    }),
+
     deleteProfile: builder.mutation({
       query: (id) => ({
         url: `/customers/${id}`,
@@ -28,15 +33,15 @@ const userProfileApi = baseApi.injectEndpoints({
       invalidatesTags: ['Profile'],
     }),
 
-    // ✅ Update customer
-    updateProfile: builder.mutation({
-      query: ({ id, ...data }) => ({
-        url: `/customers/${id}`,
-        method: 'PATCH',
-        body: data,
-      }),
-      invalidatesTags: ['Profile'],
-    }),
+    
+ updateProfile: builder.mutation({
+  query: ({ id, body }) => ({
+    url: `/customers/${id}`,
+    method: 'PATCH',
+    body, // FormData passed directly
+  }),
+  invalidatesTags: ['Profile'],
+}),
 
   }),
 });
@@ -45,5 +50,6 @@ export const {
   useAddProfileMutation,
   useDeleteProfileMutation,
     useGetSingelProfileQuery,
-  useUpdateProfileMutation
+  useUpdateProfileMutation,
+ useGetCustomerDetailsQuery
 } = userProfileApi;
