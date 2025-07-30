@@ -96,9 +96,10 @@ const Navbar = () => {
             </button>
 
             {/* Suggestions */}
-            {debouncedQuery && data?.data?.length > 0 && (
+            
+            {debouncedQuery && data?.data?.length && data.data.length > 0 && (
               <div className="absolute left-0 right-0 mt-1 max-h-56 overflow-auto rounded-md border border-gray-200 bg-white shadow-lg z-50">
-                {data.data.map((item: any) => (
+                {data?.data?.map((item: any) => (
                   <Link
                     key={item._id}
                     href={`/products/${item._id}`}
