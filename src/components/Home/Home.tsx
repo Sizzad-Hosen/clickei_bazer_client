@@ -5,6 +5,9 @@ import Sidebar from '../shared/Sidebar';
 import { useGetAllProductsQuery } from '@/redux/features/Products/productApi';
 import ProductCard from '../Products/ProductCard';
 
+import { Product } from '@/types/products';
+import SearchPage from '@/app/search/page';
+
 export const Home = () => {
   const [selectedSubcategoryId, setSelectedSubcategoryId] = useState<string | null>(null);
 
@@ -33,6 +36,8 @@ const products = productRes?.data?.data && Array.isArray(productRes.data.data)
         <main className="flex-1 p-6">
           <h2 className="text-2xl font-bold mb-6">Featured Products</h2>
 
+ <SearchPage></SearchPage>
+ 
           {/* Subcategory not selected */}
           {!selectedSubcategoryId && (
             <p className="text-gray-500 text-lg">
@@ -53,8 +58,14 @@ const products = productRes?.data?.data && Array.isArray(productRes.data.data)
           {/* Product Grid */}
           {selectedSubcategoryId && !isLoading && products.length > 0 && (
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              {products.map((product) => (
-                <ProductCard key={product._id} product={product} />
+              {products.map((product: Product) => (
+                <ProductCard
+                  key={product._id}
+                  product={product}
+                  onOpenCart={() => {
+                    // TODO: Implement cart opening logic here
+                  }}
+                />
               ))}
             </div>
           )}

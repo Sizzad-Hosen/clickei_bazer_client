@@ -1,143 +1,184 @@
 'use client';
 
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import {
-  User,
-  LogOut,
-  History,
-  CreditCard,
-  Home,
-  KeyRound,
-  RefreshCcw,
-  ShoppingCart,
-  UserCircle2,
-  MapPin,
-  Search,
-} from "lucide-react";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { Button } from "../ui/button";
-import { useAppSelector } from "@/redux/hook";
-import { useDispatch } from "react-redux";
-import { logout, selectCurrentUser } from "@/redux/features/auth/authSlices";
-import { Input } from "@/components/ui/input";
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { useEffect, useRef, useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { useGetAllProductsBySearchQuery } from '@/redux/features/Products/productApi';
+import { Search } from 'lucide-react';
+import Image from 'next/image';
+import logo from '../../../public/clickeiBazer-png.png';
 
-export const Navbar = () => {
-  const user = useAppSelector(selectCurrentUser);
-  const dispatch = useDispatch();
+const Navbar = () => {
   const router = useRouter();
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
-  const handleLogout = () => {
-    dispatch(logout());
-    router.push("/login");
+  const [query, setQuery] = useState('');
+  const [field, setField] = useState('name');
+  const [debouncedQuery, setDebouncedQuery] = useState('');
+  const [showDropdown, setShowDropdown] = useState(false);
+
+  // Debounce input
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedQuery(query);
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [query]);
+
+  // Close dropdown on outside click
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(e.target as Node)
+      ) {
+        setShowDropdown(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const { data } = useGetAllProductsBySearchQuery(
+    debouncedQuery ? { [field]: debouncedQuery } : {},
+    { skip: !debouncedQuery }
+  );
+
+  const handleSearch = () => {
+    if (!query.trim()) return;
+    router.push(`/search?${field}=${encodeURIComponent(query.trim())}`);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') handleSearch();
   };
 
   return (
-    <header className="relative z-10">
-      <div className="flex flex-col md:flex-row items-center justify-between px-4 py-3 shadow-md border-b border-transparent gap-3 md:gap-0 bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500 text-white">
-        
-        {/* Left: Logo */}
-        <div className="flex items-center justify-between mr-2 w-full md:w-auto">
-          <div className="flex items-center gap-2">
-            <button className="md:hidden">
-              <span className="text-2xl text-white">☰</span>
-            </button>
-            <span className="font-bold text-lg sm:text-xl tracking-wide">
-              <Link href="/" className="text-white">CLICKEIBAZZER</Link>
-            </span>
-          </div>
-        </div>
+    <nav className="bg-gray-800 border-b border-gray-200 shadow-sm sticky top-0 z-50">
+      <div className="max-w-8xl mx-auto flex items-center justify-between px-4 md:px-8 h-22">
+        {/* Logo & Site Name */}
+        <Link href="/" className="flex items-center gap-2  m-2">
+          <Image src={logo} alt="ClickeiBazer Logo" width={150} height={110} />
+          
+        </Link>
 
-        {/* Middle: Search Bar */}
-        <div className="w-full md:flex-1 max-w-full md:max-w-3xl">
-          <div className="relative">
-            <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
-              <Search className="w-4 h-4" />
-            </div>
-            <div className="p-[1px] bg-white rounded-md">
-              <Input
-                type="text"
-                placeholder="Search for products (e.g. eggs, milk, potato)"
-                className="pl-10 w-full text-gray-800 rounded-md outline-none focus:ring-0 focus-visible:ring-0 border-none"
-              />
-            </div>
-          </div>
-        </div>
+       {/* Search Bar */}
+<div className="flex flex-1 max-w-5xl mx-6">
+  <select
+    value={field}
+    onChange={(e) => setField(e.target.value)}
+    className="h-12 min-w-[100px] border-2 border-amber-600 rounded-l-md bg-white px-3 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-amber-600 "
+    aria-label="Search field selector"
+  >
+    <option value="title">Title</option>
+    <option value="name">Name</option>
+    <option value="price">Price</option>
+    <option value="quantity">Quantity</option>
+  </select>
 
-        {/* Right: Links & Profile */}
-        <div className="flex items-center justify-end gap-2 sm:gap-3 w-full md:w-auto">
-          <Link href="/dashboard">
-            <span className="text-xs sm:text-sm md:text-base font-medium">
-              Dashboard
-            </span>
+  <div className="relative flex-grow">
+    <input
+      type="text"
+      value={query}
+      onChange={(e) => setQuery(e.target.value)}
+      onKeyDown={handleKeyDown}
+      placeholder={`Search by ${field}...`}
+      className="w-full h-12 pl-12 pr-12 border-2 border-amber-600 bg-white rounded-r-md shadow-sm focus:outline-none focus:ring-2 focus:ring-amber-600 text-sm"
+      aria-label="Search input"
+    />
+    <button
+      onClick={handleSearch}
+      aria-label="Search button"
+      className="absolute left-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-blue-600 transition"
+      type="button"
+    >
+      <Search size={18} />
+    </button>
+
+    {/* Suggestions */}
+    {debouncedQuery && data?.data?.length > 0 && (
+      <div className="absolute left-0 right-0 mt-1 max-h-56 overflow-auto rounded-md border border-gray-200 bg-white shadow-lg z-50">
+        {data.data.map((item: any) => (
+          <Link
+            key={item._id}
+            href={`/products/${item._id}`}
+            className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+          >
+            {item.title || item.name}
           </Link>
-          <Link href="/login">
-            <span className="text-xs sm:text-sm md:text-base font-medium">
-             Login
-            </span>
-          </Link>
+        ))}
+      </div>
+    )}
+  </div>
+</div>
 
-          <div className="flex items-center gap-1">
-            <MapPin className="w-4 h-4 text-white" />
-            <span className="text-xs sm:text-sm">Dhaka</span>
-          </div>
+        {/* Right Side: Auth / Profile */}
+        <div className="flex items-center gap-6  text-xl text-white">
+          <Link
+            href="/dashboard"
+            className="hover:underline hover:text-amber-600 transition"
+          >
+            Dashboard
+          </Link>
+          <Link
+            href="/login"
+            className="hover:underline hover:text-amber-600 transition"
+          >
+            Login
+          </Link>
 
           {/* Profile Dropdown */}
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                variant="secondary"
-                className="text-xs sm:text-sm md:text-base px-3 py-1 text-black bg-white hover:bg-gray-100"
-              >
-                <User className="w-4 h-4 mr-1" />
-                Profile
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-56 bg-white">
-              <DropdownMenuLabel className="text-gray-700 font-semibold">
-                My Account
-              </DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={() => router.push('/profile')}>
-                <UserCircle2 className="w-4 h-4 mr-2" /> Your Profile
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => router.push('/orders')}>
-                <ShoppingCart className="w-4 h-4 mr-2" /> Your Orders
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => router.push('/history')}>
-                <History className="w-4 h-4 mr-2" /> Your History
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => router.push('/payments')}>
-                <CreditCard className="w-4 h-4 mr-2" /> Your Payment
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => router.push('/address')}>
-                <Home className="w-4 h-4 mr-2" /> Your Address
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => router.push('/change-password')}>
-                <KeyRound className="w-4 h-4 mr-2" /> Change Password
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => router.push('/forgot-password')}>
-                <RefreshCcw className="w-4 h-4 mr-2" /> Reset Password
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={handleLogout}>
-                <LogOut className="w-4 h-4 mr-2 text-red-500" />
-                <span className="text-red-500">Logout</span>
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <div className="relative" ref={dropdownRef}>
+            <Button
+              variant="default"
+              onClick={() => setShowDropdown(!showDropdown)}
+            className='hover:text-amber-600'
+            >
+              Profile
+            </Button>
+
+            {showDropdown && (
+              <div className="absolute right-0 mt-2 w-48 rounded-md border border-gray-200 bg-white shadow-lg z-50">
+                <Link
+                  href="/profile"
+                  className="block px-4 py-2 text-gray-700 hover:bg-gray-100"
+                >
+                  Your Profile
+                </Link>
+                <Link
+                  href="/orders"
+                  className="block px-4 py-2 text-gray-700 hover:bg-gray-100"
+                >
+                  Your Orders
+                </Link>
+                <Link
+                  href="/payments"
+                  className="block px-4 py-2 text-gray-700 hover:bg-gray-100"
+                >
+                  Your Payment
+                </Link>
+                <Link
+                  href="/change-password"
+                  className="block px-4 py-2 text-gray-700 hover:bg-gray-100"
+                >
+                  Change Password
+                </Link>
+                <button
+                  className="w-full text-left px-4 py-2 text-red-600 hover:bg-red-100"
+                  onClick={() => {
+                    console.log('Logged out');
+                  }}
+                >
+                  Logout
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       </div>
-
-      {/* Bottom border line */}
-      <div className="h-1 w-full bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500" />
-    </header>
+    </nav>
   );
 };
+
+export default Navbar;

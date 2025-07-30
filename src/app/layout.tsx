@@ -5,7 +5,8 @@ import { Toaster } from "sonner";
 import { ReduxProvider } from "./Providers";
 
 import Footer from "@/components/shared/Footer";
-import { Navbar } from "@/components/shared/Navbar";
+import Navbar from "@/components/shared/Navbar";
+
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -36,7 +37,7 @@ export default function RootLayout({
           <Toaster richColors position="top-center" />
           <Navbar></Navbar>
           {children}
-          <Footer></Footer>
+       
         </ReduxProvider>
 
       </body>
