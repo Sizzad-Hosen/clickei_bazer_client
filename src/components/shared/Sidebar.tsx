@@ -12,10 +12,12 @@ import { Service } from '@/types/products';
 export default function Sidebar({ onSelectSubcategory }: { onSelectSubcategory: (id: string) => void }) {
   const router = useRouter();
   const { data: serviceRes } = useGetAllServicesQuery({});
+  
   const services: Service[] = serviceRes?.data || [];
 
   const [activeServiceId, setActiveServiceId] = useState<string | null>(null);
   const [activeCategoryId, setActiveCategoryId] = useState<string | null>(null);
+
   const [fetchFullTree, { data: fullTreeData }] = useLazyServiceFullTreeQuery();
 
   const handleServiceClick = async (serviceId: string) => {

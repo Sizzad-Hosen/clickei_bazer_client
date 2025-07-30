@@ -13,6 +13,11 @@ const servicesApi = baseApi.injectEndpoints({
       query: () => '/services',
       providesTags: ['Services'],
     }),
+getSingelServices: builder.query({
+  query: ({ serviceId }) => `/services/${serviceId}`,
+  providesTags: ['Services'],
+}),
+
     deleteService: builder.mutation({
       query: (id) => ({
         url: `/services/${id}`,
@@ -39,4 +44,4 @@ serviceFullTree: builder.query({
   }),
 });
 
-export const { useAddServiceMutation ,useGetAllServicesQuery , useDeleteServiceMutation , useUpdateServiceMutation, useLazyServiceFullTreeQuery} = servicesApi;
+export const { useAddServiceMutation ,useGetSingelServicesQuery,useGetAllServicesQuery , useDeleteServiceMutation , useUpdateServiceMutation, useLazyServiceFullTreeQuery} = servicesApi;
