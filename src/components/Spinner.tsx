@@ -1,6 +1,6 @@
 // components/ui/spinner.jsx
 import Image from 'next/image';
-import logo from '../../../public/clickeiBazer-png.png';
+import logo from '../../public/clickeiBazer-png.png';
 
 
 export default function Spinner() {

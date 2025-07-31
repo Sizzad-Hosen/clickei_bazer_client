@@ -6,17 +6,19 @@ import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import Image from 'next/image';
 import Link from 'next/link';
+import Spinner from '@/components/Spinner';
 
 const PAGE_SIZE = 6;
 
 const ProductsListPage = () => {
+
   const [page, setPage] = useState(1);
 
   const { data, isLoading, isError } = useGetAllProductsQuery({ page, limit: PAGE_SIZE });
   const products = data?.data?.data || [];
   const meta = data?.meta;
 
-  if (isLoading) return <p className="text-center">Loading...</p>;
+  if (isLoading) return <Spinner></Spinner>
   if (isError) return <p className="text-center text-red-500">Failed to load products</p>;
   if (!Array.isArray(products) || products.length === 0) return <p className="text-center">No products found.</p>;
 

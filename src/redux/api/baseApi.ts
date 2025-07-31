@@ -67,6 +67,6 @@ console.log('Refresh result:', refreshResult);
 export const baseApi = createApi({
   reducerPath: 'baseApi',
   baseQuery: baseQueryWithRefreshToken,
-  tagTypes: ['Services','Categories','SubCategories','Products','Orders','Carts','Profile','Auth'],
+  tagTypes: ['Services','Categories','SubCategories','Products','Orders','Carts','Profile','Auth','Wishlist'],
   endpoints: () => ({}),
 });
