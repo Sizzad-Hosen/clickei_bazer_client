@@ -1,82 +1,73 @@
 'use client';
 
-import { useState } from 'react';
-import Sidebar from '../shared/Sidebar';
 import { useGetAllProductsQuery } from '@/redux/features/Products/productApi';
-import ProductCard from '../Products/ProductCard';
-
 import { Product } from '@/types/products';
-import SearchPage from '@/app/search/page';
+import ProductCard from '../Products/ProductCard';
+import { useState, useMemo } from 'react';
+import Sidebar from '../shared/Sidebar';
 
 export const Home = () => {
-  const [selectedSubcategoryId, setSelectedSubcategoryId] = useState<string | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const { data, isLoading, error } = useGetAllProductsQuery(undefined);
+  
+  const products: Product[] = useMemo(() => {
+    return data?.data?.data || [];
+  }, [data]);
 
-  const {
-    data: productRes,
-    isLoading,
-    error,
-  } = useGetAllProductsQuery(selectedSubcategoryId!, {
-    skip: !selectedSubcategoryId,
-  });
-const products = productRes?.data?.data && Array.isArray(productRes.data.data)
-  ? productRes.data.data
-  : [];
+  // Group products by category
+  const groupedProducts = useMemo(() => {
+    const grouped: { [key: string]: Product[] } = {};
+    products.forEach(product => {
+      const category = product.category || 'Uncategorized';
+      if (!grouped[category]) {
+        grouped[category] = [];
+      }
+      grouped[category].push(product);
+    });
+    return grouped;
+  }, [products]);
 
+  const categories = Object.keys(groupedProducts);
 
   return (
-    <div className="min-h-screen flex flex-col">
-  
-
-      {/* Main Layout */}
+    <div className="min-h-screen flex flex-col bg-white">
+      {/* Layout */}
       <div className="flex flex-1">
-        {/* Sidebar with subcategory selection */}
-        <Sidebar onSelectSubcategory={setSelectedSubcategoryId} />
+        {/* Sidebar */}
+        <Sidebar onSelectSubcategory={(id) => setSelectedCategory(id)} />
 
-        {/* Main Content */}
-        <main className="flex-1 p-6">
-          <h2 className="text-2xl font-bold mb-6">Featured Products</h2>
-
- <SearchPage></SearchPage>
- 
-          {/* Subcategory not selected */}
-          {!selectedSubcategoryId && (
-            <p className="text-gray-500 text-lg">
-              Please select a subcategory from the sidebar to view products.
-            </p>
-          )}
+        {/* Main */}
+        <main className="flex-1 p-4 md:p-6 space-y-10 overflow-x-hidden">
+          <h2 className="text-2xl font-bold mb-6 text-center">Explore Products by Category</h2>
 
           {/* Loading */}
-          {isLoading && selectedSubcategoryId && (
-            <p className="text-gray-600">Loading products...</p>
-          )}
+          {isLoading && <p className="text-gray-600 text-center">Loading products...</p>}
 
           {/* Error */}
-          {error && (
-            <p className="text-red-500">Failed to load products. Please try again later.</p>
-          )}
+          {error && <p className="text-red-500 text-center">Failed to load products.</p>}
 
-          {/* Product Grid */}
-          {selectedSubcategoryId && !isLoading && products.length > 0 && (
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              {products.map((product: Product) => (
-                <ProductCard
-                  key={product._id}
-                  product={product}
-                  onOpenCart={() => {
-                    // TODO: Implement cart opening logic here
-                  }}
-                />
-              ))}
-            </div>
-          )}
+          {/* Category-wise Products */}
+          {!isLoading && !error && categories.length > 0 && categories.map((category) => {
+            if (selectedCategory && selectedCategory !== category) return null;
 
-          {/* No products found */}
-          {selectedSubcategoryId && !isLoading && products.length === 0 && (
-            <p className="text-gray-500">No products found in this subcategory.</p>
+            return (
+              <section key={category}>
+                <h3 className="text-xl font-semibold mb-4">{category}</h3>
+                <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                  {groupedProducts[category].map((product) => (
+                    <ProductCard key={product._id} product={product} />
+                  ))}
+                </div>
+              </section>
+            );
+          })}
+
+          {/* No Products */}
+          {!isLoading && categories.length === 0 && (
+            <p className="text-center text-gray-500">No products available.</p>
           )}
         </main>
       </div>
-
     </div>
   );
 };
