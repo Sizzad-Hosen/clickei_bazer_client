@@ -35,7 +35,7 @@ export const Home = () => {
       </div>
 
     
-      <main className="flex-1 overflow-y-auto h-screen p-4 md:p-6 ps-6">
+      <main className="flex-1 mb-6 overflow-y-auto h-screen p-4 md:p-6 ps-6">
 
    
         <h2 className="text-2xl font-bold text-center mb-6">
