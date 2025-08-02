@@ -135,6 +135,7 @@ export default function ProductCard({ product, onOpenCart }: Props) {
               Details
             </Button>
             <Button
+               variant={"destructive"}
               className="flex-1 h-10"
               onClick={handleAddToCart}
               disabled={isAddingToCart}
@@ -189,6 +190,7 @@ export default function ProductCard({ product, onOpenCart }: Props) {
 
               <div className="pt-4">
                 <Button
+                variant={"destructive"}
                   className="w-full h-12"
                   onClick={() => {
                     handleAddToCart();

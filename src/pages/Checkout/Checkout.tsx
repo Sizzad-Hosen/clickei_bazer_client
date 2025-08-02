@@ -2,6 +2,7 @@
 
 import { useState, ChangeEvent, FormEvent } from 'react';
 import { FormInput } from '@/components/form/FromInput';
+import { Button } from '@/components/ui/button';
 
 type ShippingAddress = {
   fullName: string;
@@ -253,13 +254,13 @@ export default function CheckoutPage() {
             )}
           </div>
 
-          <button
+          <Button
             type="submit"
             onClick={handleSubmit}
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded shadow transition-colors duration-200"
+            variant={"destructive"}
           >
             Place Order
-          </button>
+          </Button>
         </aside>
       </div>
     </div>

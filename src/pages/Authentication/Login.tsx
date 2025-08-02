@@ -49,10 +49,6 @@ const dispatch = useDispatch();
 
       dispatch(setUser({ user, token }));
       
-      console.log('user',user);
-
-      console.log('token',token);
-      
 
       if (res?.data.success) {
         toast.success('Login successful!');

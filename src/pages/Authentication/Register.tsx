@@ -78,7 +78,7 @@ const RegisterPage: React.FC = () => {
     try {
       await register(form).unwrap();
       toast.success("Registration successful!");
-      router.push("/login");
+      router.push("/");
     } catch (err: any) {
       const errorMsg =
         err?.data?.errorSources?.[0]?.message || err?.data?.message || "Registration failed";
