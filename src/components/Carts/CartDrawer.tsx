@@ -16,6 +16,7 @@ import {
 } from '@/redux/features/AddToCart/addToCartApi';
 import { toast } from 'sonner';
 import { useEffect, useState } from 'react';
+import Link from 'next/link';
 
 export default function CartDrawer({
   open,
@@ -154,9 +155,13 @@ export default function CartDrawer({
 
         <div className="p-4 border-t">
           <p className="text-lg font-bold">Total: ৳{totalAmount}</p>
+            <Link href={"/checkout"}>
           <Button className="mt-4 w-full bg-green-600 hover:bg-green-700 text-white">
+
             Place Order
+
           </Button>
+            </Link>
         </div>
       </DrawerContent>
     </Drawer>

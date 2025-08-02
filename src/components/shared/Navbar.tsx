@@ -8,10 +8,16 @@ import { useGetAllProductsBySearchQuery } from '@/redux/features/Products/produc
 import { Search } from 'lucide-react';
 import Image from 'next/image';
 import logo from '../../../public/clickeiBazer-png.png';
+import { useDispatch } from 'react-redux';
+import { logout } from '@/redux/features/auth/authSlices';
+import { toast } from 'sonner';
 
 const Navbar = () => {
   const router = useRouter();
   const dropdownRef = useRef<HTMLDivElement>(null);
+
+  const dispatch = useDispatch();
+
 
   const [query, setQuery] = useState('');
   const [field, setField] = useState('name');
@@ -50,6 +56,19 @@ const Navbar = () => {
     if (e.key === 'Enter') handleSearch();
   };
 
+  const handleLogout = async()=>{
+
+
+ dispatch(logout());
+
+ console.log("logout", logout())
+
+    // Show success toast
+    toast.success('Successfully logged out');
+
+    // Redirect to login
+    router.push('/login');
+  }
   return (
     <nav className="bg-gray-800 border-b border-gray-700 shadow-sm sticky top-0 z-50 w-full">
       <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between px-4 py-1 gap-4">
@@ -166,10 +185,11 @@ const Navbar = () => {
                 </Link>
                 <button
                   className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-100"
-                  onClick={() => console.log('Logged out')}
+                  onClick={handleLogout}
                 >
                   Logout
                 </button>
+
               </div>
             )}
           </div>

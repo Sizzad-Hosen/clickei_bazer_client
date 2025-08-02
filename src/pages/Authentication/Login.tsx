@@ -71,7 +71,7 @@ const dispatch = useDispatch();
     <div className="min-h-screen flex items-center justify-center bg-muted">
       <Card className="w-full max-w-md shadow-xl rounded-2xl">
         <CardHeader>
-          <CardTitle className="text-2xl text-center">Create an Account</CardTitle>
+          <CardTitle className="text-2xl text-center">Sign In</CardTitle>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">

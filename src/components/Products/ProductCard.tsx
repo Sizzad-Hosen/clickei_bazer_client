@@ -16,6 +16,9 @@ import {
 import { Product } from '@/types/products';
 import { useAddCartMutation } from '@/redux/features/AddToCart/addToCartApi';
 import { useAddToWishlistMutation, useGetWishlistQuery, useRemoveFromWishlistMutation } from '@/redux/features/WishList/wishListApi';
+import { useAppSelector } from '@/redux/hook';
+import { selectCurrentToken } from '@/redux/features/auth/authSlices';
+import { useRouter } from 'next/navigation';
 
 interface Props {
   product: Product;
@@ -23,10 +26,13 @@ interface Props {
 }
 
 export default function ProductCard({ product, onOpenCart }: Props) {
+
   const [addCart, { isLoading: isAddingToCart }] = useAddCartMutation();
+  
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
 
   const { data: wishlistData } = useGetWishlistQuery(undefined);
+
   const [addToWishlist] = useAddToWishlistMutation();
   const [removeFromWishlist] = useRemoveFromWishlistMutation();
 
@@ -34,7 +40,20 @@ export default function ProductCard({ product, onOpenCart }: Props) {
     (item: any) => item.product._id === product._id
   );
 
+  const token = useAppSelector(selectCurrentToken);
+
+  const router = useRouter();
+
   const handleAddToCart = async () => {
+
+    if(!token){
+
+       toast.error("You must be logged in to add items to the cart.");
+
+       router.push('/login')
+    }
+
+
     try {
       await addCart({
         productId: product._id,
