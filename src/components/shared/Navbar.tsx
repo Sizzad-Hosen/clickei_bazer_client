@@ -204,7 +204,7 @@ const Navbar = () => {
                   Your WishList
                 </Link>
                 <Link
-                  href="/trackOrder"
+                  href="/track-order"
                   className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                 >
                   Track Order
