@@ -32,21 +32,11 @@ const RegisterPage: React.FC = () => {
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
 
-    setForm(prev => ({
-      ...prev,
-      [name]: value,
-    }));
-
-    setTouched(prev => ({
-      ...prev,
-      [name]: true,
-    }));
+    setForm(prev => ({ ...prev, [name]: value }));
+    setTouched(prev => ({ ...prev, [name]: true }));
 
     if (!value.trim()) {
-      setErrors(prev => ({
-        ...prev,
-        [name]: `${capitalize(name)} is required`,
-      }));
+      setErrors(prev => ({ ...prev, [name]: `${capitalize(name)} is required` }));
     } else {
       setErrors(prev => {
         const newErrors = { ...prev };
@@ -78,7 +68,7 @@ const RegisterPage: React.FC = () => {
     try {
       await register(form).unwrap();
       toast.success("Registration successful!");
-      router.push("/");
+      router.push("/login");
     } catch (err: any) {
       const errorMsg =
         err?.data?.errorSources?.[0]?.message || err?.data?.message || "Registration failed";
@@ -86,12 +76,11 @@ const RegisterPage: React.FC = () => {
     }
   };
 
-  // Utility to capitalize first letter
   const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-muted">
-      <Card className="w-full max-w-md shadow-xl rounded-2xl">
+    <div className="min-h-screen flex items-center justify-center bg-muted px-4 sm:px-6 lg:px-8">
+      <Card className="w-full max-w-sm sm:max-w-md md:max-w-lg lg:max-w-md xl:max-w-lg border border-blue-300 shadow-xl rounded-2xl">
         <CardHeader>
           <CardTitle className="text-2xl text-center">Create an Account</CardTitle>
         </CardHeader>
@@ -100,7 +89,7 @@ const RegisterPage: React.FC = () => {
             <FormInput
               label="Full Name"
               name="name"
-              type="text" 
+              type="text"
               placeholder="John Doe"
               value={form.name}
               onChange={handleChange}
@@ -145,16 +134,19 @@ const RegisterPage: React.FC = () => {
               touched={touched.password}
             />
 
-            <Button type="submit" className="w-full" disabled={isLoading}>
+            <Button variant="default"
+             type="submit" 
+             className="w-full"
+              disabled={isLoading}>
               {isLoading ? "Registering..." : "Register"}
             </Button>
           </form>
 
           <p className="text-sm text-center mt-4 text-muted-foreground">
-            Already have an account?{" "}
+            <span className="text-gray-900">Already have an account?{" "}</span>
             <button
               onClick={() => router.push("/login")}
-              className="text-primary underline"
+              className="text-primary underline hover:text-primary/80 active:text-primary/60 transform hover:scale-105 active:scale-95 transition duration-150"
             >
               Login
             </button>
