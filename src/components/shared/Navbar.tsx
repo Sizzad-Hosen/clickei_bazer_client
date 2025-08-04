@@ -193,9 +193,9 @@ const Navbar = () => {
 
           admin?.role !=="admin" ?
             <Button
-              variant="outline"
+              variant="secondary"
               onClick={() => setShowDropdown(!showDropdown)}
-              className="bg-amber-600 hover:bg-amber-700 text-white px-4 py-2 text-sm"
+              className=""
             >
               Profile
             </Button>

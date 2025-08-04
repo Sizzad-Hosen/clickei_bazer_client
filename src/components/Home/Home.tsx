@@ -7,12 +7,17 @@ import Sidebar from '../shared/Sidebar';
 import ProductCard from '../Products/ProductCard';
 import WishlistHome from './HomeWishList';
 import Spinner from '../Spinner';
+import CartDrawer from '../Carts/CartDrawer';
 
 export const Home = () => {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const { data, isLoading, error } = useGetAllProductsQuery();
+  const [cartOpen, setCartOpen] = useState(false);
 
   const products: Product[] = useMemo(() => data?.data?.data || [], [data]);
+
+  const openCart = () => setCartOpen(true);
+  const closeCart = () => setCartOpen(false);
 
   const groupedProducts = useMemo(() => {
     const grouped: Record<string, Product[]> = {};
@@ -28,16 +33,13 @@ export const Home = () => {
 
   return (
     <div className="min-h-screen flex flex-col md:flex-row bg-white gap-6 overflow-hidden">
-
-      {/* Sidebar hidden on mobile, visible on md+ */}
-      <div className="w-full md:w-64 border-r shadow-sm md:block ">
+      {/* Sidebar */}
+      <div className="w-full md:w-64 border-r shadow-sm md:block">
         <Sidebar onSelectSubcategory={setSelectedCategory} />
       </div>
 
-      {/* On mobile, sidebar can be rendered above or in a drawer if you want */}
-
+      {/* Main */}
       <main className="flex-1 overflow-y-auto h-screen p-4 md:p-6">
-
         <h2 className="text-2xl font-bold text-center md:text-left mb-6">
           Explore Products by Category
         </h2>
@@ -57,30 +59,24 @@ export const Home = () => {
               <section key={category} className="space-y-4 mb-8">
                 <h3 className="text-xl font-semibold">{category}</h3>
 
-                <div
-                  className="
-                    grid 
-                    grid-cols-1 
-                    sm:grid-cols-1 
-                    md:grid-cols-3 
-                    lg:grid-cols-4 
-                    xl:grid-cols-5 
-                    gap-4
-                  "
-                >
+                <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
                   {groupedProducts[category].map((product) => (
-
-                    <ProductCard key={product._id} product={product} />
-
+                    <ProductCard
+                      key={product._id}
+                  product={product}
+                  onOpenCart={openCart}
+                    />
                   ))}
                 </div>
               </section>
             );
           })}
 
-        {/* Wishlist shown under all categories */}
         <WishlistHome />
       </main>
+
+      {/* Cart Drawer */}
+      <CartDrawer open={cartOpen} onClose={closeCart} />
     </div>
   );
 };

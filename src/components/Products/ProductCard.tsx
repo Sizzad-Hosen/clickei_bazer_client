@@ -196,7 +196,7 @@ export default function ProductCard({ product, onOpenCart }: Props) {
 
           <div className="pt-4">
             <Button
-              variant="destructive"
+            variant="secondary"
               className="w-full h-12"
               onClick={() => {
                 handleAddToCart();

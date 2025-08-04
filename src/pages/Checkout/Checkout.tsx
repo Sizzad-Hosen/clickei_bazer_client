@@ -257,10 +257,11 @@ export default function CheckoutPage() {
           <Button
             type="submit"
             onClick={handleSubmit}
-            variant={"destructive"}
+            variant={"secondary"}
           >
             Place Order
           </Button>
+          
         </aside>
       </div>
     </div>
