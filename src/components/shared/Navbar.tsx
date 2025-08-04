@@ -190,10 +190,10 @@ const Navbar = () => {
           <div className="relative" ref={dropdownRef}>
 
               { 
-              
+
           admin?.role !=="admin" ?
             <Button
-              variant="default"
+              variant="outline"
               onClick={() => setShowDropdown(!showDropdown)}
               className="bg-amber-600 hover:bg-amber-700 text-white px-4 py-2 text-sm"
             >
