@@ -8,7 +8,7 @@ export default function TrackOrderPage() {
 
   const [trigger, { data: response, isFetching, error }] = useGetTrackOrderByInvoiceIdMutation();
 
-  // Extract actual order data from response.data safely
+  // Extract actual order data safely
   const order = response?.data;
 
   const handleSearch = () => {
@@ -17,11 +17,11 @@ export default function TrackOrderPage() {
   };
 
   return (
-    <div className="max-w-md mx-auto mt-16 p-6 bg-white rounded shadow-md">
-      <h1 className="text-2xl font-bold mb-6 text-center">Track Your Order</h1>
+    <div className="max-w-full sm:max-w-lg md:max-w-xl lg:max-w-2xl mx-auto mt-16 px-4 sm:px-6 md:px-8 py-6 bg-white rounded shadow-md">
+      <h1 className="text-2xl sm:text-3xl font-bold mb-6 text-center">Track Your Order</h1>
 
-      <div className="mb-4">
-        <label htmlFor="invoice" className="block font-semibold mb-1">
+      <div className="mb-6">
+        <label htmlFor="invoice" className="block font-semibold mb-2 text-gray-700">
           Invoice Number
         </label>
         <input
@@ -30,12 +30,13 @@ export default function TrackOrderPage() {
           value={invoiceNumber}
           onChange={(e) => setInvoiceNumber(e.target.value)}
           placeholder="Enter your invoice number"
-          className="w-full border rounded px-3 py-2 focus:outline-none focus:ring focus:border-blue-500"
+          className="w-full border border-gray-300 rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
         />
         <button
           onClick={handleSearch}
-          className="mt-3 w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 transition"
+          className="mt-4 w-full bg-blue-600 text-white py-3 rounded hover:bg-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
           disabled={isFetching}
+          aria-disabled={isFetching}
         >
           {isFetching ? 'Searching...' : 'Search'}
         </button>
@@ -49,7 +50,7 @@ export default function TrackOrderPage() {
         )}
 
         {order && (
-          <div className="mt-6 border-t pt-4">
+          <div className="mt-6 border-t pt-4 space-y-2 text-gray-800">
             <p>
               <strong>Status:</strong>{' '}
               <span className="capitalize">{order.orderStatus}</span>

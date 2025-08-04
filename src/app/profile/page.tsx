@@ -175,7 +175,7 @@ export default function ProfilePage() {
       </div>
 
       <div className="text-center sm:text-end">
-        <Button onClick={handleEditClick} className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white">
+        <Button  onClick={handleEditClick} className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white">
           ✏️ Edit Profile
         </Button>
       </div>
