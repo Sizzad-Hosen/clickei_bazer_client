@@ -1,10 +1,10 @@
-// components/ProtectedRoute.tsx
 "use client";
 
-import { useGetMeQuery } from "@/redux/features/auth/authApi";
 import { useRouter, usePathname } from "next/navigation";
 import { useEffect } from "react";
 import Spinner from "./Spinner";
+import { useAppSelector } from "@/redux/hook";
+import { selectCurrentUser } from "@/redux/features/auth/authSlices";
 
 export default function ProtectedRoute({
   children,
@@ -15,19 +15,23 @@ export default function ProtectedRoute({
 }) {
   const router = useRouter();
   const pathname = usePathname();
-  const { data: user, isLoading, isError } = useGetMeQuery({});
+  const user = useAppSelector(selectCurrentUser);
+
+  console.log("Allowed roles:", allowedRoles);
+  console.log("User role:", user?.role);
 
   useEffect(() => {
-    if (!isLoading) {
-      if (!user || isError) {
-        router.replace("/login");
-      } else if (allowedRoles && !allowedRoles.includes(user?.role)) {
-        router.replace("/unauthorized"); // optional: create this page
-      }
+    if (!user) {
+      router.replace("/login");
+    } else if (
+      allowedRoles &&
+      !allowedRoles.map(r => r.toLowerCase().trim()).includes(user.role?.toLowerCase().trim())
+    ) {
+      router.replace("/unauthorized");
     }
-  }, [user, isLoading, isError, pathname]);
+  }, [user, pathname, allowedRoles, router]);
 
-  if (isLoading || !user) return <Spinner />;
+  if (!user || typeof user.role === "undefined") return <Spinner />;
 
   return <>{children}</>;
 }

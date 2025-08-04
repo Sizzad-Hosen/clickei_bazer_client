@@ -2,7 +2,7 @@ import ProtectedRoute from "@/components/ProtectedRoute";
 
 export default function DashboardPage() {
   return (
-    <ProtectedRoute allowedRoles={["admin"]}>
+    <ProtectedRoute allowedRoles={['admin']}>
       <div>
         <h1 className="text-3xl font-bold mb-6">Dashboard Overview</h1>
 

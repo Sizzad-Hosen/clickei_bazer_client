@@ -9,6 +9,7 @@ import {
 } from '@/redux/features/Services/serviceApi';
 import { Service } from '@/types/products';
 import { Button } from '../ui/button';
+import Link from 'next/link';
 
 export default function Sidebar({ onSelectSubcategory }: { onSelectSubcategory: (id: string) => void }) {
   const router = useRouter();
@@ -39,8 +40,16 @@ export default function Sidebar({ onSelectSubcategory }: { onSelectSubcategory: 
       <div className="mb-6">
         <h1 className="text-xl md:text-2xl font-bold text-gray-800 mb-4 text-center">Our Services</h1>
         <hr className="border-t border-dashed border-gray-400 my-2" />
+<Link href={"/customBazar"}>
+   <Button 
+         className='text-xl md:text-2xl  text-gray-800 ps-2 ' >
+          Custom Bazar
+         </Button>
 
-        <Button className='text-xl md:text-2xl  text-gray-800 ps-2 ' >Custom Bazar</Button>
+
+</Link>
+     
+
       </div>
 
       <div className="space-y-1">
