@@ -1,4 +1,6 @@
-import React, { ReactNode } from "react";
+'use client';
+
+import React, { ReactNode, useState } from "react";
 import Link from "next/link";
 import {
   Home,
@@ -11,6 +13,8 @@ import {
   Bell,
   Settings,
   HomeIcon,
+  Menu,
+  X,
 } from "lucide-react";
 
 interface DashboardLayoutProps {
@@ -36,11 +40,25 @@ const navItems = [
 ];
 
 export default function DashboardLayout({ children }: DashboardLayoutProps) {
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+
   return (
-    <div className="flex min-h-screen bg-gray-50">
+    <div className="flex flex-col md:flex-row min-h-screen bg-gray-50">
+      {/* Mobile Menu Toggle */}
+      <div className="flex justify-between items-center md:hidden p-4 bg-white shadow">
+        <h2 className="text-xl font-bold">Dashboard</h2>
+        <button onClick={() => setSidebarOpen(!sidebarOpen)}>
+          {sidebarOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+        </button>
+      </div>
+
       {/* Sidebar */}
-      <aside className="w-72 bg-white border-r border-gray-200 shadow-sm p-6 min-h-screen overflow-y-auto">
-        <h2 className="text-2xl font-extrabold tracking-tight mb-8 text-gray-900">
+      <aside
+        className={`${
+          sidebarOpen ? "block" : "hidden"
+        } md:block w-full md:w-72 bg-white border-r border-gray-200 shadow-sm p-6 md:min-h-screen overflow-y-auto`}
+      >
+        <h2 className="text-2xl font-extrabold tracking-tight mb-8 text-gray-900 hidden md:block">
           Dashboard
         </h2>
         <nav className="flex flex-col space-y-2 text-gray-700 text-sm font-medium">
@@ -49,6 +67,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
               key={href}
               href={href}
               className="flex items-center gap-3 rounded-md px-3 py-2 hover:bg-gray-100 hover:text-gray-900 transition"
+              onClick={() => setSidebarOpen(false)} // close on mobile nav click
             >
               <Icon className="w-5 h-5" />
               {label}
@@ -58,11 +77,9 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 p-10 bg-white rounded-lg shadow-lg overflow-y-auto">
+      <main className="flex-1 p-4 sm:p-6 md:p-10 bg-white rounded-lg shadow-lg overflow-y-auto">
         {children}
       </main>
     </div>
   );
 }
-
-
