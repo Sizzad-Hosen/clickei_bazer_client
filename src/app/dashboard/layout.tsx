@@ -2,6 +2,9 @@
 
 import React, { ReactNode, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useDispatch } from "react-redux";
+
 import {
   Home,
   Box,
@@ -15,7 +18,9 @@ import {
   HomeIcon,
   Menu,
   X,
+  LogOut
 } from "lucide-react";
+import { logout } from "@/redux/features/auth/authSlices";
 
 interface DashboardLayoutProps {
   children: ReactNode;
@@ -35,12 +40,19 @@ const navItems = [
   { href: "/dashboard/users", label: "Users", icon: Users },
   { href: "/dashboard/notification", label: "Notifications", icon: Bell },
   { href: "/dashboard/custom-bazzer", label: "Custom Bazzer", icon: Settings },
-  { href: "/dashboard/track-order-update", label: "track-order-update", icon: Settings },
+  { href: "/dashboard/track-order-update", label: "Track Order Update", icon: Settings },
   { href: "/", label: "Home", icon: HomeIcon },
 ];
 
 export default function DashboardLayout({ children }: DashboardLayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const dispatch = useDispatch();
+  const router = useRouter();
+
+  const handleLogout = () => {
+    dispatch(logout());
+    router.push("/login");
+  };
 
   return (
     <div className="flex flex-col md:flex-row min-h-screen bg-gray-50">
@@ -67,12 +79,19 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
               key={href}
               href={href}
               className="flex items-center gap-3 rounded-md px-3 py-2 hover:bg-gray-100 hover:text-gray-900 transition"
-              onClick={() => setSidebarOpen(false)} // close on mobile nav click
+              onClick={() => setSidebarOpen(false)}
             >
               <Icon className="w-5 h-5" />
               {label}
             </Link>
           ))}
+          <button
+            onClick={handleLogout}
+            className="flex items-center gap-3 rounded-md px-3 py-2 text-red-600 hover:bg-red-100 transition mt-4"
+          >
+            <LogOut className="w-5 h-5" />
+            Logout
+          </button>
         </nav>
       </aside>
 

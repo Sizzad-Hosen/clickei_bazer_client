@@ -29,6 +29,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { FormInput } from '@/components/form/FromInput';
+import Spinner from '@/components/Spinner';
 
 const SubcategoriesPage = () => {
   const { data: subcategoryData, isLoading, isError, refetch } = useGetAllSubCategoriesQuery({});
@@ -108,7 +109,7 @@ const SubcategoriesPage = () => {
         <h1 className="text-2xl font-bold">All Subcategories</h1>
       </div>
 
-      {isLoading && <p>Loading...</p>}
+      {isLoading && <Spinner></Spinner>}
       {isError && <p>Failed to load subcategories</p>}
       {subcategories.length === 0 && <p>No subcategories found.</p>}
 

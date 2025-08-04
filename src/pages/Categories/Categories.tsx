@@ -13,6 +13,7 @@ import { Pencil, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { FormInput } from '@/components/form/FromInput';
+import Spinner from '@/components/Spinner';
 
 
 const CategoriesPage = () => {
@@ -71,7 +72,7 @@ const CategoriesPage = () => {
         <h1 className="text-2xl font-bold">All Categories</h1>
       </div>
 
-      {isLoading && <p>Loading...</p>}
+      {isLoading && <Spinner></Spinner>}
       {isError && <p>Failed to load categories</p>}
       {categories.length === 0 && <p>No categories found.</p>}
 

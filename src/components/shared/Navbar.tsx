@@ -9,8 +9,9 @@ import { Search } from 'lucide-react';
 import Image from 'next/image';
 import logo from '../../../public/clickeiBazer-png.png';
 import { useDispatch } from 'react-redux';
-import { logout } from '@/redux/features/auth/authSlices';
+import { logout, selectCurrentUser } from '@/redux/features/auth/authSlices';
 import { toast } from 'sonner';
+import { useAppSelector } from '@/redux/hook';
 
 const Navbar = () => {
   const router = useRouter();
@@ -18,6 +19,9 @@ const Navbar = () => {
 
   const dispatch = useDispatch();
 
+  const admin = useAppSelector(selectCurrentUser);
+
+  console.log("admin", admin)
 
   const [query, setQuery] = useState('');
   const [field, setField] = useState('name');
@@ -166,15 +170,28 @@ const Navbar = () => {
 
         {/* Right Side */}
         <div className="flex items-center gap-4 text-white mt-2 md:mt-0">
-          <Link href="/dashboard" className="hover:text-amber-500 text-sm md:text-base">
+
+    { 
+    admin?.role==="admin" ?
+    
+    <Link href="/dashboard" className="hover:text-amber-500 text-sm md:text-base">
             Dashboard
           </Link>
+          :
+          <>
+          </>
+}
+
           <Link href="/login" className="hover:text-amber-500 text-sm md:text-base">
             Login
           </Link>
 
           {/* Profile Dropdown */}
           <div className="relative" ref={dropdownRef}>
+
+              { 
+              
+          admin?.role !=="admin" ?
             <Button
               variant="default"
               onClick={() => setShowDropdown(!showDropdown)}
@@ -183,6 +200,11 @@ const Navbar = () => {
               Profile
             </Button>
 
+
+          :
+          <>
+          </>
+}
             {showDropdown && (
               <div className="absolute right-0 mt-2 w-48 rounded-md border border-gray-200 bg-white shadow-lg z-50">
                 <Link

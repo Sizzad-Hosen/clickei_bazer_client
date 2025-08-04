@@ -19,6 +19,7 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Pencil, Trash2 } from 'lucide-react'; // ✅ Icon library used by ShadCN
+import Spinner from '@/components/Spinner';
 
 const ServicePage = () => {
   const router = useRouter();
@@ -71,7 +72,7 @@ const ServicePage = () => {
         <h1 className="text-2xl font-bold">All Services</h1>
       </div>
 
-      {isLoading && <p>Loading...</p>}
+      {isLoading && <Spinner></Spinner>}
       {isError && <p>Error loading services</p>}
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
