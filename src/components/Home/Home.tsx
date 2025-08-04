@@ -27,53 +27,60 @@ export const Home = () => {
   const categories = Object.keys(groupedProducts);
 
   return (
-    <div className="min-h-screen flex bg-white gap-6 overflow-hidden">
+    <div className="min-h-screen flex flex-col md:flex-row bg-white gap-6 overflow-hidden">
 
-   
-      <div className="w-full md:w-64 border-r shadow-sm">
+      {/* Sidebar hidden on mobile, visible on md+ */}
+      <div className="w-full md:w-64 border-r shadow-sm md:block ">
         <Sidebar onSelectSubcategory={setSelectedCategory} />
       </div>
 
-    
-      <main className="flex-1 overflow-y-auto h-screen p-4 md:p-6 ps-6">
+      {/* On mobile, sidebar can be rendered above or in a drawer if you want */}
 
-   
-        <h2 className="text-2xl font-bold text-center mb-6">
+      <main className="flex-1 overflow-y-auto h-screen p-4 md:p-6">
+
+        <h2 className="text-2xl font-bold text-center md:text-left mb-6">
           Explore Products by Category
         </h2>
 
-      
-        {isLoading && <Spinner></Spinner>}
+        {isLoading && <Spinner />}
         {error && <p className="text-center text-red-500">Failed to load products.</p>}
         {!isLoading && !error && categories.length === 0 && (
           <p className="text-center text-gray-500">No products available.</p>
         )}
 
-      
         {!isLoading &&
           !error &&
           categories.length > 0 &&
           categories.map((category) => {
             if (selectedCategory && selectedCategory !== category) return null;
             return (
-              <section key={category} className="space-y-4">
+              <section key={category} className="space-y-4 mb-8">
                 <h3 className="text-xl font-semibold">{category}</h3>
 
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                <div
+                  className="
+                    grid 
+                    grid-cols-1 
+                    sm:grid-cols-1 
+                    md:grid-cols-3 
+                    lg:grid-cols-4 
+                    xl:grid-cols-5 
+                    gap-4
+                  "
+                >
                   {groupedProducts[category].map((product) => (
+
                     <ProductCard key={product._id} product={product} />
+
                   ))}
                 </div>
-
               </section>
             );
           })}
 
-          
-          {/* Wishlist shown under each category */}
-                <WishlistHome />
+        {/* Wishlist shown under all categories */}
+        <WishlistHome />
       </main>
-      
     </div>
   );
 };

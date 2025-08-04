@@ -86,12 +86,82 @@ export default function ProductCard({ product, onOpenCart }: Props) {
   };
 
   return (
-    <>
-      <div className="relative rounded-lg border bg-white shadow-sm hover:shadow-md transition-all w-full h-full flex flex-col">
-        {/* Wishlist Icon Top-Right */}
+    
+ <>
+
+  <div className="relative rounded-lg border bg-white shadow-sm hover:shadow-md transition-all w-full h-full flex flex-col">
+
+    {/* Wishlist Icon Top-Right */}
+
+    <button
+      onClick={handleToggleWishlist}
+      className="absolute top-2 right-2 z-10 bg-white rounded-full p-1 shadow hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+      aria-label={isInWishlist ? 'Remove from wishlist' : 'Add to wishlist'}
+    >
+      {isInWishlist ? (
+        <Heart className="text-red-500 h-5 w-5" />
+      ) : (
+        <HeartOff className="text-gray-400 h-5 w-5" />
+      )}
+    </button>
+
+    {/* Product Image */}
+    <motion.div
+      className="relative aspect-square w-full bg-gray-100 overflow-hidden"
+      whileHover={{ scale: 1.02 }}
+      transition={{ type: 'spring', stiffness: 400, damping: 10 }}
+    >
+      <Image
+        src={product.images?.[0] || '/placeholder.png'}
+        alt={product.title}
+        fill
+        className="object-cover"
+        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+        priority={true} // preload main image for better UX
+      />
+    </motion.div>
+
+    {/* Product Info */}
+    <div className="p-4 flex flex-col flex-grow">
+      <div className="flex-grow">
+        <h3 className="font-medium text-lg line-clamp-1 mb-1">{product.title}</h3>
+        <p className="text-gray-600 font-bold text-xl mb-3">৳{product.price}</p>
+      </div>
+
+{/* Action Buttons */}
+<div className="flex flex-col gap-2 md:flex-row md:gap-4">
+  <Button
+    variant="outline"
+    className="w-full md:flex-1 h-10"
+    onClick={() => setIsDetailsOpen(true)}
+  >
+    <Eye className="h-4 w-4 mr-2" />
+    Details
+  </Button>
+  <Button
+    variant="secondary"
+    className="w-full md:flex-1 h-10"
+    onClick={handleAddToCart}
+    disabled={isAddingToCart}
+  >
+    <ShoppingCart className="h-4 w-4 mr-2" />
+    {isAddingToCart ? 'Adding...' : 'Add to Cart'}
+  </Button>
+</div>
+
+
+    </div>
+  </div>
+
+  {/* Product Details Modal */}
+  <Dialog open={isDetailsOpen} onOpenChange={setIsDetailsOpen}>
+    <DialogContent className="sm:max-w-xl md:max-w-2xl lg:max-w-3xl max-h-[90vh] overflow-y-auto p-6">
+      <DialogHeader className="flex justify-between items-start">
+        <DialogTitle className="text-2xl">{product.title}</DialogTitle>
         <button
           onClick={handleToggleWishlist}
-          className="absolute top-2 right-2 z-10 bg-white rounded-full p-1 shadow hover:bg-gray-100"
+          className="bg-white rounded-full p-1 shadow hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          aria-label={isInWishlist ? 'Remove from wishlist' : 'Add to wishlist'}
         >
           {isInWishlist ? (
             <Heart className="text-red-500 h-5 w-5" />
@@ -99,135 +169,72 @@ export default function ProductCard({ product, onOpenCart }: Props) {
             <HeartOff className="text-gray-400 h-5 w-5" />
           )}
         </button>
+      </DialogHeader>
 
-        {/* Product Image */}
-        <motion.div
-          className="relative aspect-square w-full bg-gray-100 overflow-hidden"
-          whileHover={{ scale: 1.02 }}
-          transition={{ type: 'spring', stiffness: 400, damping: 10 }}
-        >
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
+        <div className="relative aspect-square w-full bg-gray-100 rounded-lg overflow-hidden">
           <Image
             src={product.images?.[0] || '/placeholder.png'}
             alt={product.title}
             fill
             className="object-cover"
-            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+            sizes="(max-width: 768px) 100vw, 50vw"
+            priority={true}
           />
-        </motion.div>
+        </div>
 
-        {/* Product Info */}
-        <div className="p-4 flex flex-col flex-grow">
-          <div className="flex-grow">
-            <h3 className="font-medium text-lg line-clamp-1 mb-1">
-              {product.title}
-            </h3>
-            <p className="text-gray-600 font-bold text-xl mb-3">৳{product.price}</p>
+        <div className="space-y-4">
+          <div>
+            <h3 className="text-lg font-semibold mb-2">Description</h3>
+            <p className="text-gray-600">{product.description}</p>
           </div>
 
-          {/* Action Buttons */}
-          <div className="flex gap-2">
+          <div>
+            <h3 className="text-lg font-semibold mb-2">Price</h3>
+            <p className="text-2xl font-bold text-primary">৳{product.price}</p>
+          </div>
+
+          <div className="pt-4">
             <Button
-              variant="outline"
-              className="flex-1 h-10"
-              onClick={() => setIsDetailsOpen(true)}
-            >
-              <Eye className="h-4 w-4 mr-2" />
-              Details
-            </Button>
-            <Button
-               variant={"destructive"}
-              className="flex-1 h-10"
-              onClick={handleAddToCart}
+              variant="destructive"
+              className="w-full h-12"
+              onClick={() => {
+                handleAddToCart();
+                setIsDetailsOpen(false);
+              }}
               disabled={isAddingToCart}
             >
-              <ShoppingCart className="h-4 w-4 mr-2" />
-              {isAddingToCart ? 'Adding...' : 'Add to Cart'}
+              <ShoppingCart className="h-5 w-5 mr-2" />
+              {isAddingToCart ? 'Adding to Cart...' : 'Add to Cart'}
             </Button>
           </div>
         </div>
       </div>
 
-      {/* Product Details Modal */}
-      <Dialog open={isDetailsOpen} onOpenChange={setIsDetailsOpen}>
-        <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader className="flex justify-between items-start">
-            <DialogTitle className="text-2xl">{product.title}</DialogTitle>
-            <button
-              onClick={handleToggleWishlist}
-              className="bg-white rounded-full p-1 shadow hover:bg-gray-100"
-            >
-              {isInWishlist ? (
-                <Heart className="text-red-500 h-5 w-5" />
-              ) : (
-                <HeartOff className="text-gray-400 h-5 w-5" />
-              )}
-            </button>
-          </DialogHeader>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
-            <div className="relative aspect-square w-full bg-gray-100 rounded-lg overflow-hidden">
-              <Image
-                src={product.images?.[0] || '/placeholder.png'}
-                alt={product.title}
-                fill
-                className="object-cover"
-                sizes="(max-width: 768px) 100vw, 50vw"
-              />
-            </div>
-
-            <div className="space-y-4">
-              <div>
-                <h3 className="text-lg font-semibold mb-2">Description</h3>
-                <p className="text-gray-600">{product.description}</p>
+      {product?.images?.length > 1 && (
+        <div className="mt-6">
+          <h3 className="text-lg font-semibold mb-3">More Images</h3>
+          <div className="grid grid-cols-3 gap-2">
+            {product.images.slice(1).map((image, index) => (
+              <div
+                key={index}
+                className="relative aspect-square bg-gray-100 rounded-md overflow-hidden"
+              >
+                <Image
+                  src={image}
+                  alt={`${product.title} ${index + 1}`}
+                  fill
+                  className="object-cover"
+                  sizes="100px"
+                />
               </div>
-
-              <div>
-                <h3 className="text-lg font-semibold mb-2">Price</h3>
-                <p className="text-2xl font-bold text-primary">
-                  ৳{product.price}
-                </p>
-              </div>
-
-              <div className="pt-4">
-                <Button
-                variant={"destructive"}
-                  className="w-full h-12"
-                  onClick={() => {
-                    handleAddToCart();
-                    setIsDetailsOpen(false);
-                  }}
-                  disabled={isAddingToCart}
-                >
-                  <ShoppingCart className="h-5 w-5 mr-2" />
-                  {isAddingToCart ? 'Adding to Cart...' : 'Add to Cart'}
-                </Button>
-              </div>
-            </div>
+            ))}
           </div>
+        </div>
+      )}
+    </DialogContent>
+  </Dialog>
+</>
 
-          {product?.images?.length > 1 && (
-            <div className="mt-6">
-              <h3 className="text-lg font-semibold mb-3">More Images</h3>
-              <div className="grid grid-cols-3 gap-2">
-                {product.images.slice(1).map((image, index) => (
-                  <div
-                    key={index}
-                    className="relative aspect-square bg-gray-100 rounded-md overflow-hidden"
-                  >
-                    <Image
-                      src={image}
-                      alt={`${product.title} ${index + 1}`}
-                      fill
-                      className="object-cover"
-                      sizes="100px"
-                    />
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
-    </>
   );
 }
