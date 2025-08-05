@@ -10,8 +10,11 @@ interface FormInputProps {
   error?: string;
   touched?: boolean;
   value: string;
-  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onChange: (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => void;
   required?: boolean;
+  options?: string[]; // optional, if provided render select dropdown
 }
 
 export const FormInput: React.FC<FormInputProps> = ({
@@ -24,6 +27,7 @@ export const FormInput: React.FC<FormInputProps> = ({
   onChange,
   touched,
   required,
+  options,
 }) => {
   const [showPassword, setShowPassword] = useState(false);
   const isPassword = type === "password";
@@ -34,16 +38,37 @@ export const FormInput: React.FC<FormInputProps> = ({
         {label}
       </label>
       <div className="relative">
-        <input
-          id={name}
-          name={name}
-          type={isPassword && showPassword ? "text" : type}
-          placeholder={placeholder}
-          value={value}
-          onChange={onChange}
-          required={required}
-          className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-        />
+        {options && options.length > 0 ? (
+          <select
+            id={name}
+            name={name}
+            value={value}
+            onChange={onChange}
+            required={required}
+            className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+          >
+            <option value="" disabled>
+              Select {label}
+            </option>
+            {options.map((opt) => (
+              <option key={opt} value={opt}>
+                {opt}
+              </option>
+            ))}
+          </select>
+        ) : (
+          <input
+            id={name}
+            name={name}
+            type={isPassword && showPassword ? "text" : type}
+            placeholder={placeholder}
+            value={value}
+            onChange={onChange}
+            required={required}
+            className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+          />
+        )}
+
         {isPassword && (
           <button
             type="button"
@@ -54,6 +79,9 @@ export const FormInput: React.FC<FormInputProps> = ({
           </button>
         )}
       </div>
+      {error && touched && (
+        <p className="text-red-600 text-sm mt-1">{error}</p>
+      )}
     </div>
   );
 };

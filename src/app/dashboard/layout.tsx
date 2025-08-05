@@ -39,7 +39,7 @@ const navItems = [
   { href: "/dashboard/orders", label: "Orders", icon: ShoppingCart },
   { href: "/dashboard/users", label: "Users", icon: Users },
   { href: "/dashboard/notification", label: "Notifications", icon: Bell },
-  { href: "/dashboard/custom-bazzer", label: "Custom Bazzer", icon: Settings },
+  { href: "/dashboard/create-custom-bazar", label: "create-custom-bazar", icon: Menu},
   { href: "/dashboard/track-order-update", label: "Track Order Update", icon: Settings },
   { href: "/", label: "Home", icon: HomeIcon },
 ];
