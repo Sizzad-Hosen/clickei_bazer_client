@@ -16,22 +16,13 @@ import { useAppSelector } from '@/redux/hook';
 const Navbar = () => {
   const router = useRouter();
   const dropdownRef = useRef<HTMLDivElement>(null);
-
   const dispatch = useDispatch();
-
   const admin = useAppSelector(selectCurrentUser);
 
-  // Hydration fix: track if component is mounted on client
   const [isClient, setIsClient] = useState(false);
   useEffect(() => {
     setIsClient(true);
   }, []);
-
-  useEffect(() => {
-    if (isClient) {
-      console.log("admin", admin);
-    }
-  }, [admin, isClient]);
 
   const [query, setQuery] = useState('');
   const [field, setField] = useState('name');
@@ -45,10 +36,7 @@ const Navbar = () => {
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
-      if (
-        dropdownRef.current &&
-        !dropdownRef.current.contains(e.target as Node)
-      ) {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
         setShowDropdown(false);
       }
     };
@@ -72,18 +60,13 @@ const Navbar = () => {
 
   const handleLogout = async () => {
     dispatch(logout());
-
-    // Show success toast
     toast.success('Successfully logged out');
-
-    // Redirect to login
     router.push('/login');
   };
 
   return (
     <nav className="bg-gray-800 border-b border-gray-700 shadow-sm sticky top-0 z-50 w-full">
-
-      {/* contact add website */}
+      {/* Top Contact Bar */}
       <div className="bg-gray-900 text-sm text-gray-300 px-4 py-2 flex justify-around items-center flex-wrap gap-2">
         <h1 className="font-medium">
           Contact:{" "}
@@ -114,6 +97,7 @@ const Navbar = () => {
         </a>
       </div>
 
+      {/* Main Navbar */}
       <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between px-4 py-1 gap-4">
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2">
@@ -131,7 +115,7 @@ const Navbar = () => {
           <select
             value={field}
             onChange={(e) => setField(e.target.value)}
-            className="h-12 min-w-[90px] border-2 border-amber-600 rounded-l-md bg-white px-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-amber-600"
+            className="h-12 min-w-[90px] border-2 border-amber-600 rounded-l-md bg-white px-2 text-sm text-gray-700 focus:outline-none"
           >
             <option value="title">Title</option>
             <option value="name">Name</option>
@@ -146,7 +130,7 @@ const Navbar = () => {
               onChange={(e) => setQuery(e.target.value)}
               onKeyDown={handleKeyDown}
               placeholder={`Search by ${field}...`}
-              className="w-full h-12 pl-4 pr-12 border-2 border-amber-600 bg-white rounded-r-md shadow-sm focus:outline-none focus:ring-2 focus:ring-amber-600 text-sm"
+              className="w-full h-12 pl-4 pr-12 border-2 border-amber-600 bg-white rounded-r-md text-sm"
             />
             <button
               onClick={handleSearch}
@@ -158,9 +142,9 @@ const Navbar = () => {
             </button>
 
             {/* Suggestions */}
-            {debouncedQuery && data?.data?.length && data.data.length > 0 && (
+            {debouncedQuery && data?.data?.length > 0 && (
               <div className="absolute left-0 right-0 mt-1 max-h-56 overflow-auto rounded-md border border-gray-200 bg-white shadow-lg z-50">
-                {data?.data?.map((item: any) => (
+                {data.data.map((item: any) => (
                   <Link
                     key={item._id}
                     href={`/products/${item._id}`}
@@ -174,60 +158,38 @@ const Navbar = () => {
           </div>
         </div>
 
-        {/* Right Side */}
-        <div className="flex items-center gap-4 text-white mt-2 md:mt-0">
-
-          {isClient && admin?.role === "admin" && (
+        {/* Right side */}
+        <div className="relative flex items-center gap-4 text-white mt-2 md:mt-0">
+          {isClient && admin?.role === 'admin' && (
             <Link href="/dashboard" className="hover:text-amber-500 text-sm md:text-base">
               Dashboard
             </Link>
           )}
 
-          {isClient && admin?.role !== "admin" && (
-            <>
-              <Button
-                variant="secondary"
-                onClick={() => setShowDropdown(!showDropdown)}
-              >
+          {isClient && admin?.role !== 'admin' && (
+            <div className="relative" ref={dropdownRef}>
+              <Button variant="secondary" onClick={() => setShowDropdown(!showDropdown)}>
                 Profile
               </Button>
 
               {showDropdown && (
-                <div className="absolute right-0 mt-2 w-48 rounded-md border border-gray-200 bg-white shadow-lg z-50" ref={dropdownRef}>
-                  <Link
-                    href="/profile"
-                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                  >
+                <div className="absolute right-0 mt-2 w-56 rounded-md border border-gray-200 bg-white shadow-lg z-50 overflow-auto max-h-96">
+                  <Link href="/profile" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
                     Your Profile
                   </Link>
-                  <Link
-                    href="/orders"
-                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                  >
+                  <Link href="/orders" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
                     Your Orders
                   </Link>
-                  <Link
-                    href="/wishList"
-                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                  >
+                  <Link href="/wishList" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
                     Your WishList
                   </Link>
-                  <Link
-                    href="/track-order"
-                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                  >
+                  <Link href="/track-order" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
                     Track Order
                   </Link>
-                  <Link
-                    href="/payments"
-                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                  >
+                  <Link href="/payments" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
                     Your Payments
                   </Link>
-                  <Link
-                    href="/change-password"
-                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                  >
+                  <Link href="/change-password" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
                     Change Password
                   </Link>
                   <button
@@ -238,12 +200,7 @@ const Navbar = () => {
                   </button>
                 </div>
               )}
-            </>
-          )}
-
-          {!isClient && (
-            // Optional: show something while hydrating or empty space
-            <div style={{ width: '100px' }} />
+            </div>
           )}
 
           {!admin && isClient && (
@@ -251,7 +208,6 @@ const Navbar = () => {
               Login
             </Link>
           )}
-
         </div>
       </div>
     </nav>
