@@ -1,31 +1,43 @@
 'use client';
-
+import Swal from 'sweetalert2';
 import { useState } from 'react';
 import Sidebar from '@/components/shared/Sidebar';
 import Spinner from '@/components/Spinner';
 import { Button } from '@/components/ui/button';
-import { useGetAllOrdersByUserIdQuery } from '@/redux/features/Order/ordersApi';
+import { useDeleteOrderByIdMutation, useGetAllOrdersByUserIdQuery } from '@/redux/features/Order/ordersApi';
 import { format } from 'date-fns';
+import { toast } from 'sonner';
 
 export default function UserOrdersPage() {
   const { data: response, isLoading, isError, error, refetch } = useGetAllOrdersByUserIdQuery({});
   const orders = response?.data || [];
 
+const [deleteOrder] = useDeleteOrderByIdMutation()
+
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
-  const handleDelete = async (orderId: string) => {
-    if (confirm("Are you sure you want to delete this order?")) {
-      try {
-        // await deleteOrder(orderId).unwrap();
-        alert("Order deleted successfully");
-        refetch();
-      } catch (err) {
-        alert("Failed to delete order");
-        console.error(err);
-      }
-    }
-  };
+const handleDelete = async (id: string) => {
+  const result = await Swal.fire({
+    title: 'Are you sure?',
+    text: 'Do you really want to delete this order? This action cannot be undone.',
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#d33',
+    cancelButtonColor: '#3085d6',
+    confirmButtonText: 'Yes, delete it!',
+  });
 
+  if (result.isConfirmed) {
+    try {
+      await deleteOrder(id).unwrap();
+      toast.success('Order deleted successfully');
+      refetch(); // Refetch your orders
+    } catch (err) {
+      toast.error('Failed to delete order');
+      console.error(err);
+    }
+  }
+};
   if (isLoading) {
     return (
       <div className="flex min-h-screen">

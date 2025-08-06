@@ -82,15 +82,27 @@ updateStatus: builder.mutation<{ success: boolean; message: string },
   invalidatesTags: ["Order"],
 }),
 
+    deleteOrderById: builder.mutation({
+
+      query: (id: string) => ({
+        url: `/orders/${id}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["Order"], 
+    }),
+
  
   }),
 });
+
+
 
 export const {
     useGetTrackOrderByInvoiceIdMutation,
  useUpdateStatusMutation,
     useGetAllOrdersQuery,
     useUpdateOrderPaymentStatusMutation,
-   useGetAllOrdersByUserIdQuery
+   useGetAllOrdersByUserIdQuery,
+   useDeleteOrderByIdMutation
 
 } = ordersApi;
