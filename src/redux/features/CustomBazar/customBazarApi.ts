@@ -60,6 +60,16 @@ const customBazarApi = baseApi.injectEndpoints({
   },
 }),
 
+updateCustomBazarOrderStatus: builder.mutation<
+  Order, 
+  { invoiceId: string; status: string }>({
+  query: ({ invoiceId, status }) => ({
+    url: `/customBazerOrders/status/${invoiceId}`, // correct interpolation with backticks
+    method: 'PATCH', // or PATCH if you prefer
+    body: { status }, // body must be an object (e.g. { status: "confirmed" })
+  }),
+  invalidatesTags: ['Products'], // or whatever tag you want to invalidate
+}),
 
   }),
 });
@@ -68,5 +78,6 @@ export const {
   useAddCustomBazarProductMutation,
   useGetAllCustomBazarProductsQuery,
   useAddCustomBazarOrderMutation,
-  useGetAllCustomBazarOrdersQuery
+  useGetAllCustomBazarOrdersQuery,
+  useUpdateCustomBazarOrderStatusMutation
 } = customBazarApi;
