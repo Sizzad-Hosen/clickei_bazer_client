@@ -16,6 +16,15 @@ export const ordersApi = baseApi.injectEndpoints({
       invalidatesTags: ["Order"],
     }),
 
+getAllOrdersByUserId: builder.query({
+  query: () => ({
+    url: `/orders/my-orders`,
+    method: 'GET',
+  }),
+  providesTags: ['Order'],
+}),
+
+
 
 getAllOrders: builder.query<{
   data: Order[];
@@ -81,6 +90,7 @@ export const {
     useGetTrackOrderByInvoiceIdMutation,
  useUpdateStatusMutation,
     useGetAllOrdersQuery,
-    useUpdateOrderPaymentStatusMutation
+    useUpdateOrderPaymentStatusMutation,
+   useGetAllOrdersByUserIdQuery
 
 } = ordersApi;

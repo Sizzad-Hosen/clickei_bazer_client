@@ -19,6 +19,7 @@
     "@reduxjs/toolkit": "^2.8.2",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "date-fns": "^4.1.0",
     "framer-motion": "^12.23.9",
     "jwt-decode": "^4.0.0",
     "lodash": "^4.17.21",
