@@ -4,7 +4,7 @@ import { FormInput } from '@/components/form/FromInput';
 import {
   useGetTrackOrderByInvoiceIdMutation,
   useUpdateTrackOrderByInvoiceIdMutation,
-} from '@/redux/features/TrackOrder/trackOrderApi';
+} from '@/redux/features/Order/ordersApi';
 import { ChangeEvent, useState } from 'react';
 import { toast } from 'sonner';
 
@@ -41,17 +41,17 @@ export default function DashboardOrderStatusUpdate() {
       setMessage('Order not found or fetch error.');
     }
   };
-const handleUpdate = async () => {
-  if (!invoiceNumber || !newStatus) return;
+  const handleUpdate = async () => {
+    if (!invoiceNumber || !newStatus) return;
 
-  try {
-    
-    await updateStatus({ invoiceId: invoiceNumber, status: newStatus }).unwrap();
-    toast.success('Status updated successfully.');
-  } catch (err) {
-    setMessage('Failed to update status.');
-  }
-};
+    try {
+
+      await updateStatus({ invoiceId: invoiceNumber, status: newStatus }).unwrap();
+      toast.success('Status updated successfully.');
+    } catch (err) {
+      setMessage('Failed to update status.');
+    }
+  };
 
   const handleStatusChange = (e: ChangeEvent<HTMLSelectElement>) => {
     setNewStatus(e.target.value as TOrderStatus);

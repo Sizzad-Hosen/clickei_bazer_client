@@ -85,6 +85,71 @@ const CustomBazarOrdersPage: React.FC = () => {
     }
   };
 
+  // Print order handler
+  const handlePrintOrder = (order: any) => {
+    const printWindow = window.open('', '_blank', 'width=800,height=600');
+    if (!printWindow) return;
+
+    const orderItemsHtml = order.orderItems
+      .map(
+        (item: any) => `
+      <tr>
+        <td>${item.subcategoryName}</td>
+        <td>${item.unit}</td>
+        <td>${item.quantity}</td>
+        <td>৳${item.pricePerUnit}</td>
+        <td>৳${item.totalPrice}</td>
+      </tr>
+    `
+      )
+      .join('');
+
+    printWindow.document.write(`
+      <html>
+      <head>
+        <title>Print Order - ${order.invoiceId}</title>
+        <style>
+          body { font-family: Arial, sans-serif; padding: 20px; }
+          h1 { text-align: center; }
+          table { width: 100%; border-collapse: collapse; margin-top: 20px;}
+          th, td { border: 1px solid #ccc; padding: 8px; text-align: left;}
+          th { background-color: #f4f4f4;}
+        </style>
+      </head>
+      <body>
+        <h1>Order Invoice: ${order.invoiceId}</h1>
+        <p><strong>Name:</strong> ${order.user?.name || 'N/A'}</p>
+        <p><strong>Email:</strong> ${order.user?.email || 'N/A'}</p>
+        <p><strong>Phone:</strong> ${order.user?.phone || 'N/A'}</p>
+        <p><strong>Address:</strong> ${order.address?.fullAddress || 'N/A'}</p>
+        <p><strong>Status:</strong> ${order.status}</p>
+        <p><strong>Total Amount:</strong> ৳${order.totalAmount?.toFixed(2) || '0'}</p>
+
+        <h2>Order Items</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Subcategory</th>
+              <th>Unit</th>
+              <th>Quantity</th>
+              <th>Price/Unit</th>
+              <th>Total Price</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${orderItemsHtml}
+          </tbody>
+        </table>
+      </body>
+      </html>
+    `);
+
+    printWindow.document.close();
+    printWindow.focus();
+    printWindow.print();
+    printWindow.close();
+  };
+
   return (
     <div className="p-4 space-y-6">
       <h1 className="text-2xl font-semibold text-center">Custom Bazar Orders</h1>
@@ -101,7 +166,9 @@ const CustomBazarOrdersPage: React.FC = () => {
       {isLoading ? (
         <Spinner />
       ) : orders.length === 0 ? (
-        <p className="text-center text-gray-500">No orders found with this Invoice ID.</p>
+        <p className="text-center text-gray-500">
+          No orders found with this Invoice ID.
+        </p>
       ) : (
         <div className="overflow-x-auto rounded-lg border">
           <Table>
@@ -128,7 +195,7 @@ const CustomBazarOrdersPage: React.FC = () => {
                   </TableCell>
                   <TableCell>৳{order.totalAmount?.toFixed(2) || '0'}</TableCell>
                   <TableCell>
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 flex-wrap">
                       <Dialog>
                         <DialogTrigger asChild>
                           <Button size="sm" variant="outline">
@@ -170,7 +237,8 @@ const CustomBazarOrdersPage: React.FC = () => {
                                   {item.quantity}
                                 </p>
                                 <p>
-                                  Price/unit: ৳{item.pricePerUnit} | Total: ৳{item.totalPrice}
+                                  Price/unit: ৳{item.pricePerUnit} | Total: ৳
+                                  {item.totalPrice}
                                 </p>
                               </div>
                             ))}
@@ -180,7 +248,9 @@ const CustomBazarOrdersPage: React.FC = () => {
 
                       <Select
                         value={statusMap[order.invoiceId] ?? order.status}
-                        onValueChange={(val) => handleStatusSelect(order.invoiceId, val)}
+                        onValueChange={(val) =>
+                          handleStatusSelect(order.invoiceId, val)
+                        }
                       >
                         <SelectTrigger className="w-24 h-8 text-sm">
                           <SelectValue placeholder={order.status} />
@@ -208,6 +278,15 @@ const CustomBazarOrdersPage: React.FC = () => {
                         onClick={() => handleUpdateClick(order?.invoiceId)}
                       >
                         Update
+                      </Button>
+
+                      <Button
+                        variant="outline"
+                        className="border-green-600 text-green-600 hover:bg-green-600 hover:text-white transition-colors duration-300"
+                        size="sm"
+                        onClick={() => handlePrintOrder(order)}
+                      >
+                        Print Order
                       </Button>
                     </div>
                   </TableCell>
