@@ -41,30 +41,31 @@ import { toast } from 'sonner';
 const ORDERS_PER_PAGE = 10;
 
 const CustomBazarOrdersPage: React.FC = () => {
-  const [searchTerm, setSearchTerm] = useState('');
+  const [invoiceIdSearch, setInvoiceIdSearch] = useState('');
   const [page, setPage] = useState(1);
   const [statusMap, setStatusMap] = useState<Record<string, string>>({});
 
+  // Send only invoiceId as query param, trim and send undefined if empty to avoid filtering
   const { data, isLoading } = useGetAllCustomBazarOrdersQuery({
-    searchTerm,
+    invoiceId: invoiceIdSearch.trim() || undefined,
     page,
     limit: ORDERS_PER_PAGE,
   });
 
-  const [updateStatus, { isLoading: isUpdating }] =
-    useUpdateCustomBazarOrderStatusMutation();
-
   const orders = data?.data?.data || [];
   const meta = data?.meta || {};
+
+  const [updateStatus, { isLoading: isUpdating }] =
+    useUpdateCustomBazarOrderStatusMutation();
 
   const handlePageChange = (newPage: number) => setPage(newPage);
 
   const onSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchTerm(e.target.value);
+    setInvoiceIdSearch(e.target.value);
     setPage(1);
   };
 
-  // Controlled select per order _id
+  // Controlled select per order invoiceId
   const handleStatusSelect = (invoiceId: string, newStatus: string) => {
     setStatusMap((prev) => ({ ...prev, [invoiceId]: newStatus }));
   };
@@ -74,16 +75,11 @@ const CustomBazarOrdersPage: React.FC = () => {
     const newStatus = statusMap[invoiceId] || null;
     if (!newStatus) return;
 
-console.log("invoiceId", invoiceId)
-console.log("sttaus", newStatus)
     try {
-
       await updateStatus({ invoiceId, status: newStatus }).unwrap();
 
- toast.success("Successfully updated status..")
+      toast.success('Successfully updated status..');
       setStatusMap((prev) => ({ ...prev, [invoiceId]: '' }));
-
-      // Optionally: refetch or show success message
     } catch (err) {
       console.error('Failed to update status:', err);
     }
@@ -95,15 +91,17 @@ console.log("sttaus", newStatus)
 
       <div className="flex justify-center mb-4">
         <Input
-          value={searchTerm}
+          value={invoiceIdSearch}
           onChange={onSearchChange}
-          placeholder="Search invoice, name, email, address"
+          placeholder="Search by Invoice ID only"
           className="max-w-md w-full"
         />
       </div>
 
       {isLoading ? (
         <Spinner />
+      ) : orders.length === 0 ? (
+        <p className="text-center text-gray-500">No orders found with this Invoice ID.</p>
       ) : (
         <div className="overflow-x-auto rounded-lg border">
           <Table>
@@ -131,7 +129,6 @@ console.log("sttaus", newStatus)
                   <TableCell>৳{order.totalAmount?.toFixed(2) || '0'}</TableCell>
                   <TableCell>
                     <div className="flex items-center gap-2">
-                      {/* Details dialog */}
                       <Dialog>
                         <DialogTrigger asChild>
                           <Button size="sm" variant="outline">
@@ -162,8 +159,7 @@ console.log("sttaus", newStatus)
                               <strong>Status:</strong> {order.status}
                             </p>
                             <p>
-                              <strong>Total:</strong> ৳
-                              {order.totalAmount?.toFixed(2)}
+                              <strong>Total:</strong> ৳{order.totalAmount?.toFixed(2)}
                             </p>
                             <hr />
                             <h4 className="font-medium mt-2">Items:</h4>
@@ -174,8 +170,7 @@ console.log("sttaus", newStatus)
                                   {item.quantity}
                                 </p>
                                 <p>
-                                  Price/unit: ৳{item.pricePerUnit} | Total: ৳
-                                  {item.totalPrice}
+                                  Price/unit: ৳{item.pricePerUnit} | Total: ৳{item.totalPrice}
                                 </p>
                               </div>
                             ))}
@@ -183,12 +178,9 @@ console.log("sttaus", newStatus)
                         </DialogContent>
                       </Dialog>
 
-                      {/* Status select */}
                       <Select
                         value={statusMap[order.invoiceId] ?? order.status}
-                        onValueChange={(val) =>
-                          handleStatusSelect(order.invoiceId, val)
-                        }
+                        onValueChange={(val) => handleStatusSelect(order.invoiceId, val)}
                       >
                         <SelectTrigger className="w-24 h-8 text-sm">
                           <SelectValue placeholder={order.status} />
@@ -208,17 +200,15 @@ console.log("sttaus", newStatus)
                         </SelectContent>
                       </Select>
 
-                 <Button
-  variant="outline"
-  className="border-blue-500 text-blue-500 hover:bg-blue-500 hover:text-white transition-colors duration-300"
-  size="sm"
-  disabled={isUpdating}
-  onClick={() => handleUpdateClick(order?.invoiceId)}
->
-  Update
-</Button>
-
-
+                      <Button
+                        variant="outline"
+                        className="border-blue-500 text-blue-500 hover:bg-blue-500 hover:text-white transition-colors duration-300"
+                        size="sm"
+                        disabled={isUpdating}
+                        onClick={() => handleUpdateClick(order?.invoiceId)}
+                      >
+                        Update
+                      </Button>
                     </div>
                   </TableCell>
                 </TableRow>
@@ -228,7 +218,7 @@ console.log("sttaus", newStatus)
         </div>
       )}
 
-      {meta.total > ORDERS_PER_PAGE && (
+      {meta.total > ORDERS_PER_PAGE && orders.length > 0 && (
         <Pagination className="justify-center mt-6">
           <PaginationContent>
             <PaginationItem>

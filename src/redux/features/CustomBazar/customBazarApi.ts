@@ -31,8 +31,8 @@ const customBazarApi = baseApi.injectEndpoints({
       providesTags: ["Products"],
     }),
 
-  getAllCustomBazarOrders: builder.query<{
-  data: Product[];
+getAllCustomBazarOrders: builder.query<{
+  data: Order[];
   meta: any;
 }, Record<string, any>>({
   query: (args) => {
@@ -53,12 +53,16 @@ const customBazarApi = baseApi.injectEndpoints({
   },
   providesTags: ['Products'],
   transformResponse: (response: TResponseRedux<Order[]>) => {
+    // Remove or keep console log if needed for debugging
+   console.log("result", response);
+
     return {
       data: response.data,
       meta: response.meta,
     };
   },
 }),
+
 
 updateCustomBazarOrderStatus: builder.mutation<
   Order, 
