@@ -186,9 +186,7 @@ const Navbar = () => {
                   <Link href="/track-order" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
                     Track Order
                   </Link>
-                  <Link href="/payments" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                    Your Payments
-                  </Link>
+                 
                   <Link href="/change-password" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
                     Change Password
                   </Link>
