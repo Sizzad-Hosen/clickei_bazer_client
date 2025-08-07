@@ -75,6 +75,26 @@ updateCustomBazarOrderStatus: builder.mutation<
   invalidatesTags: ['Products'], // or whatever tag you want to invalidate
 }),
 
+
+getAllCustomOrdersByUserId: builder.query({
+  query: () => ({
+    url: `/customBazerOrders/my-custom-orders`,
+    method: 'GET',
+  }),
+  providesTags: ['Order'],
+}),
+
+
+    deleteCustomOrderById: builder.mutation({
+
+      query: (id: string) => ({
+        url: `/customBazerOrders/${id}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["Order"], 
+    }),
+
+
   }),
 });
 
@@ -83,5 +103,7 @@ export const {
   useGetAllCustomBazarProductsQuery,
   useAddCustomBazarOrderMutation,
   useGetAllCustomBazarOrdersQuery,
-  useUpdateCustomBazarOrderStatusMutation
+  useUpdateCustomBazarOrderStatusMutation,
+  useGetAllCustomOrdersByUserIdQuery,
+  useDeleteCustomOrderByIdMutation
 } = customBazarApi;

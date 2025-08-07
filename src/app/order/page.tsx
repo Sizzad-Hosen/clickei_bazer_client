@@ -3,23 +3,57 @@ import Swal from 'sweetalert2';
 import { useState } from 'react';
 import Sidebar from '@/components/shared/Sidebar';
 import Spinner from '@/components/Spinner';
-import { Button } from '@/components/ui/button';
 import { useDeleteOrderByIdMutation, useGetAllOrdersByUserIdQuery } from '@/redux/features/Order/ordersApi';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
+import { useDeleteCustomOrderByIdMutation, useGetAllCustomOrdersByUserIdQuery } from '@/redux/features/CustomBazar/customBazarApi';
 
 export default function UserOrdersPage() {
   const { data: response, isLoading, isError, error, refetch } = useGetAllOrdersByUserIdQuery({});
   const orders = response?.data || [];
 
-const [deleteOrder] = useDeleteOrderByIdMutation()
+console.log("orders", orders)
+
+  const { data: responseCustom } = useGetAllCustomOrdersByUserIdQuery({});
+  const customBazarOrders = responseCustom?.data;
+
+  console.log("cus order", customBazarOrders)
+
+const [deleteOrder] = useDeleteOrderByIdMutation();
+
+const [deleteCustomOrder] = useDeleteCustomOrderByIdMutation();
 
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
-const handleDelete = async (id: string) => {
+  const handleDelete = async (id: string) => {
+
+    console.log("id", id)
+    
+    const result = await Swal.fire({
+      title: 'Are you sure?',
+      text: 'Do you really want to delete this order? This action cannot be undone.',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#3085d6',
+      confirmButtonText: 'Yes, delete it!',
+    });
+
+    if (result.isConfirmed) {
+      try {
+        await deleteOrder(id).unwrap();
+        toast.success('Order deleted successfully');
+        refetch();
+      } catch (err) {
+        toast.error('Failed to delete order');
+        console.error(err);
+      }
+    }
+  };
+ const handleCustomOrderDelete = async (id: string) => {
   const result = await Swal.fire({
     title: 'Are you sure?',
-    text: 'Do you really want to delete this order? This action cannot be undone.',
+    text: 'Do you really want to delete this order?',
     icon: 'warning',
     showCancelButton: true,
     confirmButtonColor: '#d33',
@@ -29,15 +63,16 @@ const handleDelete = async (id: string) => {
 
   if (result.isConfirmed) {
     try {
-      await deleteOrder(id).unwrap();
-      toast.success('Order deleted successfully');
-      refetch(); // Refetch your orders
+      await deleteCustomOrder(id).unwrap();
+      toast.success('Custom Bazar Order deleted successfully');
+      refetch(); // ✅ Re-fetch the updated list
     } catch (err) {
       toast.error('Failed to delete order');
       console.error(err);
     }
   }
 };
+
   if (isLoading) {
     return (
       <div className="flex min-h-screen">
@@ -118,7 +153,6 @@ const handleDelete = async (id: string) => {
                 key={order._id}
                 className="bg-white shadow rounded-lg p-6 border border-gray-200 relative"
               >
-                {/* Delete Order Button */}
                 <button
                   onClick={() => handleDelete(order._id)}
                   className="absolute top-4 right-4 border border-red-400 text-red-600 hover:text-red-800 transition rounded p-1"
@@ -136,7 +170,6 @@ const handleDelete = async (id: string) => {
                   </svg>
                 </button>
 
-                {/* Order Header */}
                 <div className="flex justify-between items-center mb-4 mt-3">
                   <h2 className="text-xl font-semibold">
                     Order #{order.invoiceId || order._id}
@@ -146,11 +179,14 @@ const handleDelete = async (id: string) => {
                   </span>
                 </div>
 
-                {/* Order Info */}
                 <p><span className="font-medium">Status:</span> {order.orderStatus || 'Pending'}</p>
-                <p><span className="font-medium">Total:</span> <span className="text-green-600 font-semibold">Tk {order.totalPrice?.toFixed(2) || '0.00'}</span></p>
+                <p>
+                  <span className="font-medium">Total:</span>{' '}
+                  <span className="text-green-600 font-semibold">
+                    Tk {order.totalPrice?.toFixed(2) || '0.00'}
+                  </span>
+                </p>
 
-                {/* Order Items */}
                 <div className="mt-6">
                   <h3 className="font-semibold mb-4">Items:</h3>
                   <ul className="divide-y divide-gray-200 max-h-60 overflow-y-auto">
@@ -167,6 +203,86 @@ const handleDelete = async (id: string) => {
                         </div>
                         <div className="ml-4 font-semibold text-gray-900">
                           Tk{item.price.toFixed(2)}
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {customBazarOrders?.length > 0 && (
+          <div className="space-y-6 mt-10">
+            <h2 className="text-2xl font-semibold text-center md:text-left text-indigo-700">
+              Custom Bazar Orders
+            </h2>
+
+            {customBazarOrders.map((customOrder: any) => (
+              <div
+                key={customOrder._id}
+                className="bg-white shadow rounded-lg p-6 border border-gray-200 relative"
+              >
+
+                <button
+                  onClick={() => handleCustomOrderDelete(customOrder._id)}
+                  className="absolute top-4 right-4 border border-red-400 text-red-600 hover:text-red-800 transition rounded p-1"
+                  title="Delete Order"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-5 w-5"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    strokeWidth={2}
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+
+                <div className="flex justify-between pt-4 items-center mb-4">
+                  <h2 className="text-xl font-semibold">Order #{customOrder.invoiceId}</h2>
+                  <span className="text-sm text-gray-500">
+                    {customOrder.createdAt ? format(new Date(customOrder.createdAt), 'PPP p') : 'N/A'}
+                  </span>
+                </div>
+
+                <p>
+                  <span className="font-medium">Status:</span>{' '}
+                  <span className="capitalize">{customOrder.status}</span>
+                </p>
+                <p>
+                  <span className="font-medium">Total:</span>{' '}
+                  <span className="text-green-600 font-semibold">Tk {customOrder.totalAmount}</span>
+                </p>
+                <p>
+                  <span className="font-medium">Payment:</span>{' '}
+                  <span className="capitalize">{customOrder.paymentMethod}</span>
+                </p>
+
+                {customOrder.siteNote && (
+                  <p>
+                    <span className="font-medium">Note:</span> {customOrder.siteNote}
+                  </p>
+                )}
+
+                <div className="mt-4">
+                  <h3 className="font-semibold mb-2">Items:</h3>
+                  <ul className="divide-y divide-gray-200 max-h-60 overflow-y-auto">
+                    {customOrder.orderItems.map((item: any, index: number) => (
+                      <li key={index} className="py-2">
+                        <div className="flex justify-between items-center">
+                          <div>
+                            <p className="font-medium text-gray-900">{item.subcategoryName}</p>
+                            <p className="text-sm text-gray-600">
+                              {item.quantity} {item.unit} × Tk {item.pricePerUnit}
+                            </p>
+                          </div>
+                          <div className="text-right font-semibold text-gray-900">
+                            Tk {item.totalPrice}
+                          </div>
                         </div>
                       </li>
                     ))}
