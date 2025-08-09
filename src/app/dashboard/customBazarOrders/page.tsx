@@ -33,10 +33,13 @@ import {
 } from '@/components/ui/pagination';
 import Spinner from '@/components/Spinner';
 import {
+  useDeleteCustomOrderByIdMutation,
   useGetAllCustomBazarOrdersQuery,
   useUpdateCustomBazarOrderStatusMutation,
 } from '@/redux/features/CustomBazar/customBazarApi';
 import { toast } from 'sonner';
+import { MdDelete } from 'react-icons/md';
+import Swal from 'sweetalert2';
 
 const ORDERS_PER_PAGE = 10;
 
@@ -46,7 +49,7 @@ const CustomBazarOrdersPage: React.FC = () => {
   const [statusMap, setStatusMap] = useState<Record<string, string>>({});
 
   // Send only invoiceId as query param, trim and send undefined if empty to avoid filtering
-  const { data, isLoading } = useGetAllCustomBazarOrdersQuery({
+  const { data, isLoading , refetch} = useGetAllCustomBazarOrdersQuery({
     invoiceId: invoiceIdSearch.trim() || undefined,
     page,
     limit: ORDERS_PER_PAGE,
@@ -148,6 +151,33 @@ const CustomBazarOrdersPage: React.FC = () => {
     printWindow.focus();
     printWindow.print();
     printWindow.close();
+  };
+
+  const [deleteOrder] = useDeleteCustomOrderByIdMutation();
+  
+  const handleDeleteOrder = async (id: string) => {
+  
+    const result = await Swal.fire({
+      title: 'Are you sure?',
+      text: "You won't be able to revert this!",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#3085d6',
+      confirmButtonText: 'Yes, delete it!'
+    });
+  
+    if (result.isConfirmed) {
+      try {
+        await deleteOrder(id).unwrap();
+        Swal.fire('Deleted!', 'Custom Order deleted successfully.', 'success');
+        toast.success("Custom Order deleted success...");
+        refetch();
+      } catch (error) {
+        Swal.fire('Error!', 'Failed to delete custom order.', 'error');
+        toast.error("Failed to delete custom order");
+      }
+    }
   };
 
   return (
@@ -288,6 +318,14 @@ const CustomBazarOrdersPage: React.FC = () => {
                       >
                         Print Order
                       </Button>
+
+                        <Button
+                               variant="destructive" 
+                      
+                              onClick={() => handleDeleteOrder(order._id)}>
+                      
+                      <MdDelete></MdDelete>
+                                          </Button>
                     </div>
                   </TableCell>
                 </TableRow>

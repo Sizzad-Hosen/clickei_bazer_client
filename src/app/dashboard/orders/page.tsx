@@ -34,12 +34,15 @@ import {
 import Spinner from "@/components/Spinner";
 import { toast } from "sonner";
 import {
+  useDeleteOrderByIdMutation,
   useGetAllOrdersQuery,
   useUpdateOrderPaymentStatusMutation,
   useUpdateStatusMutation,
 
 
 } from "@/redux/features/Order/ordersApi";
+import { MdDelete } from "react-icons/md";
+import Swal from "sweetalert2";
 
 const ORDERS_PER_PAGE = 10;
 
@@ -190,6 +193,34 @@ const handlePrintOrder = (order: any) => {
   printWindow.print();
 };
 
+const [deleteOrder] = useDeleteOrderByIdMutation();
+
+
+const handleDeleteOrder = async (id: string) => {
+
+  const result = await Swal.fire({
+    title: 'Are you sure?',
+    text: "You won't be able to revert this!",
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#d33',
+    cancelButtonColor: '#3085d6',
+    confirmButtonText: 'Yes, delete it!'
+  });
+
+  if (result.isConfirmed) {
+    try {
+      await deleteOrder(id).unwrap();
+      Swal.fire('Deleted!', 'Order deleted successfully.', 'success');
+      toast.success("Order deleted success...");
+      refetch();
+    } catch (error) {
+      Swal.fire('Error!', 'Failed to delete order.', 'error');
+      toast.error("Failed to delete order");
+    }
+  }
+};
+
   return (
     <div className="p-4 space-y-6">
       <h1 className="text-2xl font-bold text-center">Orders</h1>
@@ -284,6 +315,13 @@ const handlePrintOrder = (order: any) => {
                     </Dialog>
                     <Button variant="outline" onClick={() => handlePrintOrder(order)}>
                       Print
+                    </Button>
+                    <Button
+                     variant="destructive" 
+
+                     onClick={() => handleDeleteOrder(order._id)}>
+
+                      <MdDelete></MdDelete>
                     </Button>
                   </TableCell>
                 </TableRow>
