@@ -93,6 +93,26 @@ getAllCustomOrdersByUserId: builder.query({
       }),
       invalidatesTags: ["Order"], 
     }),
+    
+deleteCustomProduct: builder.mutation<void, string>({
+  query: (id) => ({
+    url: `/customBazerProducts/${id}`,
+    method: "DELETE",
+  }),
+  invalidatesTags: ["Products"],
+}),
+
+updateCustomBazarProduct: builder.mutation<
+  any, // response type from API
+  { id: string; data: { name?: string; price?: number } }
+>({
+  query: ({ id, data }) => ({
+    url: `/customBazerProducts/${id}`,
+    method: "PATCH",
+    body: data, // send actual data, not { data }
+  }),
+  invalidatesTags: ["Products"],
+}),
 
 
   }),
@@ -105,5 +125,7 @@ export const {
   useGetAllCustomBazarOrdersQuery,
   useUpdateCustomBazarOrderStatusMutation,
   useGetAllCustomOrdersByUserIdQuery,
-  useDeleteCustomOrderByIdMutation
+  useDeleteCustomOrderByIdMutation,
+  useDeleteCustomProductMutation,
+  useUpdateCustomBazarProductMutation
 } = customBazarApi;

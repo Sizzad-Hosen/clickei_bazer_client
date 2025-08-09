@@ -37,11 +37,10 @@ const navItems = [
   { href: "/dashboard/products", label: "Products", icon: Package },
   { href: "/dashboard/products/create-product", label: "Create Product", icon: PlusCircle },
   { href: "/dashboard/orders", label: "Orders", icon: ShoppingCart },
-  { href: "/dashboard/customBazarOrders", label: "customBazarOrders", icon: ShoppingCart },
+  { href: "/dashboard/customBazarOrders", label: "Custom Bazar Orders", icon: ShoppingCart },
   { href: "/dashboard/users", label: "Users", icon: Users },
-  { href: "/dashboard/notification", label: "Notifications", icon: Bell },
-  { href: "/dashboard/create-custom-bazar", label: "create-custom-bazar", icon: Menu},
-  { href: "/dashboard/track-order-update", label: "Track Order Update", icon: Settings },
+  { href: "/dashboard/create-custom-bazar", label: "Create-custom-bazar", icon: Menu},
+  { href: "/dashboard/custom-bazar-products", label: "Custom Bazar Products", icon: Box},
   { href: "/", label: "Home", icon: HomeIcon },
 ];
 
