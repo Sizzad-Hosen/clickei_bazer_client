@@ -11,21 +11,28 @@ import CartDrawer from '../Carts/CartDrawer';
 
 export const Home = () => {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-  const { data, isLoading, error } = useGetAllProductsQuery();
+
+  const { data, isLoading, error } = useGetAllProductsQuery({});
+
   const [cartOpen, setCartOpen] = useState(false);
 
-  const products: Product[] = useMemo(() => data?.data?.data || [], [data]);
+  const products: Product[] = useMemo(
+    () => (Array.isArray(data?.data?.data) ? data.data.data : []),
+    [data]
+  );
 
   const openCart = () => setCartOpen(true);
   const closeCart = () => setCartOpen(false);
 
   const groupedProducts = useMemo(() => {
     const grouped: Record<string, Product[]> = {};
-    products.forEach((product) => {
-      const category = product.category || 'Uncategorized';
-      if (!grouped[category]) grouped[category] = [];
-      grouped[category].push(product);
-    });
+    products
+      .filter((p) => p && p._id) // ✅ filter out null or missing _id
+      .forEach((product) => {
+        const category = product.category || 'Uncategorized';
+        if (!grouped[category]) grouped[category] = [];
+        grouped[category].push(product);
+      });
     return grouped;
   }, [products]);
 
@@ -45,7 +52,9 @@ export const Home = () => {
         </h2>
 
         {isLoading && <Spinner />}
-        {error && <p className="text-center text-red-500">Failed to load products.</p>}
+        {error && (
+          <p className="text-center text-red-500">Failed to load products.</p>
+        )}
         {!isLoading && !error && categories.length === 0 && (
           <p className="text-center text-gray-500">No products available.</p>
         )}
@@ -63,8 +72,8 @@ export const Home = () => {
                   {groupedProducts[category].map((product) => (
                     <ProductCard
                       key={product._id}
-                  product={product}
-                  onOpenCart={openCart}
+                      product={product}
+                      onOpenCart={openCart}
                     />
                   ))}
                 </div>

@@ -1,16 +1,19 @@
 'use client';
 
-import React from 'react';
-import { use, useState } from 'react';
-import { useDeleteProductMutation, useGetSingleProductQuery } from '@/redux/features/Products/productApi';
+import React, { useState } from 'react';
+import { use } from 'react';
+import { useDeleteProductMutation, useGetSingleProductQuery, useUpdateProductMutation } from '@/redux/features/Products/productApi';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { EditProductModal } from '@/components/Products/EditProductModal';
+import { MdDelete, MdEdit } from 'react-icons/md';
+import Swal from 'sweetalert2'; // install with `npm install sweetalert2`
+import Spinner from '@/components/Spinner';
 
 const ProductDetailsPage = ({ params }: { params: Promise<{ id: string }> }) => {
-  const { id } = use(params); // ✅ unwrap `params` using React.use
+  const { id } = use(params);
   const router = useRouter();
 
   const { data: product, isLoading, isError } = useGetSingleProductQuery(id);
@@ -18,56 +21,113 @@ const ProductDetailsPage = ({ params }: { params: Promise<{ id: string }> }) => 
 
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [deleteProduct, { isLoading: isDeleting }] = useDeleteProductMutation();
+  const [updateProduct, { isLoading: isUpdating }] = useUpdateProductMutation();
 
-  if (isLoading) return <p className="text-center">Loading product...</p>;
-  if (isError || !productExists) return <p className="text-center text-red-500">Failed to load product.</p>;
+  if (isLoading) return <Spinner />;
+  if (isError || !productExists)
+    return <p className="text-center text-red-600 py-20 font-semibold">Failed to load product.</p>;
 
   const handleDelete = async () => {
-    if (!confirm('Are you sure you want to delete this product?')) return;
-    try {
-      await deleteProduct(id).unwrap();
-      toast.success('Product deleted successfully!');
-      router.push('/dashboard/products');
-    } catch {
-      toast.error('Failed to delete product.');
+    const result = await Swal.fire({
+      title: 'Are you sure?',
+      text: 'This action will permanently delete the product.',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#3085d6',
+      confirmButtonText: 'Yes, delete it!',
+      cancelButtonText: 'Cancel',
+    });
+
+    if (result.isConfirmed) {
+      try {
+        await deleteProduct(id).unwrap();
+        toast.success('Product deleted successfully!');
+        router.push('/dashboard/products');
+      } catch (error) {
+        toast.error('Failed to delete product.');
+      }
     }
   };
 
+  // The edit logic will be handled inside the EditProductModal
+  // The modal should call your updateProduct mutation internally and then call onClose
+
   return (
-    <div className="max-w-3xl mx-auto py-10 px-4">
-      <h1 className="text-3xl font-bold mb-6">{productExists.name}</h1>
+    <main className="max-w-4xl mx-auto p-6 bg-white rounded-2xl shadow-lg">
+      <h1 className="text-4xl font-extrabold mb-8 text-gray-900">{productExists.name}</h1>
 
-      <div className="mb-6 flex gap-4 overflow-x-auto">
-        {productExists.images?.length > 0 ? (
-          productExists.images.map((img: string, i: number) => (
-            <div key={i} className="relative w-48 h-48 rounded-lg overflow-hidden flex-shrink-0">
-              <Image src={img} alt={`${productExists.name} image ${i + 1}`} fill className="object-cover" />
+      <section className="mb-8">
+        <div className="flex space-x-4 overflow-x-auto pb-2">
+          {productExists.images?.length ? (
+            productExists.images.map((img: string, i: number) => (
+              <div
+                key={i}
+                className="relative w-56 h-56 rounded-lg overflow-hidden flex-shrink-0 shadow-md hover:scale-105 transition-transform duration-300"
+              >
+                <Image src={img} alt={`${productExists.name} image ${i + 1}`} fill className="object-cover" />
+              </div>
+            ))
+          ) : (
+            <div className="w-56 h-56 bg-gray-100 flex items-center justify-center rounded-lg text-gray-400 font-medium">
+              No Images
             </div>
-          ))
-        ) : (
-          <div className="w-48 h-48 bg-gray-200 flex items-center justify-center rounded-lg">No Images</div>
-        )}
-      </div>
+          )}
+        </div>
+      </section>
 
-      <p className="mb-2"><strong>Title:</strong> {productExists.title}</p>
-      <p className="mb-2"><strong>Description:</strong> {productExists.description}</p>
-      <p className="mb-2"><strong>Price:</strong> ৳ {productExists.price}</p>
-      <p className="mb-2"><strong>Quantity:</strong> {productExists.quantity}</p>
-      <p className="mb-4"><strong>Published:</strong> {productExists.isPublished ? 'Yes' : 'No'}</p>
+      <section className="mb-8 space-y-3 text-gray-800">
+        <p>
+          <span className="font-semibold">Title:</span> {productExists.title}
+        </p>
+        <p>
+          <span className="font-semibold">Description:</span> {productExists.description}
+        </p>
+        <p>
+          <span className="font-semibold">Price:</span>{' '}
+          <span className="text-green-600 font-semibold">৳ {productExists.price}</span>
+        </p>
+        <p>
+          <span className="font-semibold">Quantity:</span> {productExists.quantity}
+        </p>
+        <p>
+          <span className="font-semibold">Published:</span>{' '}
+          <span
+            className={
+              productExists.isPublished ? 'text-green-600 font-semibold' : 'text-red-600 font-semibold'
+            }
+          >
+            {productExists.isPublished ? 'Yes' : 'No'}
+          </span>
+        </p>
+      </section>
 
-      <div className="flex gap-4">
-        <Button onClick={() => setIsEditOpen(true)}>Edit</Button>
-        <Button variant="destructive" onClick={handleDelete} disabled={isDeleting}>
-          {isDeleting ? 'Deleting...' : 'Delete'}
+      <section className="flex gap-4">
+        <Button
+          onClick={() => setIsEditOpen(true)}
+          aria-label="Edit product"
+          className="px-6 py-2 flex items-center gap-2"
+          disabled={isUpdating}
+        >
+          <MdEdit size={20} /> 
         </Button>
-      </div>
+        <Button
+          variant="destructive"
+          onClick={handleDelete}
+          disabled={isDeleting}
+          aria-label="Delete product"
+          className="px-6 py-2 flex items-center gap-2"
+        >
+          <MdDelete size={20} /> 
+        </Button>
+      </section>
 
       <EditProductModal
         product={productExists}
         isOpen={isEditOpen}
         onClose={() => setIsEditOpen(false)}
       />
-    </div>
+    </main>
   );
 };
 

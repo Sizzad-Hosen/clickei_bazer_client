@@ -47,10 +47,10 @@ const productApi = baseApi.injectEndpoints({
 }),
 
 
-    getAllProducts: builder.query<Product[], void>({
-      query: () => '/products',
-      providesTags: ['Products'],
-    }),
+getAllProducts: builder.query<TResponseRedux<Product[]>, { page?: number; limit?: number }>({
+  query: ({ page = 1, limit = 6 } = {}) => `/products?page=${page}&limit=${limit}`,
+  providesTags: ['Products'],
+}),
 
     getSingleProduct: builder.query<Product, string>({
       query: (id) => `/products/${id}`,
@@ -68,7 +68,7 @@ const productApi = baseApi.injectEndpoints({
     updateProduct: builder.mutation<void, { id: string; [key: string]: any }>({
       query: ({ id, ...data }) => ({
         url: `/products/${id}`,
-        method: 'PUT',
+        method: 'PATCH',
         body: data,
       }),
       invalidatesTags: ['Products'],

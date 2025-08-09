@@ -107,7 +107,7 @@ export default function CartDrawer({
                   className="flex gap-3 items-center border-b pb-3"
                 >
                   <Image
-                    src={imageSrc}
+                    src={imageSrc?imageSrc :"https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT2U2akySBgSHUK-foX-9SGFmLk6zEuGYNNqw&savatar-placeholder.png"}
                     alt={item?.title || 'Product'}
                     width={80}
                     height={80}
@@ -154,7 +154,8 @@ export default function CartDrawer({
         </div>
 
         <div className="p-4 border-t">
-          <p className="text-lg font-bold">Total: ৳{totalAmount}</p>
+        <p className="text-lg font-bold">Total: ৳ {totalAmount.toFixed(2)}</p>
+
             <Link href={"/checkout"}>
           <Button className="mt-4 w-full bg-green-600 hover:bg-green-700 text-white">
 

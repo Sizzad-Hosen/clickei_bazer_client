@@ -13,6 +13,28 @@ import { logout, selectCurrentUser } from '@/redux/features/auth/authSlices';
 import { toast } from 'sonner';
 import { useAppSelector } from '@/redux/hook';
 
+const examplePlaceholders = [
+  'potato',
+  'milk',
+  'rice',
+  'apple',
+  'banana',
+  'onion',
+  'bread',
+  'egg',
+  'chicken',
+  'fish',
+];
+
+const exampleColors = [
+  '#E53E3E', // red-600
+  '#38A169', // green-600
+  '#3182CE', // blue-600
+  '#D69E2E', // yellow-600
+  '#805AD5', // purple-600
+  '#DD6B20', // orange-600
+];
+
 const Navbar = () => {
   const router = useRouter();
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -25,9 +47,19 @@ const Navbar = () => {
   }, []);
 
   const [query, setQuery] = useState('');
-  const [field, setField] = useState('name');
+  const [field, setField] = useState<'title' | 'name' | 'price' | 'quantity'>('name');
   const [debouncedQuery, setDebouncedQuery] = useState('');
   const [showDropdown, setShowDropdown] = useState(false);
+
+  // For placeholder animation
+  const [placeholderIndex, setPlaceholderIndex] = useState(0);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setPlaceholderIndex((prev) => (prev + 1) % examplePlaceholders.length);
+    }, 3000);
+    return () => clearInterval(interval);
+  }, []);
 
   useEffect(() => {
     const timer = setTimeout(() => setDebouncedQuery(query), 500);
@@ -52,10 +84,13 @@ const Navbar = () => {
   const handleSearch = () => {
     if (!query.trim()) return;
     router.push(`/search?${field}=${encodeURIComponent(query.trim())}`);
+    setShowDropdown(false);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') handleSearch();
+    if (e.key === 'Enter') {
+      handleSearch();
+    }
   };
 
   const handleLogout = async () => {
@@ -64,17 +99,21 @@ const Navbar = () => {
     router.push('/login');
   };
 
+  // Pick color based on current placeholder index
+  const placeholderColor = exampleColors[placeholderIndex % exampleColors.length];
+
   return (
     <nav className="bg-gray-800 border-b border-gray-700 shadow-sm sticky top-0 z-50 w-full">
       {/* Top Contact Bar */}
-      <div className="bg-gray-900 text-sm text-gray-300 px-4 py-2 flex justify-around items-center flex-wrap gap-2">
+      
+      <div className="bg-gray-900 text-sm text-amber-600 px-4 py-2 flex justify-around items-center flex-wrap gap-2">
         <h1 className="font-medium">
-          Contact:{" "}
-          <a href="mailto:clickeibazer2025july@gmail.com" className="text-blue-400 hover:underline">
-            clickeibazer2025july@gmail.com
-          </a>{" "}
-          | Phone:{" "}
-          <a href="tel:01745455353" className="text-blue-400 hover:underline">
+          Contact:{' '}
+          <a href="mailto:clickeibazer2025july@gmail.com" className="text-lime-600 hover:underline">
+            clickeibazar2025july@gmail.com
+          </a>{' '}
+          | Phone:{' '}
+          <a href="tel:01745455353" className="text-lime-600 hover:underline">
             01745455353
           </a>
         </h1>
@@ -83,7 +122,7 @@ const Navbar = () => {
           href="https://www.facebook.com/share/1Fh8DHu1UG/"
           target="_blank"
           rel="noopener noreferrer"
-          className="text-blue-400 hover:underline flex items-center gap-1"
+          className="text-lime-600 hover:underline flex items-center gap-1"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -101,20 +140,14 @@ const Navbar = () => {
       <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between px-4 py-1 gap-4">
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2">
-          <Image
-            src={logo}
-            alt="ClickeiBazer Logo"
-            width={120}
-            height={60}
-            className="object-contain"
-          />
+          <Image src={logo} alt="ClickeiBazer Logo" width={120} height={60} className="object-contain" />
         </Link>
 
         {/* Search */}
-        <div className="flex w-full max-w-2xl md:flex-1">
+        <div className="flex w-full max-w-2xl md:flex-1 relative" ref={dropdownRef}>
           <select
             value={field}
-            onChange={(e) => setField(e.target.value)}
+            onChange={(e) => setField(e.target.value as 'title' | 'name' | 'price' | 'quantity')}
             className="h-12 min-w-[90px] border-2 border-amber-600 rounded-l-md bg-white px-2 text-sm text-gray-700 focus:outline-none"
           >
             <option value="title">Title</option>
@@ -123,39 +156,81 @@ const Navbar = () => {
             <option value="quantity">Quantity</option>
           </select>
 
-          <div className="relative flex-grow">
-            <input
-              type="text"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              onKeyDown={handleKeyDown}
-              placeholder={`Search by ${field}...`}
-              className="w-full h-12 pl-4 pr-12 border-2 border-amber-600 bg-white rounded-r-md text-sm"
-            />
-            <button
-              onClick={handleSearch}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-amber-600"
-              aria-label="Search"
-              type="button"
-            >
-              <Search size={20} />
-            </button>
+          {/* Input with transparent text for placeholder layering */}
+         <input
+  type={field === 'price' || field === 'quantity' ? 'number' : 'text'}
+  value={query}
+  onChange={(e) => {
+    setQuery(e.target.value);
+    setShowDropdown(true);
+  }}
+  onKeyDown={handleKeyDown}
+  placeholder="Search ..."
+  className={`w-full h-12 pl-4 pr-12 border-2 border-amber-600 bg-white rounded-r-md text-sm caret-black ${
+    query ? 'text-gray-900' : 'text-transparent'
+  }`}
+  min={field === 'price' || field === 'quantity' ? 0 : undefined}
+  step={field === 'price' || field === 'quantity' ? 'any' : undefined}
+  spellCheck={false}
+  autoComplete="off"
+/>
 
-            {/* Suggestions */}
-            {debouncedQuery && data?.data?.length > 0 && (
-              <div className="absolute left-0 right-0 mt-1 max-h-56 overflow-auto rounded-md border border-gray-200 bg-white shadow-lg z-50">
-                {data.data.map((item: any) => (
+
+          {/* Overlay placeholder text with color */}
+          {!query && (
+            <div
+              className="pointer-events-none absolute left-[104px] top-1/2 -translate-y-1/2 text-sm select-none"
+              style={{ color: placeholderColor, fontWeight: '500' }}
+            >
+              Search <span className="font-bold">{examplePlaceholders[placeholderIndex]}</span>...
+            </div>
+          )}
+
+          <button
+            onClick={handleSearch}
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-amber-600"
+            aria-label="Search"
+            type="button"
+          >
+            <Search size={20} />
+          </button>
+
+          {/* Suggestions dropdown */}
+          {showDropdown && debouncedQuery && data?.data?.length > 0 && (
+            <div className="absolute left-0 right-0 mt-1 max-h-56 overflow-auto rounded-md border border-gray-200 bg-white shadow-lg z-50">
+              {data.data.map((item: any) => {
+                let displayText = '';
+
+                switch (field) {
+                  case 'title':
+                    displayText = item.title || item.name || 'Untitled';
+                    break;
+                  case 'name':
+                    displayText = item.name || item.title || 'Unnamed';
+                    break;
+                  case 'price':
+                    displayText = `৳${item.price ?? 'N/A'} - ${item.title || item.name || ''}`;
+                    break;
+                  case 'quantity':
+                    displayText = `${item.quantity ?? 'N/A'} pcs - ${item.title || item.name || ''}`;
+                    break;
+                  default:
+                    displayText = item.title || item.name || '';
+                }
+
+                return (
                   <Link
                     key={item._id}
                     href={`/products/${item._id}`}
                     className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                    onClick={() => setShowDropdown(false)}
                   >
-                    {item.title || item.name}
+                    {displayText}
                   </Link>
-                ))}
-              </div>
-            )}
-          </div>
+                );
+              })}
+            </div>
+          )}
         </div>
 
         {/* Right side */}
@@ -186,7 +261,7 @@ const Navbar = () => {
                   <Link href="/track-order" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
                     Track Order
                   </Link>
-                 
+
                   <Link href="/change-password" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
                     Change Password
                   </Link>

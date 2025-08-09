@@ -8,7 +8,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import Spinner from '@/components/Spinner';
 
-const PAGE_SIZE = 6;
+const PAGE_SIZE = 10;
 
 const ProductsListPage = () => {
 
@@ -16,8 +16,11 @@ const ProductsListPage = () => {
 
   const { data, isLoading, isError } = useGetAllProductsQuery({ page, limit: PAGE_SIZE });
   const products = data?.data?.data || [];
-  const meta = data?.meta;
+  console.log("products", data)
 
+  const meta = data?.data?.meta;
+
+console.log("meta", meta)
   if (isLoading) return <Spinner></Spinner>
   if (isError) return <p className="text-center text-red-500">Failed to load products</p>;
   if (!Array.isArray(products) || products.length === 0) return <p className="text-center">No products found.</p>;
@@ -47,7 +50,7 @@ const ProductsListPage = () => {
               <p className="text-xs text-gray-500">Qty: {product.quantity}</p>
 
               <Link href={`/dashboard/products/${product._id}`}>
-                <Button className="mt-4 w-full">View Details</Button>
+                <Button variant={"secondary"} className="mt-4 w-full">View Details</Button>
               </Link>
             </CardContent>
           </Card>

@@ -1,5 +1,4 @@
-'use client';
-
+import { useState, useEffect } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -7,9 +6,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-
 import { useUpdateProductMutation } from '@/redux/features/Products/productApi';
-import { useState } from 'react';
 import { toast } from 'sonner';
 import { FormInput } from '../form/FromInput';
 
@@ -34,16 +31,31 @@ export const EditProductModal = ({
   const [form, setForm] = useState({ ...product });
   const [updateProduct, { isLoading }] = useUpdateProductMutation();
 
+  useEffect(() => {
+    setForm({ ...product });
+  }, [product]);
+
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
+    const { name, value, type } = e.target;
+    setForm((prev) => ({
+      ...prev,
+      [name]: type === 'number' ? Number(value) : value,
+    }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    console.log("id", product._id)
+   console.log("data", form)
+
     try {
-      await updateProduct({ id: product._id, data: form }).unwrap();
+      const res = await updateProduct({ id: product._id, ...form }).unwrap();
+
+ console.log("res", res)
+
       toast.success('Product updated successfully!');
       onClose();
     } catch {
@@ -61,7 +73,7 @@ export const EditProductModal = ({
         <form onSubmit={handleSubmit} className="space-y-4">
           <FormInput
             label="Name"
-            type='text'
+            type="text"
             name="name"
             value={form.name}
             onChange={handleChange}
@@ -69,7 +81,7 @@ export const EditProductModal = ({
           />
           <FormInput
             label="Title"
-            type='text'
+            type="text"
             name="title"
             value={form.title}
             onChange={handleChange}
@@ -87,7 +99,7 @@ export const EditProductModal = ({
             label="Price"
             name="price"
             type="number"
-            value={form.price.toString()}
+            value={form.price}
             onChange={handleChange}
             required
           />
@@ -95,7 +107,7 @@ export const EditProductModal = ({
             label="Quantity"
             name="quantity"
             type="number"
-            value={form.quantity.toString()}
+            value={form.quantity}
             onChange={handleChange}
             required
           />
