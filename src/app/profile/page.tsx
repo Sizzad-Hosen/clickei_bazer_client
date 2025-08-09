@@ -145,8 +145,13 @@ export default function ProfilePage() {
   };
 
   return (
+
     <div className="flex flex-col md:flex-row min-h-screen bg-gray-100">
-      <Sidebar />
+      
+        <aside>
+            <Sidebar />
+          </aside>
+    
 
 <div className="flex-1 p-4">
   <div className="bg-white shadow-md rounded-xl p-6 max-w-4xl mx-auto">

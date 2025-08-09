@@ -23,6 +23,7 @@ export default function CheckoutPage() {
     fullAddress: '',
   });
 
+  const [siteNote, setSiteNote] = useState<string>('');
   const [validationErrors, setValidationErrors] = useState<ValidationErrors>({});
   const [backendError, setBackendError] = useState<string | null>(null);
 
@@ -52,9 +53,14 @@ export default function CheckoutPage() {
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
+
+    if (name === 'siteNote') {
+      setSiteNote(value);
+      return;
+    }
+
     setShippingAddress((prev) => ({ ...prev, [name]: value }));
 
-    // Clear client error for the field while typing
     setValidationErrors((prev) => ({ ...prev, [name]: undefined }));
     setBackendError(null);
   };
@@ -76,7 +82,6 @@ export default function CheckoutPage() {
   const [addOrder] = useAddOrderMutation();
   const router = useRouter();
 
-  // Client-side validation
   const validateForm = (): boolean => {
     const errors: ValidationErrors = {};
 
@@ -95,11 +100,10 @@ export default function CheckoutPage() {
     if (!shippingAddress.fullAddress.trim()) {
       errors.fullAddress = 'Full Address is required';
     } else if (shippingAddress.fullAddress.trim().length < 6) {
-      errors.fullAddress = 'Address must be at least 8 characters';
+      errors.fullAddress = 'Address must be at least 6 characters';
     }
 
     setValidationErrors(errors);
-
     return Object.keys(errors).length === 0;
   };
 
@@ -117,6 +121,7 @@ export default function CheckoutPage() {
         paymentMethod,
         address: shippingAddress,
         deliveryOption,
+        siteNote,
         cartItems,
       };
 
@@ -125,6 +130,7 @@ export default function CheckoutPage() {
       toast.success('Order placed successfully!');
 
       setShippingAddress({ fullName: '', phone: '', fullAddress: '' });
+      setSiteNote('');
       setPaymentMethod('cash_on_delivery');
       setDeliveryOption('insideRangpur');
       setSslCommerzWarning(false);
@@ -132,7 +138,6 @@ export default function CheckoutPage() {
 
       router.push('/order');
     } catch (error: any) {
-      // Handle backend error messages with some known cases
       if (error?.data?.message) {
         setBackendError(error.data.message);
       } else if (error?.status === 401) {
@@ -148,9 +153,9 @@ export default function CheckoutPage() {
     <div className="min-h-screen p-6 max-w-7xl mb-9 mx-auto">
       <h1 className="text-3xl font-semibold mb-8">Checkout</h1>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+      <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-3 gap-8" noValidate>
         {/* Left Section */}
-        <form onSubmit={handleSubmit} className="md:col-span-2 space-y-6" noValidate>
+        <div className="md:col-span-2 space-y-6">
           {/* Backend error */}
           {backendError && (
             <div className="bg-red-100 text-red-700 p-3 rounded mb-4 border border-red-400">
@@ -201,6 +206,15 @@ export default function CheckoutPage() {
               <p className="text-red-600 text-sm mt-1">{validationErrors.fullAddress}</p>
             )}
           </section>
+
+          {/* Site Note (optional) */}
+          <FormInput
+            type="text"
+            label="Site Note (Optional)"
+            name="siteNote"
+            value={siteNote}
+            onChange={handleChange}
+          />
 
           {/* Delivery Option */}
           <section className="bg-white rounded-lg shadow-md p-4 border border-gray-200">
@@ -281,7 +295,7 @@ export default function CheckoutPage() {
               </p>
             )}
           </section>
-        </form>
+        </div>
 
         {/* Right Section */}
         <aside className="bg-white rounded-lg shadow-md p-6 flex flex-col justify-between border border-gray-200">
@@ -319,11 +333,12 @@ export default function CheckoutPage() {
             )}
           </div>
 
-          <Button type="submit" onClick={handleSubmit} variant="secondary">
+          {/* Confirm Button BELOW the order summary */}
+          <Button type="submit" variant="secondary" className="w-full mt-4">
             Confirm Order
           </Button>
         </aside>
-      </div>
+      </form>
     </div>
   );
 }

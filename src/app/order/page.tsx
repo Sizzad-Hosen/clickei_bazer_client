@@ -1,6 +1,7 @@
 'use client';
+
 import Swal from 'sweetalert2';
-import { useState } from 'react';
+
 import Sidebar from '@/components/shared/Sidebar';
 import Spinner from '@/components/Spinner';
 import { useDeleteOrderByIdMutation, useGetAllOrdersByUserIdQuery } from '@/redux/features/Order/ordersApi';
@@ -12,23 +13,14 @@ export default function UserOrdersPage() {
   const { data: response, isLoading, isError, error, refetch } = useGetAllOrdersByUserIdQuery({});
   const orders = response?.data || [];
 
-console.log("orders", orders)
-
   const { data: responseCustom } = useGetAllCustomOrdersByUserIdQuery({});
   const customBazarOrders = responseCustom?.data;
 
-  console.log("cus order", customBazarOrders)
+  const [deleteOrder] = useDeleteOrderByIdMutation();
+  const [deleteCustomOrder] = useDeleteCustomOrderByIdMutation();
 
-const [deleteOrder] = useDeleteOrderByIdMutation();
-
-const [deleteCustomOrder] = useDeleteCustomOrderByIdMutation();
-
-  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const handleDelete = async (id: string) => {
-
-    console.log("id", id)
-    
     const result = await Swal.fire({
       title: 'Are you sure?',
       text: 'Do you really want to delete this order? This action cannot be undone.',
@@ -50,28 +42,29 @@ const [deleteCustomOrder] = useDeleteCustomOrderByIdMutation();
       }
     }
   };
- const handleCustomOrderDelete = async (id: string) => {
-  const result = await Swal.fire({
-    title: 'Are you sure?',
-    text: 'Do you really want to delete this order?',
-    icon: 'warning',
-    showCancelButton: true,
-    confirmButtonColor: '#d33',
-    cancelButtonColor: '#3085d6',
-    confirmButtonText: 'Yes, delete it!',
-  });
 
-  if (result.isConfirmed) {
-    try {
-      await deleteCustomOrder(id).unwrap();
-      toast.success('Custom Bazar Order deleted successfully');
-      refetch(); // ✅ Re-fetch the updated list
-    } catch (err) {
-      toast.error('Failed to delete order');
-      console.error(err);
+  const handleCustomOrderDelete = async (id: string) => {
+    const result = await Swal.fire({
+      title: 'Are you sure?',
+      text: 'Do you really want to delete this order?',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#3085d6',
+      confirmButtonText: 'Yes, delete it!',
+    });
+
+    if (result.isConfirmed) {
+      try {
+        await deleteCustomOrder(id).unwrap();
+        toast.success('Custom Bazar Order deleted successfully');
+        refetch(); // Re-fetch updated list
+      } catch (err) {
+        toast.error('Failed to delete order');
+        console.error(err);
+      }
     }
-  }
-};
+  };
 
   if (isLoading) {
     return (
@@ -98,47 +91,12 @@ const [deleteCustomOrder] = useDeleteCustomOrderByIdMutation();
 
   return (
     <div className="flex min-h-screen bg-gray-100">
-      {/* Mobile Sidebar Toggle Button */}
-      <button
-        className="fixed top-4 left-4 z-30 p-2 rounded-md bg-white shadow-md md:hidden"
-        onClick={() => setSidebarOpen(!sidebarOpen)}
-        aria-label="Toggle sidebar"
-      >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          className="h-6 w-6 text-gray-700"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-          strokeWidth={2}
-        >
-          {sidebarOpen ? (
-            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-          ) : (
-            <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
-          )}
-        </svg>
-      </button>
+     
 
-      {/* Sidebar - responsive */}
-      <aside
-        className={`
-          fixed top-0 left-0 h-full w-64 bg-white border-r border-gray-200 z-20
-          transform transition-transform duration-300 ease-in-out
-          ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}
-          md:translate-x-0 md:static md:flex-shrink-0
-        `}
-      >
+      <aside>
         <Sidebar />
       </aside>
 
-      {/* Overlay on mobile when sidebar is open */}
-      {sidebarOpen && (
-        <div
-          className="fixed inset-0 bg-black bg-opacity-30 z-10 md:hidden"
-          onClick={() => setSidebarOpen(false)}
-        />
-      )}
 
       {/* Main Content */}
       <main className="flex-1 p-6 md:p-8 max-w-5xl mx-auto w-full">
@@ -224,7 +182,6 @@ const [deleteCustomOrder] = useDeleteCustomOrderByIdMutation();
                 key={customOrder._id}
                 className="bg-white shadow rounded-lg p-6 border border-gray-200 relative"
               >
-
                 <button
                   onClick={() => handleCustomOrderDelete(customOrder._id)}
                   className="absolute top-4 right-4 border border-red-400 text-red-600 hover:text-red-800 transition rounded p-1"

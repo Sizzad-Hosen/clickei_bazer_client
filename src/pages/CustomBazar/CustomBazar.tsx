@@ -46,6 +46,9 @@ const CustomBazarPage: React.FC = () => {
   });
   const [siteNote, setSiteNote] = useState('');
   const [paymentMethod, setPaymentMethod] = useState<'cash_on_delivery' | 'sslcommerz'>('cash_on_delivery');
+  const [sslCommerzWarning, setSslCommerzWarning] = useState(false);
+
+  const [deliveryOption, setDeliveryOption] = useState<'insideRangpur' | 'outsideRangpur'>('insideRangpur');
 
   const categories: Category[] = data?.data || [];
 
@@ -116,7 +119,7 @@ const CustomBazarPage: React.FC = () => {
   const getTotalPrice = (): number => {
     return Object.values(selections).reduce((acc, item) => {
       if (!item.selectedSub) return acc;
-      return acc + (item.selectedSub.pricePerUnit * (item.quantity || 0));
+      return acc + item.selectedSub.pricePerUnit * (item.quantity || 0);
     }, 0);
   };
 
@@ -126,7 +129,18 @@ const CustomBazarPage: React.FC = () => {
   };
 
   const handlePaymentChange = (e: ChangeEvent<HTMLInputElement>) => {
-    setPaymentMethod(e.target.value as 'cash_on_delivery' | 'sslcommerz');
+    const val = e.target.value as 'cash_on_delivery' | 'sslcommerz';
+    if (val === 'sslcommerz') {
+      setSslCommerzWarning(true);
+      // do NOT set payment method to sslcommerz because it’s not ready yet
+      return;
+    }
+    setSslCommerzWarning(false);
+    setPaymentMethod(val);
+  };
+
+  const handleDeliveryChange = (e: ChangeEvent<HTMLInputElement>) => {
+    setDeliveryOption(e.target.value as 'insideRangpur' | 'outsideRangpur');
   };
 
   const resetForm = () => {
@@ -148,6 +162,8 @@ const CustomBazarPage: React.FC = () => {
 
     setSiteNote('');
     setPaymentMethod('cash_on_delivery');
+    setSslCommerzWarning(false);
+    setDeliveryOption('insideRangpur');
   };
 
   const handleSubmitOrder = async (e: FormEvent) => {
@@ -180,6 +196,7 @@ const CustomBazarPage: React.FC = () => {
       orderItems,
       status: 'pending',
       paymentMethod,
+      deliveryOption,
       address,
       siteNote,
     };
@@ -285,6 +302,41 @@ const CustomBazarPage: React.FC = () => {
           })}
         </div>
 
+        {/* Delivery Option */}
+        <section className="bg-white rounded-lg shadow-md p-4 border border-gray-200 space-y-4">
+          <h3 className="text-lg font-semibold mb-2">ডেলিভারি অপশন</h3>
+          
+          <div className="flex flex-col gap-3 w-full ">
+            {['insideRangpur', 'outsideRangpur'].map(option => (
+              <label
+                key={option}
+                className={`cursor-pointer border rounded-lg p-4 flex items-center justify-between ${
+                  deliveryOption === option
+                    ? 'border-amber-600 bg-amber-50'
+                    : 'border-gray-300 bg-white hover:bg-gray-50'
+                }`}
+              >
+                <span>
+                  {option === 'insideRangpur' ? 'Inside Rangpur (Free)' : 'Outside Rangpur (Free)'}
+                </span>
+                <input
+                  type="radio"
+                  name="deliveryOption"
+                  value={option}
+                  checked={deliveryOption === option}
+                  onChange={handleDeliveryChange}
+                  className="hidden"
+                />
+                <span
+                  className={`w-5 h-5 rounded-full border-2 flex-shrink-0 ${
+                    deliveryOption === option ? 'border-amber-600 bg-amber-600' : 'border-gray-300'
+                  }`}
+                />
+              </label>
+            ))}
+          </div>
+        </section>
+
         {/* Address Section */}
         <section className="bg-white rounded-lg shadow-md p-4 border border-gray-200 space-y-4">
           <h3 className="text-lg font-semibold mb-2">ডেলিভারি ঠিকানা</h3>
@@ -337,9 +389,9 @@ const CustomBazarPage: React.FC = () => {
         </section>
 
         {/* Payment Method */}
-        <section className="bg-white rounded-lg shadow-md p-4 border border-gray-200">
+        <section className="bg-white rounded-lg shadow-md p-4 border border-gray-200 space-y-3">
           <h3 className="text-lg font-semibold mb-4">পেমেন্ট পদ্ধতি</h3>
-          <div className="flex gap-4">
+          <div className="flex gap-4 max-w-sm">
             <label
               className={`cursor-pointer border rounded-lg p-4 flex-1 text-center ${
                 paymentMethod === 'cash_on_delivery'
@@ -359,11 +411,12 @@ const CustomBazarPage: React.FC = () => {
             </label>
 
             <label
-              className={`cursor-pointer border rounded-lg p-4 flex-1 text-center ${
+              className={`cursor-pointer border rounded-lg p-4 flex-1 text-center opacity-50 cursor-not-allowed ${
                 paymentMethod === 'sslcommerz'
                   ? 'border-amber-600 bg-amber-50'
-                  : 'border-gray-300 bg-white hover:bg-gray-50'
+                  : 'border-gray-300 bg-white'
               }`}
+              onClick={() => setSslCommerzWarning(true)}
             >
               <input
                 type="radio"
@@ -372,10 +425,17 @@ const CustomBazarPage: React.FC = () => {
                 checked={paymentMethod === 'sslcommerz'}
                 onChange={handlePaymentChange}
                 className="hidden"
+                disabled
               />
               SSLCommerz
             </label>
           </div>
+
+          {sslCommerzWarning && (
+            <p className="mt-2 text-sm text-red-600 font-semibold">
+              ⚠️ কাজ চলছে, শীঘ্রই আসছে...
+            </p>
+          )}
         </section>
 
         {/* Order Summary and Submit */}
