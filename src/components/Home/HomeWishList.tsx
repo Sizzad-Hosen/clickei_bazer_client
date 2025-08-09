@@ -4,7 +4,11 @@ import { useGetWishlistQuery } from '@/redux/features/WishList/wishListApi';
 import ProductCard from '@/components/Products/ProductCard';
 import Spinner from '../Spinner';
 
-export default function WishlistHome() {
+interface WishlistHomeProps {
+  onOpenCart: () => void;
+}
+
+export default function WishlistHome({ onOpenCart }: WishlistHomeProps) {
   const { data: wishlistData, isLoading } = useGetWishlistQuery({});
 
   // Safely extract products, filtering out null/undefined ones
@@ -25,7 +29,7 @@ export default function WishlistHome() {
             <ProductCard
               key={product._id}
               product={product}
-              onOpenCart={() => {}}
+              onOpenCart={onOpenCart} // Pass down onOpenCart prop
             />
           ))}
         </div>

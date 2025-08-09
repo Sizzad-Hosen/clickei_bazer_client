@@ -14,6 +14,7 @@ const subCategoryApi = baseApi.injectEndpoints({
       query: () => '/subCategories',
       providesTags: ['SubCategories'],
     }),
+    
     deleteSubCategory: builder.mutation({
       query: (id) => ({
         url: `/subCategories/${id}`,

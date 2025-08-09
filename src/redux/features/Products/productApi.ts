@@ -52,6 +52,11 @@ getAllProducts: builder.query<TResponseRedux<Product[]>, { page?: number; limit?
   providesTags: ['Products'],
 }),
 
+getAllProductsBySubcategory: builder.query<TResponseRedux<Product[]>, { page?: number; limit?: number }>({
+  query: ({ page = 1, limit = 6 } = {}) => `/products/sub-products?page=${page}&limit=${limit}`,
+  providesTags: ['Products'],
+}),
+
     getSingleProduct: builder.query<Product, string>({
       query: (id) => `/products/${id}`,
       providesTags: (result, error, id) => [{ type: 'Products', id }],
@@ -90,4 +95,5 @@ export const {
   useGetAllProductsQuery,
   useUpdateProductMutation,
   useGetSingleProductQuery,
+  useGetAllProductsBySubcategoryQuery
 } = productApi;
