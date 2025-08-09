@@ -36,6 +36,7 @@ import {
   useDeleteCustomOrderByIdMutation,
   useGetAllCustomBazarOrdersQuery,
   useUpdateCustomBazarOrderStatusMutation,
+  useUpdateCustomOrderPaymentStatusMutation,
 } from '@/redux/features/CustomBazar/customBazarApi';
 import { toast } from 'sonner';
 import { MdDelete } from 'react-icons/md';
@@ -46,10 +47,9 @@ const ORDERS_PER_PAGE = 10;
 const CustomBazarOrdersPage: React.FC = () => {
   const [invoiceIdSearch, setInvoiceIdSearch] = useState('');
   const [page, setPage] = useState(1);
-  const [statusMap, setStatusMap] = useState<Record<string, string>>({});
 
-  // Send only invoiceId as query param, trim and send undefined if empty to avoid filtering
-  const { data, isLoading , refetch} = useGetAllCustomBazarOrdersQuery({
+  // Fetch orders
+  const { data, isLoading, refetch } = useGetAllCustomBazarOrdersQuery({
     invoiceId: invoiceIdSearch.trim() || undefined,
     page,
     limit: ORDERS_PER_PAGE,
@@ -58,8 +58,11 @@ const CustomBazarOrdersPage: React.FC = () => {
   const orders = data?.data?.data || [];
   const meta = data?.meta || {};
 
-  const [updateStatus, { isLoading: isUpdating }] =
-    useUpdateCustomBazarOrderStatusMutation();
+  // Mutation for updating order/payment status
+  const [updateStatus, { isLoading: isUpdating }] = useUpdateCustomBazarOrderStatusMutation();
+  const [updatePaymentStatus] = useUpdateCustomOrderPaymentStatusMutation();
+
+  const [deleteOrder] = useDeleteCustomOrderByIdMutation();
 
   const handlePageChange = (newPage: number) => setPage(newPage);
 
@@ -68,27 +71,55 @@ const CustomBazarOrdersPage: React.FC = () => {
     setPage(1);
   };
 
-  // Controlled select per order invoiceId
-  const handleStatusSelect = (invoiceId: string, newStatus: string) => {
-    setStatusMap((prev) => ({ ...prev, [invoiceId]: newStatus }));
-  };
-
-  // Update using invoiceId and selected status from map
-  const handleUpdateClick = async (invoiceId: string) => {
-    const newStatus = statusMap[invoiceId] || null;
-    if (!newStatus) return;
-
+  // Update handler for both order status and payment status (called immediately on select change)
+  const handleStatusChange = async (invoiceId: string, newStatus: string, type: 'order' | 'payment') => {
     try {
       await updateStatus({ invoiceId, status: newStatus }).unwrap();
-
-      toast.success('Successfully updated status..');
-      setStatusMap((prev) => ({ ...prev, [invoiceId]: '' }));
-    } catch (err) {
-      console.error('Failed to update status:', err);
+      toast.success(`${type === 'order' ? 'Order' : 'Payment'} status updated to "${newStatus}".`);
+      refetch();
+    } catch (error) {
+      console.error('Failed to update status:', error);
+      toast.error(`Failed to update ${type === 'order' ? 'order' : 'payment'} status.`);
+    }
+  };
+  const handlePaymentStatusChange= async (invoiceId: string, newStatus: string, type: 'order' | 'payment') => {
+    try {
+      await updatePaymentStatus({ invoiceId, status: newStatus }).unwrap();
+      
+      toast.success(`${type === 'order' ? 'Order' : 'Payment'} status updated to "${newStatus}".`);
+      refetch();
+    } catch (error) {
+      console.error('Failed to update status:', error);
+      toast.error(`Failed to update ${type === 'order' ? 'order' : 'payment'} status.`);
     }
   };
 
-  // Print order handler
+  // Delete order with confirmation
+  const handleDeleteOrder = async (id: string) => {
+    const result = await Swal.fire({
+      title: 'Are you sure?',
+      text: "You won't be able to revert this!",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#3085d6',
+      confirmButtonText: 'Yes, delete it!',
+    });
+
+    if (result.isConfirmed) {
+      try {
+        await deleteOrder(id).unwrap();
+        Swal.fire('Deleted!', 'Custom Order deleted successfully.', 'success');
+        toast.success('Custom Order deleted successfully.');
+        refetch();
+      } catch (error) {
+        Swal.fire('Error!', 'Failed to delete custom order.', 'error');
+        toast.error('Failed to delete custom order.');
+      }
+    }
+  };
+
+  // Print order handler unchanged
   const handlePrintOrder = (order: any) => {
     const printWindow = window.open('', '_blank', 'width=800,height=600');
     if (!printWindow) return;
@@ -153,33 +184,6 @@ const CustomBazarOrdersPage: React.FC = () => {
     printWindow.close();
   };
 
-  const [deleteOrder] = useDeleteCustomOrderByIdMutation();
-  
-  const handleDeleteOrder = async (id: string) => {
-  
-    const result = await Swal.fire({
-      title: 'Are you sure?',
-      text: "You won't be able to revert this!",
-      icon: 'warning',
-      showCancelButton: true,
-      confirmButtonColor: '#d33',
-      cancelButtonColor: '#3085d6',
-      confirmButtonText: 'Yes, delete it!'
-    });
-  
-    if (result.isConfirmed) {
-      try {
-        await deleteOrder(id).unwrap();
-        Swal.fire('Deleted!', 'Custom Order deleted successfully.', 'success');
-        toast.success("Custom Order deleted success...");
-        refetch();
-      } catch (error) {
-        Swal.fire('Error!', 'Failed to delete custom order.', 'error');
-        toast.error("Failed to delete custom order");
-      }
-    }
-  };
-
   return (
     <div className="p-4 space-y-6">
       <h1 className="text-2xl font-semibold text-center">Custom Bazar Orders</h1>
@@ -196,9 +200,7 @@ const CustomBazarOrdersPage: React.FC = () => {
       {isLoading ? (
         <Spinner />
       ) : orders.length === 0 ? (
-        <p className="text-center text-gray-500">
-          No orders found with this Invoice ID.
-        </p>
+        <p className="text-center text-gray-500">No orders found with this Invoice ID.</p>
       ) : (
         <div className="overflow-x-auto rounded-lg border">
           <Table>
@@ -220,12 +222,11 @@ const CustomBazarOrdersPage: React.FC = () => {
                   <TableCell>{order.user?.name || 'N/A'}</TableCell>
                   <TableCell>{order.user?.email || 'N/A'}</TableCell>
                   <TableCell>{order.user?.phone || 'N/A'}</TableCell>
-                  <TableCell className="max-w-xs truncate">
-                    {order.address?.fullAddress || 'N/A'}
-                  </TableCell>
+                  <TableCell className="max-w-xs truncate">{order.address?.fullAddress || 'N/A'}</TableCell>
                   <TableCell>৳{order.totalAmount?.toFixed(2) || '0'}</TableCell>
                   <TableCell>
                     <div className="flex items-center gap-2 flex-wrap">
+                      {/* Order Details Dialog */}
                       <Dialog>
                         <DialogTrigger asChild>
                           <Button size="sm" variant="outline">
@@ -263,12 +264,10 @@ const CustomBazarOrdersPage: React.FC = () => {
                             {order.orderItems.map((item, idx) => (
                               <div key={idx} className="border-b py-1">
                                 <p>
-                                  <strong>{item.subcategoryName}</strong> ({item.unit}) x{' '}
-                                  {item.quantity}
+                                  <strong>{item.subcategoryName}</strong> ({item.unit}) x {item.quantity}
                                 </p>
                                 <p>
-                                  Price/unit: ৳{item.pricePerUnit} | Total: ৳
-                                  {item.totalPrice}
+                                  Price/unit: ৳{item.pricePerUnit} | Total: ৳{item.totalPrice}
                                 </p>
                               </div>
                             ))}
@@ -276,23 +275,16 @@ const CustomBazarOrdersPage: React.FC = () => {
                         </DialogContent>
                       </Dialog>
 
+                      {/* Order Status Select - auto update on change */}
                       <Select
-                        value={statusMap[order.invoiceId] ?? order.status}
-                        onValueChange={(val) =>
-                          handleStatusSelect(order.invoiceId, val)
-                        }
+                        value={order.status}
+                        onValueChange={(val) => handleStatusChange(order.invoiceId, val, 'order')}
                       >
                         <SelectTrigger className="w-24 h-8 text-sm">
                           <SelectValue placeholder={order.status} />
                         </SelectTrigger>
                         <SelectContent>
-                          {[
-                            'pending',
-                            'confirmed',
-                            'shipped',
-                            'delivered',
-                            'cancelled',
-                          ].map((s) => (
+                          {['pending', 'confirmed', 'shipped', 'delivered', 'cancelled'].map((s) => (
                             <SelectItem key={s} value={s}>
                               {s}
                             </SelectItem>
@@ -300,15 +292,22 @@ const CustomBazarOrdersPage: React.FC = () => {
                         </SelectContent>
                       </Select>
 
-                      <Button
-                        variant="outline"
-                        className="border-blue-500 text-blue-500 hover:bg-blue-500 hover:text-white transition-colors duration-300"
-                        size="sm"
-                        disabled={isUpdating}
-                        onClick={() => handleUpdateClick(order?.invoiceId)}
+                      {/* Payment Status Select - auto update on change */}
+                      <Select
+                        value={order.paymentStatus ?? 'pending'}
+                        onValueChange={(val) => handlePaymentStatusChange(order.invoiceId, val, 'payment')}
                       >
-                        Update
-                      </Button>
+                        <SelectTrigger className="w-24 h-8 text-sm">
+                          <SelectValue placeholder={order.paymentStatus ?? 'pending'} />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {['pending', 'paid', 'success', 'failed'].map((s) => (
+                            <SelectItem key={s} value={s}>
+                              {s}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
 
                       <Button
                         variant="outline"
@@ -319,13 +318,9 @@ const CustomBazarOrdersPage: React.FC = () => {
                         Print Order
                       </Button>
 
-                        <Button
-                               variant="destructive" 
-                      
-                              onClick={() => handleDeleteOrder(order._id)}>
-                      
-                      <MdDelete></MdDelete>
-                                          </Button>
+                      <Button variant="destructive" onClick={() => handleDeleteOrder(order._id)}>
+                        <MdDelete />
+                      </Button>
                     </div>
                   </TableCell>
                 </TableRow>
@@ -339,10 +334,7 @@ const CustomBazarOrdersPage: React.FC = () => {
         <Pagination className="justify-center mt-6">
           <PaginationContent>
             <PaginationItem>
-              <PaginationLink
-                disabled={page === 1}
-                onClick={() => handlePageChange(page - 1)}
-              >
+              <PaginationLink disabled={page === 1} onClick={() => handlePageChange(page - 1)}>
                 Prev
               </PaginationLink>
             </PaginationItem>
@@ -357,10 +349,7 @@ const CustomBazarOrdersPage: React.FC = () => {
               </PaginationItem>
             ))}
             <PaginationItem>
-              <PaginationLink
-                disabled={page === meta.totalPages}
-                onClick={() => handlePageChange(page + 1)}
-              >
+              <PaginationLink disabled={page === meta.totalPages} onClick={() => handlePageChange(page + 1)}>
                 Next
               </PaginationLink>
             </PaginationItem>

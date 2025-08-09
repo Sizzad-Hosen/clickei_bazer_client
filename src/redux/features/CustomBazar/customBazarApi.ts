@@ -1,5 +1,6 @@
 // @/redux/features/CustomBazar/customBazarApi.ts
 import { baseApi } from "@/redux/api/baseApi";
+import { TCustomBazerOrder } from "@/types/CustomBazar";
 import { TResponseRedux } from "@/types/global";
 import { Order } from "@/types/order";
 import { Product } from "@/types/products";
@@ -114,6 +115,17 @@ updateCustomBazarProduct: builder.mutation<
   invalidatesTags: ["Products"],
 }),
 
+updateCustomOrderPaymentStatus: builder.mutation<
+  TCustomBazerOrder,
+  { invoiceId: string; status: string } 
+>({
+  query: ({ invoiceId, status }) => ({
+    url: `/customBazerOrders/update-paymentstatus/${invoiceId}`,
+    method: 'PATCH',
+    body: { status }, 
+  }),
+  invalidatesTags: ['Orders'], 
+}),
 
   }),
 });
@@ -127,5 +139,6 @@ export const {
   useGetAllCustomOrdersByUserIdQuery,
   useDeleteCustomOrderByIdMutation,
   useDeleteCustomProductMutation,
-  useUpdateCustomBazarProductMutation
+  useUpdateCustomBazarProductMutation,
+  useUpdateCustomOrderPaymentStatusMutation
 } = customBazarApi;
