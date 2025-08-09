@@ -8,6 +8,7 @@ import ProductCard from '../Products/ProductCard';
 import WishlistHome from './HomeWishList';
 import Spinner from '../Spinner';
 import CartDrawer from '../Carts/CartDrawer';
+import BannerSlider from './Banner';
 
 export const Home = () => {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
@@ -40,6 +41,7 @@ export const Home = () => {
 
   return (
     <div className="min-h-screen flex flex-col md:flex-row bg-white gap-6 overflow-hidden">
+
       {/* Sidebar */}
       <div className="w-full md:w-64 border-r shadow-sm md:block">
         <Sidebar onSelectSubcategory={setSelectedCategory} />
@@ -47,6 +49,11 @@ export const Home = () => {
 
       {/* Main */}
       <main className="flex-1 overflow-y-auto h-screen p-4 md:p-6">
+
+        {/* banner */}
+
+        <BannerSlider></BannerSlider>
+        
         <h2 className="text-2xl font-bold text-center md:text-left mb-6">
           Explore Products by Category
         </h2>

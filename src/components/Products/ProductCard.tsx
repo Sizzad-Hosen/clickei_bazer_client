@@ -42,9 +42,9 @@ export default function ProductCard({
   const [addToWishlist] = useAddToWishlistMutation();
   const [removeFromWishlist] = useRemoveFromWishlistMutation();
 
-const isInWishlist = wishlistData?.data?.some(
-  (item: any) => item.product && item.product._id === product?._id
-);
+  const isInWishlist = wishlistData?.data?.some(
+    (item: any) => item.product && item.product._id === product?._id
+  );
 
   const token = useAppSelector(selectCurrentToken);
   const router = useRouter();
@@ -87,6 +87,12 @@ const isInWishlist = wishlistData?.data?.some(
     }
   };
 
+  // Calculate discounted price
+  const discountedPrice =
+    product.discount && product.discount > 0
+      ? product.price * (1 - product.discount / 100)
+      : product.price;
+
   return (
     <>
       <div className="relative rounded-lg border bg-white shadow-sm hover:shadow-md transition-all w-full h-full flex flex-col">
@@ -103,6 +109,13 @@ const isInWishlist = wishlistData?.data?.some(
           )}
         </button>
 
+        {/* Discount Badge Top-Left */}
+        {product.discount && product.discount > 0 && (
+          <div className="absolute top-2 left-2 z-10 bg-red-600 text-white text-xs font-bold px-2 py-1 rounded shadow-md select-none">
+            {product.discount}% OFF
+          </div>
+        )}
+
         {/* Product Image */}
         <motion.div
           className="relative aspect-square w-full bg-gray-100 overflow-hidden"
@@ -115,17 +128,28 @@ const isInWishlist = wishlistData?.data?.some(
             fill
             className="object-cover"
             sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-            priority={true} // preload main image for better UX
+            priority={true}
           />
         </motion.div>
 
         {/* Product Info */}
         <div className="p-4 flex flex-col flex-grow">
           <div className="flex-grow">
-            <h3 className="font-medium text-lg line-clamp-1 mb-1">
-              {product.title}
-            </h3>
-            <p className="text-gray-600 font-bold text-xl mb-3">৳{product.price}</p>
+            <h3 className="font-medium text-lg line-clamp-1 mb-1">{product.title}</h3>
+            <div className="flex items-center gap-2">
+              {product.discount && product.discount > 0 ? (
+                <>
+                  <span className="text-red-600 font-bold text-xl">
+                    ৳{discountedPrice.toFixed(2)}
+                  </span>
+                  <span className="line-through text-gray-400 text-sm">
+                    ৳{product.price.toFixed(2)}
+                  </span>
+                </>
+              ) : (
+                <span className="font-bold text-xl">৳{product.price.toFixed(2)}</span>
+              )}
+            </div>
           </div>
 
           {/* Action Buttons */}
@@ -171,16 +195,20 @@ const isInWishlist = wishlistData?.data?.some(
           </DialogHeader>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
-  <div className="relative w-full h-64 bg-gray-100 rounded-lg overflow-hidden">
-  <Image
-    src={product.images?.[0] ? product.images[0] : 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT2U2akySBgSHUK-foX-9SGFmLk6zEuGYNNqw&s'}
-    alt={product.title || 'Avatar'}
-    fill
-    className="object-cover"
-    sizes="(max-width: 768px) 100vw, 50vw"
-    priority={true}
-  />
-</div>
+            <div className="relative w-full h-64 bg-gray-100 rounded-lg overflow-hidden">
+              <Image
+                src={
+                  product.images?.[0]
+                    ? product.images[0]
+                    : 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT2U2akySBgSHUK-foX-9SGFmLk6zEuGYNNqw&s'
+                }
+                alt={product.title || 'Avatar'}
+                fill
+                className="object-cover"
+                sizes="(max-width: 768px) 100vw, 50vw"
+                priority={true}
+              />
+            </div>
 
             <div className="space-y-4">
               <div>
@@ -190,7 +218,20 @@ const isInWishlist = wishlistData?.data?.some(
 
               <div>
                 <h3 className="text-lg font-semibold mb-2">Price</h3>
-                <p className="text-2xl font-bold text-primary">৳{product.price}</p>
+                <div className="flex items-center gap-2">
+                  {product.discount && product.discount > 0 ? (
+                    <>
+                      <span className="text-red-600 font-bold text-2xl">
+                        ৳{discountedPrice.toFixed(2)}
+                      </span>
+                      <span className="line-through text-gray-400 text-lg">
+                        ৳{product.price.toFixed(2)}
+                      </span>
+                    </>
+                  ) : (
+                    <span className="font-bold text-2xl">৳{product.price.toFixed(2)}</span>
+                  )}
+                </div>
               </div>
 
               <div className="pt-4">
