@@ -16,6 +16,14 @@ export const ordersApi = baseApi.injectEndpoints({
       invalidatesTags: ["Order"],
     }),
 
+      addOrder: builder.mutation({
+      query: (userInfo) => ({
+        url: '/orders/create-order',
+        method: 'POST',
+        body: userInfo,
+      }),
+    }),
+
 getAllOrdersByUserId: builder.query({
   query: () => ({
     url: `/orders/my-orders`,
@@ -103,6 +111,7 @@ export const {
     useGetAllOrdersQuery,
     useUpdateOrderPaymentStatusMutation,
    useGetAllOrdersByUserIdQuery,
-   useDeleteOrderByIdMutation
+   useDeleteOrderByIdMutation,
+   useAddOrderMutation
 
 } = ordersApi;

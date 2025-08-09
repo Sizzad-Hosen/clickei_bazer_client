@@ -26,6 +26,7 @@ export default function CartDrawer({
   onClose: () => void;
 }) {
   const { data, isLoading } = useGetAllCartsQuery({});
+  
   const [updateQty] = useUpdateCartsQuantityMutation();
   const [removeItem] = useRemoveCartMutation();
 

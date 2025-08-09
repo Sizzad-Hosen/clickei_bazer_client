@@ -11,6 +11,15 @@ const addToCartApi = baseApi.injectEndpoints({
         body: userInfo,
       }),
     }),
+
+    clearCart: builder.mutation({
+
+      query: (userInfo) => ({
+        url: '/carts/clear',
+        method: 'POST',
+        body: userInfo,
+      }),
+    }),
     
     getAllCarts: builder.query({
       query: () => '/carts',
@@ -39,4 +48,4 @@ updateCartsQuantity: builder.mutation({
   }),
 });
 
-export const { useAddCartMutation, useRemoveCartMutation, useGetAllCartsQuery,useUpdateCartsQuantityMutation} = addToCartApi
+export const { useAddCartMutation,useClearCartMutation, useRemoveCartMutation, useGetAllCartsQuery,useUpdateCartsQuantityMutation} = addToCartApi
