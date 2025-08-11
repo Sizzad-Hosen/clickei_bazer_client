@@ -1,6 +1,6 @@
 // @/redux/features/CustomBazar/customBazarApi.ts
 import { baseApi } from "@/redux/api/baseApi";
-import { TCustomBazerOrder } from "@/types/CustomBazar";
+import { TCustomBazerOrder, TCustomBazerOrderItem } from "@/types/CustomBazar";
 import { TResponseRedux } from "@/types/global";
 import { Order } from "@/types/order";
 import { Product } from "@/types/products";
@@ -17,15 +17,20 @@ const customBazarApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["Products"],
     }),
+    
+addCustomBazarOrder: builder.mutation<
+  // Replace `ResponseType` with your actual API response type if you have one
+  any,               // or a more precise response type
+  TCustomBazerOrder  // full order payload as input
+>({
+  query: (orderPayload) => ({
+    url: "/customBazerOrders/create-customBazerOrder",
+    method: "POST",
+    body: orderPayload,
+  }),
+  invalidatesTags: ["Products"],
+}),
 
-    addCustomBazarOrder: builder.mutation<Product, Partial<Product>>({
-      query: (product) => ({
-        url: "/customBazerOrders/create-customBazerOrder",
-        method: "POST",
-        body: product,
-      }),
-      invalidatesTags: ["Products"],
-    }),
 
     getAllCustomBazarProducts: builder.query<Product[], void>({
       query: () => "/customBazerProducts",
@@ -58,8 +63,8 @@ getAllCustomBazarOrders: builder.query<{
    console.log("result", response);
 
     return {
-      data: response.data,
-      meta: response.meta,
+    data: response.data ?? [],
+    meta: response.meta ?? {},
     };
   },
 }),

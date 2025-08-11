@@ -29,7 +29,7 @@ const RegisterPage: React.FC = () => {
   const [errors, setErrors] = useState<Partial<Record<keyof FormState, string>>>({});
   const [touched, setTouched] = useState<Partial<Record<keyof FormState, boolean>>>({});
 
-  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
 
     setForm(prev => ({ ...prev, [name]: value }));

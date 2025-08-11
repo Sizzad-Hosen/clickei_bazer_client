@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, ChangeEvent } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
@@ -18,7 +18,6 @@ import {
 import { FormInput } from "@/components/form/FromInput";
 import { toast } from "sonner";
 import Spinner from "@/components/Spinner";
-import { CustomerDataType } from "@/types/user";
 
 const editableAddressFields = [
   "division",
@@ -30,11 +29,20 @@ const editableAddressFields = [
   "paraName",
 ] as const;
 
+type Address = {
+  [key in typeof editableAddressFields[number]]: string;
+};
+
+type FormData = {
+  gender: string;
+  address: Address;
+};
+
 export default function ProfilePage() {
   const [modalOpen, setModalOpen] = useState(false);
   const [addressModalOpen, setAddressModalOpen] = useState(false);
   const [imageFile, setImageFile] = useState<File | null>(null);
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<FormData>({
     gender: "",
     address: {
       division: "",
@@ -58,9 +66,8 @@ export default function ProfilePage() {
   const {
     data: customerData,
     isLoading: customerLoading,
-    isError: customerError,
     refetch,
-  } = useGetCustomerDetailsQuery(userId, { skip: !userId });
+  } = useGetCustomerDetailsQuery(userId ?? "", { skip: !userId });
 
   const [addProfile, { isLoading: isUpdating }] = useAddProfileMutation();
 
@@ -90,11 +97,16 @@ export default function ProfilePage() {
   const profileImage = customerData?.data?.profileImage || "";
   const address = customerData?.data?.address || formData.address;
 
-  const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setFormData((prev) => ({ ...prev, gender: e.target.value }));
+  // Handler for select (gender)
+  const handleChange = (e: ChangeEvent<HTMLSelectElement | HTMLInputElement>) => {
+    const { name, value } = e.target;
+    if (name === "gender") {
+      setFormData((prev) => ({ ...prev, gender: value }));
+    }
   };
 
-  const handleAddressChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  // Handler for address inputs
+  const handleAddressChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
@@ -105,15 +117,15 @@ export default function ProfilePage() {
     }));
   };
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) setImageFile(file);
+  const handleImageChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0] ?? null;
+    setImageFile(file);
   };
 
   const handleUpdate = async () => {
     try {
       const formDataToSend = new FormData();
-      const payload: any = {};
+      const payload: Partial<FormData> = {};
 
       if (formData.gender.trim()) payload.gender = formData.gender;
 
@@ -121,10 +133,10 @@ export default function ProfilePage() {
         const value = formData.address[key];
         if (value && value.trim()) acc[key] = value.trim();
         return acc;
-      }, {} as any);
+      }, {} as Partial<Address>);
 
       if (Object.keys(cleanedAddress).length > 0) {
-        payload.address = cleanedAddress;
+        payload.address = cleanedAddress as Address;
       }
 
       if (Object.keys(payload).length > 0) {
@@ -145,56 +157,59 @@ export default function ProfilePage() {
   };
 
   return (
-
     <div className="flex flex-col md:flex-row min-h-screen bg-gray-100">
-      
-        <aside>
-            <Sidebar />
-          </aside>
-    
+      <aside>
+        <Sidebar />
+      </aside>
 
-<div className="flex-1 p-4">
-  <div className="bg-white shadow-md rounded-xl p-6 max-w-4xl mx-auto">
-    
-    {/* Profile Image on Top */}
-    <div className="flex justify-center mb-4">
-      <Avatar className="w-24 h-24">
-        <AvatarImage src={profileImage} alt={user.name} />
-        <AvatarFallback>{user.name?.charAt(0) || "U"}</AvatarFallback>
-      </Avatar>
-    </div>
-
-    {/* User Info */}
-    <div className="text-center md:text-left space-y-2">
-      <h2 className="text-2xl font-bold">{user.name}</h2>
-      <p className="text-gray-600">Email: <span className="font-medium text-gray-800">{user.email}</span></p>
-      <p className="text-gray-600">Gender: <span className="font-medium text-gray-800">{gender || "Not set"}</span></p>
-    </div>
-
-    {/* Shipping Address */}
-    <div className="mt-4">
-      <h4 className="font-semibold text-gray-700 mb-1">Shipping Address:</h4>
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm text-gray-700">
-        {editableAddressFields.map((key) => (
-          <div key={key} className="flex gap-1">
-            <span className="font-medium capitalize">{key}:</span>
-            <span>{address?.[key] || "N/A"}</span>
+      <div className="flex-1 p-4">
+        <div className="bg-white shadow-md rounded-xl p-6 max-w-4xl mx-auto">
+          {/* Profile Image on Top */}
+          <div className="flex justify-center mb-4">
+            <Avatar className="w-24 h-24">
+              <AvatarImage src={profileImage} alt={user.name} />
+              <AvatarFallback>{user.name?.charAt(0) || "U"}</AvatarFallback>
+            </Avatar>
           </div>
-        ))}
+
+          {/* User Info */}
+          <div className="text-center md:text-left space-y-2">
+            <h2 className="text-2xl font-bold">{user.name}</h2>
+            <p className="text-gray-600">
+              Email: <span className="font-medium text-gray-800">{user.email}</span>
+            </p>
+            <p className="text-gray-600">
+              Gender: <span className="font-medium text-gray-800">{gender || "Not set"}</span>
+            </p>
+          </div>
+
+          {/* Shipping Address */}
+          <div className="mt-4">
+            <h4 className="font-semibold text-gray-700 mb-1">Shipping Address:</h4>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm text-gray-700">
+              {editableAddressFields.map((key) => (
+                <div key={key} className="flex gap-1">
+                  <span className="font-medium capitalize">{key}:</span>
+                  <span>{address?.[key] || "N/A"}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Edit Button */}
+          <div className="text-end mt-6">
+            <Button
+              className="border border-amber-400"
+              variant={"outline"}
+              onClick={() => setModalOpen(true)}
+            >
+              ✏️ Edit Profile
+            </Button>
+          </div>
+        </div>
       </div>
-    </div>
 
-    {/* Edit Button */}
-    <div className="text-end mt-6">
-      <Button className="border border-amber-400" variant={"outline"} onClick={() => setModalOpen(true)}>
-        ✏️ Edit Profile
-      </Button>
-    </div>
-
-  </div>
-</div>
-
-
+      {/* Edit Profile Dialog */}
       <Dialog open={modalOpen} onOpenChange={setModalOpen}>
         <DialogContent className="max-w-xl">
           <DialogHeader>
@@ -237,6 +252,7 @@ export default function ProfilePage() {
         </DialogContent>
       </Dialog>
 
+      {/* Edit Address Dialog */}
       <Dialog open={addressModalOpen} onOpenChange={setAddressModalOpen}>
         <DialogContent className="max-w-xl">
           <DialogHeader>

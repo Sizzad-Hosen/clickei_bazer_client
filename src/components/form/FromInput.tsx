@@ -9,6 +9,9 @@ interface FormInputProps {
   placeholder?: string;
   error?: string;
   touched?: boolean;
+  min?:number;
+  max?:number;
+   step?: number | string;
   value: string;
   onChange: (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>

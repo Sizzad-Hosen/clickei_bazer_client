@@ -3,6 +3,12 @@
 import { useGetWishlistQuery } from '@/redux/features/WishList/wishListApi';
 import ProductCard from '@/components/Products/ProductCard';
 import Spinner from '../Spinner';
+import type { Product } from '@/types/products';  // make sure this path is correct
+
+interface WishlistItem {
+  _id: string;
+  product: Product | null;
+}
 
 interface WishlistHomeProps {
   onOpenCart: () => void;
@@ -11,11 +17,11 @@ interface WishlistHomeProps {
 export default function WishlistHome({ onOpenCart }: WishlistHomeProps) {
   const { data: wishlistData, isLoading } = useGetWishlistQuery({});
 
-  // Safely extract products, filtering out null/undefined ones
-  const wishlistProducts =
+  // Extract products safely, filtering out null or undefined products
+  const wishlistProducts: Product[] =
     wishlistData?.data
-      ?.map((item: any) => item?.product)
-      ?.filter((p: any) => p && p._id) || [];
+      ?.map((item: WishlistItem) => item.product)
+      ?.filter((product): product is Product => Boolean(product && product._id)) || [];
 
   return (
     <section className="mt-10 space-y-4">
@@ -25,11 +31,14 @@ export default function WishlistHome({ onOpenCart }: WishlistHomeProps) {
         <Spinner />
       ) : wishlistProducts.length > 0 ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
-          {wishlistProducts.map((product: any) => (
+          {wishlistProducts.map((product: Product) => (
             <ProductCard
               key={product._id}
-              product={product}
-              onOpenCart={onOpenCart} // Pass down onOpenCart prop
+              product={{
+                ...product,
+                description: product.description ?? '', // ensure description is string
+              }}
+              onOpenCart={onOpenCart}
             />
           ))}
         </div>

@@ -42,6 +42,41 @@ import { toast } from 'sonner';
 import { MdDelete } from 'react-icons/md';
 import Swal from 'sweetalert2';
 
+interface OrderItem {
+  subcategoryName: string;
+  unit: string;
+  quantity: number;
+  pricePerUnit: number;
+  totalPrice: number;
+}
+
+interface User {
+  name?: string;
+  email?: string;
+  phone?: string;
+}
+
+interface Address {
+  fullAddress?: string;
+}
+
+interface Order {
+  _id: string;
+  invoiceId: string;
+  user?: User;
+  address?: Address;
+  status: string;
+  paymentStatus?: string;
+  totalAmount?: number;
+  orderItems: OrderItem[];
+}
+
+interface MetaData {
+  total?: number;
+  totalPages?: number;
+  [key: string]: any;
+}
+
 const ORDERS_PER_PAGE = 10;
 
 const CustomBazarOrdersPage: React.FC = () => {
@@ -55,13 +90,12 @@ const CustomBazarOrdersPage: React.FC = () => {
     limit: ORDERS_PER_PAGE,
   });
 
-  const orders = data?.data?.data || [];
-  const meta = data?.meta || {};
+  const orders: Order[] = data?.data?.data || [];
+  const meta: MetaData = data?.meta || {};
 
   // Mutation for updating order/payment status
-  const [updateStatus, { isLoading: isUpdating }] = useUpdateCustomBazarOrderStatusMutation();
+  const [updateStatus] = useUpdateCustomBazarOrderStatusMutation();
   const [updatePaymentStatus] = useUpdateCustomOrderPaymentStatusMutation();
-
   const [deleteOrder] = useDeleteCustomOrderByIdMutation();
 
   const handlePageChange = (newPage: number) => setPage(newPage);
@@ -71,7 +105,6 @@ const CustomBazarOrdersPage: React.FC = () => {
     setPage(1);
   };
 
-  // Update handler for both order status and payment status (called immediately on select change)
   const handleStatusChange = async (invoiceId: string, newStatus: string, type: 'order' | 'payment') => {
     try {
       await updateStatus({ invoiceId, status: newStatus }).unwrap();
@@ -82,10 +115,10 @@ const CustomBazarOrdersPage: React.FC = () => {
       toast.error(`Failed to update ${type === 'order' ? 'order' : 'payment'} status.`);
     }
   };
-  const handlePaymentStatusChange= async (invoiceId: string, newStatus: string, type: 'order' | 'payment') => {
+
+  const handlePaymentStatusChange = async (invoiceId: string, newStatus: string, type: 'order' | 'payment') => {
     try {
       await updatePaymentStatus({ invoiceId, status: newStatus }).unwrap();
-      
       toast.success(`${type === 'order' ? 'Order' : 'Payment'} status updated to "${newStatus}".`);
       refetch();
     } catch (error) {
@@ -94,7 +127,6 @@ const CustomBazarOrdersPage: React.FC = () => {
     }
   };
 
-  // Delete order with confirmation
   const handleDeleteOrder = async (id: string) => {
     const result = await Swal.fire({
       title: 'Are you sure?',
@@ -119,14 +151,13 @@ const CustomBazarOrdersPage: React.FC = () => {
     }
   };
 
-  // Print order handler unchanged
-  const handlePrintOrder = (order: any) => {
+  const handlePrintOrder = (order: Order) => {
     const printWindow = window.open('', '_blank', 'width=800,height=600');
     if (!printWindow) return;
 
     const orderItemsHtml = order.orderItems
       .map(
-        (item: any) => `
+        (item) => `
       <tr>
         <td>${item.subcategoryName}</td>
         <td>${item.unit}</td>
@@ -226,7 +257,6 @@ const CustomBazarOrdersPage: React.FC = () => {
                   <TableCell>৳{order.totalAmount?.toFixed(2) || '0'}</TableCell>
                   <TableCell>
                     <div className="flex items-center gap-2 flex-wrap">
-                      {/* Order Details Dialog */}
                       <Dialog>
                         <DialogTrigger asChild>
                           <Button size="sm" variant="outline">
@@ -275,7 +305,6 @@ const CustomBazarOrdersPage: React.FC = () => {
                         </DialogContent>
                       </Dialog>
 
-                      {/* Order Status Select - auto update on change */}
                       <Select
                         value={order.status}
                         onValueChange={(val) => handleStatusChange(order.invoiceId, val, 'order')}
@@ -292,7 +321,6 @@ const CustomBazarOrdersPage: React.FC = () => {
                         </SelectContent>
                       </Select>
 
-                      {/* Payment Status Select - auto update on change */}
                       <Select
                         value={order.paymentStatus ?? 'pending'}
                         onValueChange={(val) => handlePaymentStatusChange(order.invoiceId, val, 'payment')}
@@ -330,15 +358,21 @@ const CustomBazarOrdersPage: React.FC = () => {
         </div>
       )}
 
-      {meta.total > ORDERS_PER_PAGE && orders.length > 0 && (
+      {meta.total && meta.total > ORDERS_PER_PAGE && orders.length > 0 && (
         <Pagination className="justify-center mt-6">
           <PaginationContent>
             <PaginationItem>
-              <PaginationLink disabled={page === 1} onClick={() => handlePageChange(page - 1)}>
-                Prev
-              </PaginationLink>
+             <PaginationLink
+                 onClick={() => {
+                   if (page !== 1) handlePageChange(page - 1);
+                 }}
+                 style={{ pointerEvents: page === 1 ? "none" : "auto", opacity: page === 1 ? 0.5 : 1 }}
+               >
+                 Prev
+               </PaginationLink>
+ 
             </PaginationItem>
-            {Array.from({ length: meta.totalPages }, (_, i) => (
+            {Array.from({ length: meta.totalPages || 0 }, (_, i) => (
               <PaginationItem key={i}>
                 <PaginationLink
                   isActive={page === i + 1}
@@ -349,9 +383,14 @@ const CustomBazarOrdersPage: React.FC = () => {
               </PaginationItem>
             ))}
             <PaginationItem>
-              <PaginationLink disabled={page === meta.totalPages} onClick={() => handlePageChange(page + 1)}>
-                Next
-              </PaginationLink>
+                   <PaginationLink
+                              onClick={() => {
+                                if (page !== 1) handlePageChange(page + 1);
+                              }}
+                              style={{ pointerEvents: page === 1 ? "none" : "auto", opacity: page === 1 ? 0.5 : 1 }}
+                            >
+                              Next
+                            </PaginationLink>
             </PaginationItem>
           </PaginationContent>
         </Pagination>

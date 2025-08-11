@@ -18,6 +18,15 @@ import { toast } from 'sonner';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 
+// CartItem টাইপ ডিফাইন করা হলো
+interface CartItem {
+  productId: string;
+  title: string;
+  price: number;
+  quantity: number;
+  image?: string;
+}
+
 export default function CartDrawer({
   open,
   onClose,
@@ -26,16 +35,14 @@ export default function CartDrawer({
   onClose: () => void;
 }) {
   const { data, isLoading } = useGetAllCartsQuery({});
-  
   const [updateQty] = useUpdateCartsQuantityMutation();
   const [removeItem] = useRemoveCartMutation();
 
-  // ✅ Local cart state
-  const [localCart, setLocalCart] = useState<any[]>([]);
+  // Local cart state টাইপসহ
+  const [localCart, setLocalCart] = useState<CartItem[]>([]);
   const [totalAmount, setTotalAmount] = useState(0);
   const [totalQuantity, setTotalQuantity] = useState(0);
 
-  // ✅ Sync local cart with backend data
   useEffect(() => {
     if (data?.data?.items) {
       setLocalCart(data.data.items);
@@ -43,8 +50,8 @@ export default function CartDrawer({
     }
   }, [data]);
 
-  // ✅ Recalculate totals when cart changes
-  const calculateTotals = (items: any[]) => {
+  // totals calculate করার জন্য ফাংশন (CartItem[] টাইপ সহ)
+  const calculateTotals = (items: CartItem[]) => {
     const quantity = items.reduce((sum, item) => sum + item.quantity, 0);
     const amount = items.reduce((sum, item) => sum + item.quantity * item.price, 0);
     setTotalQuantity(quantity);
@@ -66,6 +73,8 @@ export default function CartDrawer({
   };
 
   const handleUpdateQuantity = async (productId: string, newQuantity: number) => {
+    if (newQuantity < 1) return; // prevent quantity less than 1
+
     try {
       await updateQty({ data: { id: productId, quantity: newQuantity } }).unwrap();
 
@@ -95,10 +104,9 @@ export default function CartDrawer({
           ) : localCart.length === 0 ? (
             <p className="text-gray-500 italic">Your cart is empty.</p>
           ) : (
-            localCart.map((item: any, index: number) => {
+            localCart.map((item, index) => {
               const imageSrc =
-                typeof item?.image === 'string' &&
-                (item.image.startsWith('http') || item.image.startsWith('/'))
+                item.image && (item.image.startsWith('http') || item.image.startsWith('/'))
                   ? item.image
                   : '/placeholder.png';
 
@@ -108,8 +116,8 @@ export default function CartDrawer({
                   className="flex gap-3 items-center border-b pb-3"
                 >
                   <Image
-                    src={imageSrc?imageSrc :"https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT2U2akySBgSHUK-foX-9SGFmLk6zEuGYNNqw&savatar-placeholder.png"}
-                    alt={item?.title || 'Product'}
+                    src={imageSrc}
+                    alt={item.title || 'Product'}
                     width={80}
                     height={80}
                     className="rounded object-cover"
@@ -155,15 +163,13 @@ export default function CartDrawer({
         </div>
 
         <div className="p-4 border-t">
-        <p className="text-lg font-bold">Total: ৳ {totalAmount.toFixed(2)}</p>
+          <p className="text-lg font-bold">Total: ৳ {totalAmount.toFixed(2)}</p>
 
-            <Link href={"/checkout"}>
-          <Button className="mt-4 w-full bg-green-600 hover:bg-green-700 text-white">
-
-            Place Order
-
-          </Button>
-            </Link>
+          <Link href="/checkout">
+            <Button className="mt-4 w-full bg-green-600 hover:bg-green-700 text-white">
+              Place Order
+            </Button>
+          </Link>
         </div>
       </DrawerContent>
     </Drawer>

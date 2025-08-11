@@ -7,6 +7,9 @@ import { useGetAllCartsQuery } from '@/redux/features/AddToCart/addToCartApi';
 import { useAddOrderMutation } from '@/redux/features/Order/ordersApi';
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
+import { useAppSelector } from '@/redux/hook';
+import { selectCurrentUser } from '@/redux/features/auth/authSlices';
+import Image from 'next/image';
 
 type ShippingAddress = {
   fullName: string;
@@ -32,6 +35,10 @@ export default function CheckoutPage() {
 
   const { data, isLoading } = useGetAllCartsQuery({});
 
+  const user = useAppSelector(selectCurrentUser)
+
+  console.log("user", user)
+
   type DeliveryOption = 'insideRangpur' | 'outsideRangpur';
   const [deliveryOption, setDeliveryOption] = useState<DeliveryOption>('insideRangpur');
 
@@ -39,6 +46,7 @@ export default function CheckoutPage() {
     _id: item.productId,
     name: item.title,
     price: item.price,
+   image: item.image || item.productId?.image,
     quantity: item.quantity,
   })) ?? [
     { _id: '1', name: 'Rice 5kg', price: 300, quantity: 1 },
@@ -46,12 +54,14 @@ export default function CheckoutPage() {
     { _id: '3', name: 'Dal 1kg', price: 120, quantity: 1 },
   ];
 
+  console.log("cart Item", cartItems)
+
   const subtotal = cartItems.reduce((acc, item) => acc + item.price * item.quantity, 0);
   const subtotalFixed = Number(subtotal.toFixed(2));
   const shippingCost = deliveryOption === 'insideRangpur' ? 0 : 0;
   const grandTotal = +(subtotalFixed + shippingCost).toFixed(2);
 
-  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
 
     if (name === 'siteNote') {
@@ -125,7 +135,9 @@ export default function CheckoutPage() {
         cartItems,
       };
 
-      await addOrder(orderPayload).unwrap();
+      const res = await addOrder(orderPayload).unwrap();
+      
+      console.log("res", res)
 
       toast.success('Order placed successfully!');
 
@@ -308,7 +320,23 @@ export default function CheckoutPage() {
               <div className="space-y-3 mb-6">
                 {cartItems.map((item) => (
                   <div key={item._id} className="flex justify-between text-gray-700">
-                    <span>
+
+                   {item.image ? (
+                <Image
+                  width={40}
+                  height={40}
+                  src={item.image}
+                  alt={item.name || ""}
+                  className="w-12 h-12 object-cover rounded mr-3 border"
+                />
+              ) : (
+                // Optionally render a placeholder image or nothing if no image available
+                <div className="w-12 h-12 bg-gray-200 rounded mr-3 border flex items-center justify-center text-gray-500 text-xs">
+                  No Image
+                </div>
+              )}
+
+                                    <span>
                       {item.name} × {item.quantity}
                     </span>
                     <span>৳ {item.price * item.quantity}</span>
@@ -338,6 +366,7 @@ export default function CheckoutPage() {
             Confirm Order
           </Button>
         </aside>
+
       </form>
     </div>
   );

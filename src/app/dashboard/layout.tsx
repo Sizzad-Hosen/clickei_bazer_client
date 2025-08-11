@@ -13,8 +13,6 @@ import {
   Package,
   ShoppingCart,
   Users,
-  Bell,
-  Settings,
   HomeIcon,
   Menu,
   X,

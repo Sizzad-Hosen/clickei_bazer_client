@@ -12,66 +12,55 @@ import { useDispatch } from 'react-redux';
 import { logout, selectCurrentUser } from '@/redux/features/auth/authSlices';
 import { toast } from 'sonner';
 import { useAppSelector } from '@/redux/hook';
+import type { Product } from '@/types/products';
 
 const examplePlaceholders = [
-  'potato',
-  'milk',
-  'rice',
-  'apple',
-  'banana',
-  'onion',
-  'bread',
-  'egg',
-  'chicken',
-  'fish',
+  'potato', 'milk', 'rice', 'apple', 'banana', 'onion', 'bread', 'egg', 'chicken', 'fish',
 ];
 
 const exampleColors = [
-  '#E53E3E', // red-600
-  '#38A169', // green-600
-  '#3182CE', // blue-600
-  '#D69E2E', // yellow-600
-  '#805AD5', // purple-600
-  '#DD6B20', // orange-600
+  '#E53E3E', '#38A169', '#3182CE', '#D69E2E', '#805AD5', '#DD6B20',
 ];
 
 const Navbar = () => {
   const router = useRouter();
-  const dropdownRef = useRef<HTMLDivElement>(null);
   const dispatch = useDispatch();
   const admin = useAppSelector(selectCurrentUser);
 
   const [isClient, setIsClient] = useState(false);
-  useEffect(() => {
-    setIsClient(true);
-  }, []);
+  useEffect(() => setIsClient(true), []);
 
   const [query, setQuery] = useState('');
   const [field, setField] = useState<'title' | 'name' | 'price' | 'quantity'>('name');
   const [debouncedQuery, setDebouncedQuery] = useState('');
-  const [showDropdown, setShowDropdown] = useState(false);
-
-  // For placeholder animation
+  const [showSearchDropdown, setShowSearchDropdown] = useState(false);
+  const [showProfileDropdown, setShowProfileDropdown] = useState(false);
   const [placeholderIndex, setPlaceholderIndex] = useState(0);
 
+  const dropdownRef = useRef<HTMLDivElement>(null); // for both dropdowns container
+
+  // Rotate placeholder text color and index
   useEffect(() => {
     const interval = setInterval(() => {
-      setPlaceholderIndex((prev) => (prev + 1) % examplePlaceholders.length);
+      setPlaceholderIndex(prev => (prev + 1) % examplePlaceholders.length);
     }, 3000);
     return () => clearInterval(interval);
   }, []);
 
+  // Debounce input query
   useEffect(() => {
     const timer = setTimeout(() => setDebouncedQuery(query), 500);
     return () => clearTimeout(timer);
   }, [query]);
 
+  // Close dropdowns when clicking outside
   useEffect(() => {
-    const handleClickOutside = (e: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
-        setShowDropdown(false);
+    function handleClickOutside(event: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setShowSearchDropdown(false);
+        setShowProfileDropdown(false);
       }
-    };
+    }
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
@@ -84,28 +73,24 @@ const Navbar = () => {
   const handleSearch = () => {
     if (!query.trim()) return;
     router.push(`/search?${field}=${encodeURIComponent(query.trim())}`);
-    setShowDropdown(false);
+    setShowSearchDropdown(false);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') {
-      handleSearch();
-    }
+    if (e.key === 'Enter') handleSearch();
   };
 
-  const handleLogout = async () => {
+  const handleLogout = () => {
     dispatch(logout());
     toast.success('Successfully logged out');
     router.push('/login');
   };
 
-  // Pick color based on current placeholder index
   const placeholderColor = exampleColors[placeholderIndex % exampleColors.length];
 
   return (
     <nav className="bg-gray-800 border-b border-gray-700 shadow-sm sticky top-0 z-50 w-full">
       {/* Top Contact Bar */}
-      
       <div className="bg-gray-900 text-sm text-amber-600 px-4 py-2 flex justify-around items-center flex-wrap gap-2">
         <h1 className="font-medium">
           Contact:{' '}
@@ -117,19 +102,13 @@ const Navbar = () => {
             01745455353
           </a>
         </h1>
-
         <a
           href="https://www.facebook.com/share/1Fh8DHu1UG/"
           target="_blank"
           rel="noopener noreferrer"
           className="text-lime-600 hover:underline flex items-center gap-1"
         >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            fill="currentColor"
-            viewBox="0 0 24 24"
-            className="w-4 h-4"
-          >
+          <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24" className="w-4 h-4">
             <path d="M22 12a10 10 0 1 0-11.63 9.87v-7H8v-3h2.37V9.5c0-2.3 1.37-3.57 3.47-3.57.7 0 1.44.12 1.44.12v1.58H14.6c-1.14 0-1.5.71-1.5 1.44V12h2.56l-.41 3h-2.15v7A10 10 0 0 0 22 12z" />
           </svg>
           Facebook
@@ -147,8 +126,9 @@ const Navbar = () => {
         <div className="flex w-full max-w-2xl md:flex-1 relative" ref={dropdownRef}>
           <select
             value={field}
-            onChange={(e) => setField(e.target.value as 'title' | 'name' | 'price' | 'quantity')}
+            onChange={e => setField(e.target.value as 'title' | 'name' | 'price' | 'quantity')}
             className="h-12 min-w-[90px] border-2 border-amber-600 rounded-l-md bg-white px-2 text-sm text-gray-700 focus:outline-none"
+            aria-label="Search field selector"
           >
             <option value="title">Title</option>
             <option value="name">Name</option>
@@ -156,27 +136,25 @@ const Navbar = () => {
             <option value="quantity">Quantity</option>
           </select>
 
-          {/* Input with transparent text for placeholder layering */}
-         <input
-  type={field === 'price' || field === 'quantity' ? 'number' : 'text'}
-  value={query}
-  onChange={(e) => {
-    setQuery(e.target.value);
-    setShowDropdown(true);
-  }}
-  onKeyDown={handleKeyDown}
-  placeholder="Search ..."
-  className={`w-full h-12 pl-4 pr-12 border-2 border-amber-600 bg-white rounded-r-md text-sm caret-black ${
-    query ? 'text-gray-900' : 'text-transparent'
-  }`}
-  min={field === 'price' || field === 'quantity' ? 0 : undefined}
-  step={field === 'price' || field === 'quantity' ? 'any' : undefined}
-  spellCheck={false}
-  autoComplete="off"
-/>
+          <input
+            type={field === 'price' || field === 'quantity' ? 'number' : 'text'}
+            value={query}
+            onChange={e => {
+              setQuery(e.target.value);
+              setShowSearchDropdown(true);
+            }}
+            onKeyDown={handleKeyDown}
+            placeholder="Search ..."
+            className={`w-full h-12 pl-4 pr-12 border-2 border-amber-600 bg-white rounded-r-md text-sm caret-black ${
+              query ? 'text-gray-900' : 'text-transparent'
+            }`}
+            min={field === 'price' || field === 'quantity' ? 0 : undefined}
+            step={field === 'price' || field === 'quantity' ? 'any' : undefined}
+            spellCheck={false}
+            autoComplete="off"
+            aria-label="Search input"
+          />
 
-
-          {/* Overlay placeholder text with color */}
           {!query && (
             <div
               className="pointer-events-none absolute left-[104px] top-1/2 -translate-y-1/2 text-sm select-none"
@@ -195,12 +173,10 @@ const Navbar = () => {
             <Search size={20} />
           </button>
 
-          {/* Suggestions dropdown */}
-          {showDropdown && debouncedQuery && data?.data?.length > 0 && (
+          {showSearchDropdown && debouncedQuery && (data?.data?.length ?? 0) > 0 && (
             <div className="absolute left-0 right-0 mt-1 max-h-56 overflow-auto rounded-md border border-gray-200 bg-white shadow-lg z-50">
-              {data.data.map((item: any) => {
+              {data!.data!.map((item: Product) => {
                 let displayText = '';
-
                 switch (field) {
                   case 'title':
                     displayText = item.title || item.name || 'Untitled';
@@ -217,13 +193,12 @@ const Navbar = () => {
                   default:
                     displayText = item.title || item.name || '';
                 }
-
                 return (
                   <Link
                     key={item._id}
                     href={`/products/${item._id}`}
                     className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                    onClick={() => setShowDropdown(false)}
+                    onClick={() => setShowSearchDropdown(false)}
                   >
                     {displayText}
                   </Link>
@@ -234,7 +209,7 @@ const Navbar = () => {
         </div>
 
         {/* Right side */}
-        <div className="relative flex items-center gap-4 text-white mt-2 md:mt-0">
+        <div className="relative flex items-center gap-4 text-white mt-2 md:mt-0" ref={dropdownRef}>
           {isClient && admin?.role === 'admin' && (
             <Link href="/dashboard" className="hover:text-amber-500 text-sm md:text-base">
               Dashboard
@@ -242,32 +217,70 @@ const Navbar = () => {
           )}
 
           {isClient && admin?.role !== 'admin' && (
-            <div className="relative" ref={dropdownRef}>
-              <Button variant="secondary" onClick={() => setShowDropdown(!showDropdown)}>
+            <div className="relative">
+              <Button
+                variant="secondary"
+                onClick={() => setShowProfileDropdown((prev) => !prev)}
+                aria-expanded={showProfileDropdown}
+                aria-haspopup="true"
+              >
                 Profile
               </Button>
 
-              {showDropdown && (
-                <div className="absolute right-0 mt-2 w-56 rounded-md border border-gray-200 bg-white shadow-lg z-50 overflow-auto max-h-96">
-                  <Link href="/profile" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+              {showProfileDropdown && (
+                <div
+                  className="absolute right-0 mt-2 w-56 rounded-md border border-gray-200 bg-white shadow-lg z-50 overflow-auto max-h-96"
+                  role="menu"
+                  aria-orientation="vertical"
+                  aria-labelledby="profile-menu-button"
+                >
+                  <Link
+                    href="/profile"
+                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                    role="menuitem"
+                    onClick={() => setShowProfileDropdown(false)}
+                  >
                     Your Profile
                   </Link>
-                  <Link href="/order" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                  <Link
+                    href="/order"
+                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                    role="menuitem"
+                    onClick={() => setShowProfileDropdown(false)}
+                  >
                     Your Orders
                   </Link>
-                  <Link href="/wishList" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                  <Link
+                    href="/wishList"
+                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                    role="menuitem"
+                    onClick={() => setShowProfileDropdown(false)}
+                  >
                     Your WishList
                   </Link>
-                  <Link href="/track-order" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                  <Link
+                    href="/track-order"
+                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                    role="menuitem"
+                    onClick={() => setShowProfileDropdown(false)}
+                  >
                     Track Order
                   </Link>
-
-                  <Link href="/change-password" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                  <Link
+                    href="/change-password"
+                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                    role="menuitem"
+                    onClick={() => setShowProfileDropdown(false)}
+                  >
                     Change Password
                   </Link>
                   <button
                     className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-100"
-                    onClick={handleLogout}
+                    onClick={() => {
+                      setShowProfileDropdown(false);
+                      handleLogout();
+                    }}
+                    role="menuitem"
                   >
                     Logout
                   </button>

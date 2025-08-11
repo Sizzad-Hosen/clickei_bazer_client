@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import React, { ChangeEvent, useState } from 'react';
 import { toast } from 'sonner';
 import { Pencil, Trash2 } from 'lucide-react';
 
@@ -31,7 +31,25 @@ import {
 import { FormInput } from '@/components/form/FromInput';
 import Spinner from '@/components/Spinner';
 
-const SubcategoriesPage = () => {
+// Define interfaces for data models
+interface Subcategory {
+  _id: string;
+  name: string;
+  serviceId: string;
+  categoryId: string;
+}
+
+interface Category {
+  _id: string;
+  name: string;
+}
+
+interface Service {
+  _id: string;
+  name: string;
+}
+
+const SubcategoriesPage: React.FC = () => {
   const { data: subcategoryData, isLoading, isError, refetch } = useGetAllSubCategoriesQuery({});
   const { data: categoryData } = useGetAllCategoriesQuery({});
   const { data: serviceData } = useGetAllServicesQuery({});
@@ -39,19 +57,29 @@ const SubcategoriesPage = () => {
   const [deleteSubcategory] = useDeleteSubCategoryMutation();
   const [updateSubcategory] = useUpdateSubCategoryMutation();
 
-  const subcategories = Array.isArray(subcategoryData) ? subcategoryData : subcategoryData?.data || [];
-  const categories = Array.isArray(categoryData) ? categoryData : categoryData?.data || [];
-  const services = Array.isArray(serviceData) ? serviceData : serviceData?.data || [];
+  // Normalize data arrays
+  const subcategories: Subcategory[] = Array.isArray(subcategoryData)
+    ? subcategoryData
+    : subcategoryData?.data || [];
+
+  const categories: Category[] = Array.isArray(categoryData)
+    ? categoryData
+    : categoryData?.data || [];
+
+  const services: Service[] = Array.isArray(serviceData)
+    ? serviceData
+    : serviceData?.data || [];
 
   const [isOpen, setIsOpen] = useState(false);
-  const [selectedSubcategory, setSelectedSubcategory] = useState<any>(null);
+  const [selectedSubcategory, setSelectedSubcategory] = useState<Subcategory | null>(null);
+
   const [formData, setFormData] = useState({
     name: '',
     serviceId: '',
     categoryId: '',
   });
 
-  const openEditModal = (subcategory: any) => {
+  const openEditModal = (subcategory: Subcategory) => {
     setSelectedSubcategory(subcategory);
     setFormData({
       name: subcategory.name || '',
@@ -61,7 +89,9 @@ const SubcategoriesPage = () => {
     setIsOpen(true);
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (
+    e: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
+  ) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
@@ -74,12 +104,12 @@ const SubcategoriesPage = () => {
   };
 
   const handleDelete = async (id: string) => {
-
     try {
       await deleteSubcategory(id).unwrap();
       toast.success('Subcategory deleted successfully!');
       refetch();
     } catch (error) {
+      console.error(error);
       toast.error('Failed to delete subcategory');
     }
   };
@@ -87,6 +117,11 @@ const SubcategoriesPage = () => {
   const handleSave = async () => {
     if (!formData.name || !formData.serviceId || !formData.categoryId) {
       toast.error('Please fill in all fields');
+      return;
+    }
+
+    if (!selectedSubcategory) {
+      toast.error('No subcategory selected');
       return;
     }
 
@@ -99,6 +134,7 @@ const SubcategoriesPage = () => {
       setIsOpen(false);
       refetch();
     } catch (error) {
+      console.error(error);
       toast.error('Failed to update subcategory');
     }
   };
@@ -109,12 +145,12 @@ const SubcategoriesPage = () => {
         <h1 className="text-2xl font-bold">All Subcategories</h1>
       </div>
 
-      {isLoading && <Spinner></Spinner>}
+      {isLoading && <Spinner />}
       {isError && <p>Failed to load subcategories</p>}
-      {subcategories.length === 0 && <p>No subcategories found.</p>}
+      {!isLoading && subcategories.length === 0 && <p>No subcategories found.</p>}
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        {subcategories.map((subcategory: any) => (
+        {subcategories.map((subcategory) => (
           <Card key={subcategory._id} className="rounded-2xl border shadow-sm p-4 bg-muted/50">
             <CardHeader className="text-lg font-semibold">{subcategory.name}</CardHeader>
             <CardContent className="flex gap-2">
@@ -129,7 +165,7 @@ const SubcategoriesPage = () => {
         ))}
       </div>
 
-      {/* ✅ Edit Modal with name, serviceId, categoryId */}
+      {/* Edit Modal */}
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
@@ -155,7 +191,7 @@ const SubcategoriesPage = () => {
                   <SelectValue placeholder="Select a service" />
                 </SelectTrigger>
                 <SelectContent>
-                  {services.map((service: any) => (
+                  {services.map((service) => (
                     <SelectItem key={service._id} value={service._id}>
                       {service.name}
                     </SelectItem>
@@ -172,7 +208,7 @@ const SubcategoriesPage = () => {
                   <SelectValue placeholder="Select a category" />
                 </SelectTrigger>
                 <SelectContent>
-                  {categories.map((category: any) => (
+                  {categories.map((category) => (
                     <SelectItem key={category._id} value={category._id}>
                       {category.name}
                     </SelectItem>

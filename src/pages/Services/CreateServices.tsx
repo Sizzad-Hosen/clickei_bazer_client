@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { ChangeEvent, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 import { FormInput } from '@/components/form/FromInput';
@@ -16,7 +16,7 @@ export const CreateServicePage = () => {
   
   const [addService, { isLoading, isError, error }] = useAddServiceMutation();
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
     setFormError(''); 
   };

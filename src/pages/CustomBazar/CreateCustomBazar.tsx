@@ -1,17 +1,28 @@
-// CustomBazarForm.tsx
 'use client';
 
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { toast } from 'sonner';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { useAddCustomBazarProductMutation } from '@/redux/features/CustomBazar/customBazarApi';
+
+interface Subcategory {
+  subcategory: string;
+  unit: string;
+  pricePerUnit: string; // keep as string for controlled input, convert on submit
+}
 
 export default function CustomBazarForm() {
   const [category, setCategory] = useState('');
-  const [subcategories, setSubcategories] = useState([
+  const [subcategories, setSubcategories] = useState<Subcategory[]>([
     { subcategory: '', unit: '', pricePerUnit: '' },
   ]);
   const [apiError, setApiError] = useState<string | null>(null);
@@ -20,7 +31,7 @@ export default function CustomBazarForm() {
 
   const handleChange = (
     index: number,
-    field: 'subcategory' | 'unit' | 'pricePerUnit',
+    field: keyof Subcategory,
     value: string
   ) => {
     const updated = [...subcategories];
@@ -35,15 +46,25 @@ export default function CustomBazarForm() {
     ]);
   };
 
-  const validate = () => {
+  const validate = (): boolean => {
     if (!category.trim()) {
       toast.error('Category is required');
       return false;
     }
 
     for (const item of subcategories) {
-      if (!item.subcategory.trim() || !item.unit.trim() || !item.pricePerUnit.toString().trim()) {
+      if (
+        !item.subcategory.trim() ||
+        !item.unit.trim() ||
+        !item.pricePerUnit.toString().trim()
+      ) {
         toast.error('All subcategory fields are required');
+        return false;
+      }
+
+      // Optional: check pricePerUnit is a valid positive number
+      if (isNaN(Number(item.pricePerUnit)) || Number(item.pricePerUnit) <= 0) {
+        toast.error('Price per unit must be a positive number');
         return false;
       }
     }
@@ -65,14 +86,19 @@ export default function CustomBazarForm() {
         })),
       }).unwrap();
 
-console.log("result", res)
+      console.log('result', res);
 
       toast.success('Custom Bazar Products added successfully');
       setCategory('');
       setSubcategories([{ subcategory: '', unit: '', pricePerUnit: '' }]);
       setApiError(null);
-    } catch (error: any) {
-      const message = error?.data?.message || error?.error || 'Failed to add';
+    } catch (error: unknown) {
+      // safer error handling
+      let message = 'Failed to add';
+      if (typeof error === 'object' && error !== null) {
+        // @ts-ignore
+        message = error?.data?.message || error?.error || message;
+      }
       setApiError(message);
       toast.error(message);
     }
@@ -84,38 +110,58 @@ console.log("result", res)
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <label className="block mb-1 font-medium">Category</label>
+          <label htmlFor="category" className="block mb-1 font-medium">
+            Category
+          </label>
           <Input
+            id="category"
             type="text"
             value={category}
             onChange={(e) => setCategory(e.target.value)}
             placeholder="Enter category name"
             className="w-full"
+            required
           />
         </div>
 
         <h3 className="text-lg font-semibold mt-6">Subcategories</h3>
         {subcategories.map((item, index) => (
-          <div key={index} className="grid grid-cols-3 gap-4 items-end">
+          <div
+            key={index}
+            className="grid grid-cols-3 gap-4 items-end"
+            aria-label={`Subcategory row ${index + 1}`}
+          >
             <div>
-              <label className="block mb-1">Subcategory</label>
+              <label
+                htmlFor={`subcategory-${index}`}
+                className="block mb-1 font-medium"
+              >
+                Subcategory
+              </label>
               <Input
+                id={`subcategory-${index}`}
                 type="text"
                 value={item.subcategory}
                 onChange={(e) =>
                   handleChange(index, 'subcategory', e.target.value)
                 }
                 placeholder="e.g. আলু"
+                required
               />
             </div>
 
             <div>
-              <label className="block mb-1">Unit</label>
+              <label
+                htmlFor={`unit-${index}`}
+                className="block mb-1 font-medium"
+              >
+                Unit
+              </label>
               <Select
                 value={item.unit}
                 onValueChange={(value) => handleChange(index, 'unit', value)}
               >
-                <SelectTrigger className="w-full">
+                <SelectTrigger id={`unit-${index}`} className="w-full">
                   <SelectValue placeholder="Select unit" />
                 </SelectTrigger>
                 <SelectContent>
@@ -128,14 +174,23 @@ console.log("result", res)
             </div>
 
             <div>
-              <label className="block mb-1">Price per Unit</label>
+              <label
+                htmlFor={`pricePerUnit-${index}`}
+                className="block mb-1 font-medium"
+              >
+                Price per Unit
+              </label>
               <Input
+                id={`pricePerUnit-${index}`}
                 type="number"
+                min={0}
+                step="any"
                 value={item.pricePerUnit}
                 onChange={(e) =>
                   handleChange(index, 'pricePerUnit', e.target.value)
                 }
                 placeholder="e.g. 40"
+                required
               />
             </div>
           </div>

@@ -1,20 +1,25 @@
-interface Product {
-  name: string;
-  price: number;
-  quantity: number;
-}
-
 export interface Order {
   _id: string;
   invoiceId: string;
-  user: {
-    name: string;
-    email: string;
-    address: string;
-    phone: string;
+  status: string;
+  paymentStatus: string;
+  totalPrice: number;
+  user?: {
+    name?: string;
+    email?: string;
+    phone?: string;
   };
-  orderItems: {
-    product: Product;
-    quantity: number;
-  }[];
+  cart?: {
+    items: {
+      title: string;
+      quantity: number;
+      price: number;
+    }[];
+  };
+  address?: {
+    phone?: string;
+    fullAddress?: string;
+  };
+  createdAt?: string;
+  // other fields...
 }

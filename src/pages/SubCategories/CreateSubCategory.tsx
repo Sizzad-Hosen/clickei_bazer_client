@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { ChangeEvent, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { useGetAllServicesQuery } from '@/redux/features/Services/serviceApi';
@@ -33,7 +33,7 @@ const CreateSubcategoryPage = () => {
   const services = Array.isArray(servicesData) ? servicesData : servicesData?.data || [];
   const categories = Array.isArray(categoriesData) ? categoriesData : categoriesData?.data || [];
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 

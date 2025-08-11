@@ -2,6 +2,14 @@ import { RootState } from "@/redux/store";
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { REHYDRATE } from "redux-persist";
 
+// Define a typed interface for REHYDRATE action
+interface RehydrateAction<T> {
+  type: typeof REHYDRATE;
+  payload: {
+    [key: string]: any;  // generic shape for persisted states
+    auth?: T;            // specifically expect auth slice here
+  } | null | undefined;
+}
 
 export type TUser = {
   userId: string;
@@ -17,7 +25,7 @@ type TAuthState = {
 
 const initialState: TAuthState = {
   user: null,
-  token: null
+  token: null,
 };
 
 const authSlice = createSlice({
@@ -31,16 +39,16 @@ const authSlice = createSlice({
     logout: (state) => {
       state.user = null;
       state.token = null;
-    }
+    },
   },
   extraReducers: (builder) => {
-    builder.addCase(REHYDRATE, (state, action: any) => {
+    builder.addCase(REHYDRATE, (state, action: RehydrateAction<TAuthState>) => {
       if (action.payload?.auth) {
         state.user = action.payload.auth.user;
         state.token = action.payload.auth.token;
       }
     });
-  }
+  },
 });
 
 export const { setUser, logout } = authSlice.actions;

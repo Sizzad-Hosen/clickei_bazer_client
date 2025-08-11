@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { ChangeEvent, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { FormInput } from '@/components/form/FromInput';
@@ -40,9 +40,13 @@ const CreateProductPage = () => {
 
   const [files, setFiles] = useState<File[]>([]);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
-  };
+const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+  setForm({
+    ...form,
+    [e.target.name]: e.target.value,
+  });
+};
+
 
   const handleSelect = (field: string, value: string) => {
     setForm({ ...form, [field]: value });
@@ -123,6 +127,7 @@ const validateDiscount = () => {
           <textarea
             name="description"
             value={form.description}
+            
             onChange={handleChange}
             className="w-full px-4 py-2 border rounded-md resize-none focus:outline-amber-500"
             placeholder="Enter product description"

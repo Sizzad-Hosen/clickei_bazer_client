@@ -21,7 +21,7 @@ const LoginPage = () => {
     password: "",
   });
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
@@ -32,15 +32,15 @@ const LoginPage = () => {
       const token = res?.data?.data?.accessToken;
       const user = verifyToken(token) as TUser;
 
-      if (!user) throw new Error('Invalid token');
+      if (!user) throw new Error("Invalid token");
 
       dispatch(setUser({ user, token }));
 
       if (res?.data.success) {
-        toast.success('Login successful!');
-        router.push('/');
+        toast.success("Login successful!");
+        router.push("/");
       } else {
-        toast.error(res?.data.message || 'Login failed');
+        toast.error(res?.data.message || "Login failed");
       }
     } catch (error) {
       console.error("Login failed:", error);
@@ -80,7 +80,7 @@ const LoginPage = () => {
           </form>
 
           <p className="text-sm text-center mt-4 text-muted-foreground">
-            <span className="text-gray-900">Doesn't have an account?{" "}</span>
+            <span className="text-gray-900">Doesn&apos;t have an account?{" "}</span>
             <button
               onClick={() => router.push("/register")}
               className="text-primary underline hover:text-primary/80 active:text-primary/60 transform hover:scale-105 active:scale-95 transition duration-150"

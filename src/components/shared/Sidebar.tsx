@@ -11,7 +11,27 @@ import { Service } from '@/types/products';
 import { Button } from '../ui/button';
 import Link from 'next/link';
 
-export default function Sidebar({ onSelectSubcategory }: { onSelectSubcategory: (id: string) => void }) {
+// Types for full tree structure
+interface SubcategoryItem {
+  _id: string;
+  name: string;
+}
+
+interface CategoryItem {
+  _id: string;
+  name: string;
+}
+
+interface CategoryTree {
+  category: CategoryItem;
+  subcategories: { subcategory: SubcategoryItem }[];
+}
+
+interface SidebarProps {
+  onSelectSubcategory?: (id: string) => void; // optional
+}
+
+export default function Sidebar({ onSelectSubcategory }: SidebarProps) {
   const router = useRouter();
   const { data: serviceRes } = useGetAllServicesQuery({});
   const services: Service[] = serviceRes?.data || [];
@@ -20,12 +40,11 @@ export default function Sidebar({ onSelectSubcategory }: { onSelectSubcategory: 
   const [activeCategoryId, setActiveCategoryId] = useState<string | null>(null);
 
   const [fetchFullTree, { data: fullTreeData }] = useLazyServiceFullTreeQuery();
-  const activeCategories = fullTreeData?.data?.categories || [];
+  const activeCategories: CategoryTree[] = fullTreeData?.data?.categories || [];
 
-  // Mobile sidebar open state
   const [mobileOpen, setMobileOpen] = useState(false);
 
-  // Close sidebar on route change or outside click
+  // Close sidebar on Escape key
   useEffect(() => {
     const closeOnEsc = (e: KeyboardEvent) => {
       if (e.key === 'Escape') setMobileOpen(false);
@@ -45,7 +64,6 @@ export default function Sidebar({ onSelectSubcategory }: { onSelectSubcategory: 
     }
   };
 
-  // Close sidebar on navigation in mobile
   const handleNavigate = (path: string) => {
     setMobileOpen(false);
     router.push(path);
@@ -54,17 +72,17 @@ export default function Sidebar({ onSelectSubcategory }: { onSelectSubcategory: 
   return (
     <>
       {/* Mobile Toggle Button */}
-<button
-  aria-label="Toggle menu"
-  onClick={() => setMobileOpen(!mobileOpen)}
-  className={`fixed left-2 z-[999] md:hidden bg-white rounded-md p-2 ms-2 shadow-md focus:outline-none focus:ring-2 focus:ring-blue-600
-    ${mobileOpen ? 'top-4' : 'top-32'}
-  `}
->
-  {mobileOpen ? <X size={20} /> : <Menu size={24} />}
-</button>
+      <button
+        aria-label="Toggle menu"
+        onClick={() => setMobileOpen(!mobileOpen)}
+        className={`fixed left-2 z-[999] md:hidden bg-white rounded-md p-2 ms-2 shadow-md focus:outline-none focus:ring-2 focus:ring-blue-600
+          ${mobileOpen ? 'top-4' : 'top-32'}
+        `}
+      >
+        {mobileOpen ? <X size={20} /> : <Menu size={24} />}
+      </button>
 
-      {/* Overlay for mobile when sidebar open */}
+      {/* Overlay for mobile */}
       {mobileOpen && (
         <div
           onClick={() => setMobileOpen(false)}
@@ -83,7 +101,9 @@ export default function Sidebar({ onSelectSubcategory }: { onSelectSubcategory: 
         `}
       >
         <div className="mb-6">
-          <h1 className="text-xl md:text-2xl font-bold text-gray-800 mb-4 text-center">Our Services</h1>
+          <h1 className="text-xl md:text-2xl font-bold text-gray-800 mb-4 text-center">
+            Our Services
+          </h1>
           <hr className="border-t border-dashed border-gray-400 my-2" />
           <Link href="/customBazar" onClick={() => setMobileOpen(false)}>
             <Button
@@ -108,16 +128,22 @@ export default function Sidebar({ onSelectSubcategory }: { onSelectSubcategory: 
                 `}
               >
                 <span className="text-sm md:text-base">{service.name}</span>
-                {activeServiceId === service._id ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+                {activeServiceId === service._id ? (
+                  <ChevronDown size={16} />
+                ) : (
+                  <ChevronRight size={16} />
+                )}
               </button>
 
               {activeServiceId === service._id && (
                 <div className="ml-2 md:ml-3 mt-1 space-y-1">
-                  {activeCategories.map(({ category, subcategories }: any) => (
+                  {activeCategories.map(({ category, subcategories }) => (
                     <div key={category._id}>
                       <button
                         onClick={() =>
-                          setActiveCategoryId(activeCategoryId === category._id ? null : category._id)
+                          setActiveCategoryId(
+                            activeCategoryId === category._id ? null : category._id
+                          )
                         }
                         className={`
                           w-full flex justify-between items-center px-3 md:px-4 py-1 md:py-2 rounded-md text-xs md:text-sm font-medium text-left transition-colors duration-200
@@ -127,15 +153,22 @@ export default function Sidebar({ onSelectSubcategory }: { onSelectSubcategory: 
                         `}
                       >
                         <span>{category.name}</span>
-                        {activeCategoryId === category._id ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
+                        {activeCategoryId === category._id ? (
+                          <ChevronDown size={14} />
+                        ) : (
+                          <ChevronRight size={14} />
+                        )}
                       </button>
 
                       {activeCategoryId === category._id && (
                         <div className="ml-3 md:ml-4 mt-1 space-y-1">
-                          {subcategories.map(({ subcategory }: any) => (
+                          {subcategories.map(({ subcategory }) => (
                             <button
                               key={subcategory._id}
-                              onClick={() => handleNavigate(`/products/${subcategory._id}`)}
+                              onClick={() => {
+                                handleNavigate(`/products/${subcategory._id}`);
+                                onSelectSubcategory?.(subcategory._id);
+                              }}
                               className="
                                 w-full px-3 md:px-4 py-1 md:py-2 rounded-md text-xs md:text-sm text-left text-gray-700
                                 hover:bg-gray-100 hover:text-amber-600

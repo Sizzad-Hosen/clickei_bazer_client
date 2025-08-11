@@ -26,8 +26,13 @@ import { useRouter } from 'next/navigation';
 
 interface Props {
   product: Product;
-  recommendedProducts?: Product[]; // pass recommended products as prop or fetch inside modal
+  recommendedProducts?: Product[]; // optional recommended products
   onOpenCart: () => void;
+}
+
+interface WishlistItem {
+  _id: string;
+  product: Product | null;
 }
 
 export default function ProductCard({
@@ -42,12 +47,19 @@ export default function ProductCard({
   const [addToWishlist] = useAddToWishlistMutation();
   const [removeFromWishlist] = useRemoveFromWishlistMutation();
 
+  const router = useRouter();
+  const token = useAppSelector(selectCurrentToken);
+
+  // Determine if the product is in wishlist
   const isInWishlist = wishlistData?.data?.some(
-    (item: any) => item.product && item.product._id === product?._id
+    (item: WishlistItem) => item.product?._id === product._id
   );
 
-  const token = useAppSelector(selectCurrentToken);
-  const router = useRouter();
+  // Calculate discounted price
+  const discountedPrice =
+    product.discount && product.discount > 0
+      ? product.price * (1 - product.discount / 100)
+      : product.price;
 
   const handleAddToCart = async () => {
     if (!token) {
@@ -62,9 +74,10 @@ export default function ProductCard({
         title: product.title,
         price: product.price,
         quantity: 1,
-        image: product.images?.[0] || '/avatar-placeholder.png',
+        image:
+          product.images?.[0] ??
+          'https://static.vecteezy.com/system/resources/previews/024/183/525/non_2x/avatar-of-a-man-portrait-of-a-young-guy-illustration-of-male-character-in-modern-color-style-vector.jpg',
       }).unwrap();
-
       toast.success('Added to cart');
       onOpenCart();
     } catch (error) {
@@ -74,6 +87,12 @@ export default function ProductCard({
   };
 
   const handleToggleWishlist = async () => {
+    if (!token) {
+      toast.error('You must be logged in to manage favorites.');
+      router.push('/login');
+      return;
+    }
+
     try {
       if (isInWishlist) {
         await removeFromWishlist(product._id).unwrap();
@@ -84,14 +103,9 @@ export default function ProductCard({
       }
     } catch (error) {
       toast.error('Wishlist action failed');
+      console.error(error);
     }
   };
-
-  // Calculate discounted price
-  const discountedPrice =
-    product.discount && product.discount > 0
-      ? product.price * (1 - product.discount / 100)
-      : product.price;
 
   return (
     <>
@@ -101,6 +115,7 @@ export default function ProductCard({
           onClick={handleToggleWishlist}
           className="absolute top-2 right-2 z-10 bg-white rounded-full p-1 shadow hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
           aria-label={isInWishlist ? 'Remove from wishlist' : 'Add to wishlist'}
+          type="button"
         >
           {isInWishlist ? (
             <Heart className="text-red-500 h-5 w-5" />
@@ -123,7 +138,10 @@ export default function ProductCard({
           transition={{ type: 'spring', stiffness: 400, damping: 10 }}
         >
           <Image
-            src={product.images?.[0] || '/avatar-placeholder.png'}
+            src={
+              product.images?.[0] ??
+              'https://static.vecteezy.com/system/resources/previews/024/183/525/non_2x/avatar-of-a-man-portrait-of-a-young-guy-illustration-of-male-character-in-modern-color-style-vector.jpg'
+            }
             alt={product.title}
             fill
             className="object-cover"
@@ -158,6 +176,7 @@ export default function ProductCard({
               variant="outline"
               className="w-full sm:flex-1 h-10"
               onClick={() => setIsDetailsOpen(true)}
+              type="button"
             >
               <Eye className="h-4 w-4 mr-2" />
               Details
@@ -167,6 +186,7 @@ export default function ProductCard({
               className="w-full sm:flex-1 h-10"
               onClick={handleAddToCart}
               disabled={isAddingToCart}
+              type="button"
             >
               <ShoppingCart className="h-4 w-4 md:mr-0 md:m-2 mr-2" />
               {isAddingToCart ? 'Adding...' : 'Add to Cart'}
@@ -185,6 +205,7 @@ export default function ProductCard({
               onClick={handleToggleWishlist}
               className="bg-white rounded-full p-1 shadow hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
               aria-label={isInWishlist ? 'Remove from wishlist' : 'Add to wishlist'}
+              type="button"
             >
               {isInWishlist ? (
                 <Heart className="text-red-500 h-5 w-5" />
@@ -213,7 +234,7 @@ export default function ProductCard({
             <div className="space-y-4">
               <div>
                 <h3 className="text-lg font-semibold mb-2">Description</h3>
-                <p className="text-gray-600">{product.description}</p>
+                <p className="text-gray-600">{product.description ?? 'No description available.'}</p>
               </div>
 
               <div>
@@ -243,6 +264,7 @@ export default function ProductCard({
                     setIsDetailsOpen(false);
                   }}
                   disabled={isAddingToCart}
+                  type="button"
                 >
                   <ShoppingCart className="h-5 w-5 mr-2" />
                   {isAddingToCart ? 'Adding to Cart...' : 'Add to Cart'}
@@ -252,7 +274,7 @@ export default function ProductCard({
           </div>
 
           {/* More Images Section */}
-          {product?.images?.length > 1 && (
+          {product.images && product.images.length > 1 && (
             <div className="mt-6">
               <h3 className="text-lg font-semibold mb-3">More Images</h3>
               <div className="grid grid-cols-3 gap-2">
@@ -286,6 +308,14 @@ export default function ProductCard({
                     onClick={() => {
                       setIsDetailsOpen(false);
                       router.push(`/products/${recProd._id}`);
+                    }}
+                    role="button"
+                    tabIndex={0}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        setIsDetailsOpen(false);
+                        router.push(`/products/${recProd._id}`);
+                      }
                     }}
                   >
                     <div className="relative aspect-square w-full bg-gray-100 rounded-md overflow-hidden mb-2">

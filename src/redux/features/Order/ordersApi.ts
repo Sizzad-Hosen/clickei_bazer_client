@@ -1,8 +1,20 @@
 import { baseApi } from "@/redux/api/baseApi";
+interface OrdersApiResponse {
+  data: Order[];
+  meta: {
+    total: number;
+    totalPages: number;
+  };
+}
 import { TResponseRedux } from "@/types/global";
 import { Order } from "@/types/order";
 
-
+function normalizeMeta(meta: any): { total: number; totalPages: number } {
+  return {
+    total: meta?.total ?? 0,
+    totalPages: meta?.totalPages ?? 0,
+  };
+}
 export const ordersApi = baseApi.injectEndpoints({
 
   endpoints: (builder) => ({
@@ -32,12 +44,7 @@ getAllOrdersByUserId: builder.query({
   providesTags: ['Order'],
 }),
 
-
-
-getAllOrders: builder.query<{
-  data: Order[];
-  meta: any;
-}, Record<string, any>>({
+getAllOrders: builder.query<OrdersApiResponse, Record<string, any>>({
   query: (args) => {
     const params = new URLSearchParams();
 
@@ -57,15 +64,14 @@ getAllOrders: builder.query<{
   providesTags: ['Products'],
 
   transformResponse: (response: TResponseRedux<Order[]>) => {
-    // Remove or keep console log if needed for debugging
-   console.log("result", response);
-
+    console.log("result", response);
     return {
-      data: response.data,
-      meta: response.meta,
+      data: response.data ?? [],
+          meta: normalizeMeta(response.meta),
     };
   },
 }),
+
 // ✅ Update Payment Status Mutation
 updateOrderPaymentStatus: builder.mutation<
   Order, // ✅ Response type (if using TypeScript)

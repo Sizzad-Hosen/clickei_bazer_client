@@ -1,12 +1,19 @@
 'use client';
 
-import React, { useState, useEffect, ChangeEvent, FormEvent } from 'react';
+import React, {
+  useState,
+  useEffect,
+  ChangeEvent,
+  FormEvent,
+  useMemo,
+} from 'react';
 import {
   useAddCustomBazarOrderMutation,
   useGetAllCustomBazarProductsQuery,
 } from '@/redux/features/CustomBazar/customBazarApi';
 import Spinner from '@/components/Spinner';
 import { toast } from 'sonner';
+import { TCustomBazerOrder, TCustomBazerOrderItem } from '@/types/CustomBazar';
 
 interface Subcategory {
   _id: string;
@@ -38,6 +45,9 @@ const CustomBazarPage: React.FC = () => {
   const { data, isLoading, isError } = useGetAllCustomBazarProductsQuery();
   const [addCustomBazarOrder, { isLoading: isSubmitting }] = useAddCustomBazarOrderMutation();
 
+  // Memoize categories to avoid re-creating reference on each render
+  const categories: Category[] = useMemo(() => data?.data ?? [], [data?.data]);
+
   const [selections, setSelections] = useState<Record<string, Selection>>({});
   const [address, setAddress] = useState<Address>({
     fullName: '',
@@ -47,14 +57,11 @@ const CustomBazarPage: React.FC = () => {
   const [siteNote, setSiteNote] = useState('');
   const [paymentMethod, setPaymentMethod] = useState<'cash_on_delivery' | 'sslcommerz'>('cash_on_delivery');
   const [sslCommerzWarning, setSslCommerzWarning] = useState(false);
-
   const [deliveryOption, setDeliveryOption] = useState<'insideRangpur' | 'outsideRangpur'>('insideRangpur');
 
-  const categories: Category[] = data?.data || [];
-
-  // Initialize selections when data loads - start with no selection (empty)
+  // Initialize selections when categories change
   useEffect(() => {
-    if (!categories.length) return;
+    if (categories.length === 0) return;
 
     const initialSelections: Record<string, Selection> = {};
     categories.forEach(cat => {
@@ -80,7 +87,7 @@ const CustomBazarPage: React.FC = () => {
         ? {
             selectedSub: sub,
             quantity: 1,
-            unit: sub.units?.[0] || sub.unit || '',
+            unit: sub.units?.[0] ?? sub.unit ?? '',
           }
         : {
             selectedSub: undefined,
@@ -93,7 +100,7 @@ const CustomBazarPage: React.FC = () => {
   const handleQuantityChange = (categoryId: string, delta: number) => {
     setSelections(prev => {
       const current = prev[categoryId];
-      if (!current || !current.selectedSub) return prev; // can't change quantity if no sub selected
+      if (!current || !current.selectedSub) return prev;
 
       const newQty = Math.max(1, (current.quantity || 1) + delta);
       return {
@@ -132,7 +139,6 @@ const CustomBazarPage: React.FC = () => {
     const val = e.target.value as 'cash_on_delivery' | 'sslcommerz';
     if (val === 'sslcommerz') {
       setSslCommerzWarning(true);
-      // do NOT set payment method to sslcommerz because it’s not ready yet
       return;
     }
     setSslCommerzWarning(false);
@@ -166,33 +172,38 @@ const CustomBazarPage: React.FC = () => {
     setDeliveryOption('insideRangpur');
   };
 
-  const handleSubmitOrder = async (e: FormEvent) => {
+  const handleSubmitOrder = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     // Basic validation
-    if (!address.fullName || !address.phoneNumber || !address.fullAddress) {
+    if (!address.fullName.trim() || !address.phoneNumber.trim() || !address.fullAddress.trim()) {
       toast.error('দয়া করে সকল ঠিকানা তথ্য পূরণ করুন।');
       return;
     }
 
-    // Filter only selections with selected subcategory and quantity > 0
-    const orderItems = Object.entries(selections)
-      .filter(([, sel]) => sel.selectedSub && sel.quantity > 0)
-      .map(([catId, sel]) => ({
-        product: catId,
-        subcategoryName: sel.selectedSub!.name,
-        unit: sel.unit,
-        pricePerUnit: sel.selectedSub!.pricePerUnit,
-        quantity: sel.quantity,
-        totalPrice: sel.selectedSub!.pricePerUnit * sel.quantity,
-      }));
+    // Prepare order items
+    const orderItems: TCustomBazerOrderItem[] = Object.entries(selections)
+      .filter(([, sel]) => sel.selectedSub !== undefined && sel.quantity > 0)
+      .map(([catId, sel]) => {
+        const product = categories.find(cat => cat._id === catId);
+        if (!product) throw new Error(`Product not found for id ${catId}`);
+
+        return {
+          product: product._id,
+          subcategoryName: sel.selectedSub!.name,
+          unit: sel.unit as 'kg' | 'gm' | 'piece' | 'litre',
+          pricePerUnit: sel.selectedSub!.pricePerUnit,
+          quantity: sel.quantity,
+          totalPrice: sel.selectedSub!.pricePerUnit * sel.quantity,
+        };
+      });
 
     if (orderItems.length === 0) {
       toast.error('দয়া করে অন্তত একটি পণ্য নির্বাচন করুন।');
       return;
     }
 
-    const payload = {
+    const payload: TCustomBazerOrder = {
       orderItems,
       status: 'pending',
       paymentMethod,
@@ -202,8 +213,8 @@ const CustomBazarPage: React.FC = () => {
     };
 
     try {
-      await addCustomBazarOrder(payload).unwrap();
-
+     const res = await addCustomBazarOrder(payload).unwrap();
+     console.log("res", res)
       toast.success('✅ অর্ডার সফলভাবে সাবমিট হয়েছে!');
       resetForm();
     } catch (error) {
@@ -216,7 +227,7 @@ const CustomBazarPage: React.FC = () => {
     <div className="p-4 max-w-4xl mx-auto">
       <h2 className="text-2xl font-bold mb-6 text-center">🛒 কাস্টম বাজার অর্ডার</h2>
 
-      <form onSubmit={handleSubmitOrder} className="space-y-6">
+      <form onSubmit={handleSubmitOrder} className="space-y-6" noValidate>
         {/* Product Selection */}
         <div className="space-y-4 max-h-[70vh] overflow-y-auto pr-2">
           {categories.map(category => {
@@ -257,7 +268,7 @@ const CustomBazarPage: React.FC = () => {
                       value={selection.unit}
                       onChange={e => handleUnitChange(category._id, e.target.value)}
                     >
-                      {(selected.units || [selected.unit || '']).map(unit => (
+                      {(selected.units ?? [selected.unit ?? '']).map(unit => (
                         <option key={unit} value={unit}>
                           {unit}
                         </option>
@@ -273,6 +284,7 @@ const CustomBazarPage: React.FC = () => {
                     onClick={() => handleQuantityChange(category._id, -1)}
                     className="bg-red-500 text-white px-3 py-1 rounded disabled:opacity-50"
                     disabled={!selected || selection?.quantity === 1}
+                    aria-label={`Decrease quantity for ${category.category}`}
                   >
                     −
                   </button>
@@ -286,6 +298,7 @@ const CustomBazarPage: React.FC = () => {
                     onClick={() => handleQuantityChange(category._id, 1)}
                     className="bg-green-500 text-white px-3 py-1 rounded"
                     disabled={!selected}
+                    aria-label={`Increase quantity for ${category.category}`}
                   >
                     +
                   </button>
@@ -305,8 +318,8 @@ const CustomBazarPage: React.FC = () => {
         {/* Delivery Option */}
         <section className="bg-white rounded-lg shadow-md p-4 border border-gray-200 space-y-4">
           <h3 className="text-lg font-semibold mb-2">ডেলিভারি অপশন</h3>
-          
-          <div className="flex flex-col gap-3 w-full ">
+
+          <div className="flex flex-col gap-3 w-full">
             {['insideRangpur', 'outsideRangpur'].map(option => (
               <label
                 key={option}
@@ -317,7 +330,9 @@ const CustomBazarPage: React.FC = () => {
                 }`}
               >
                 <span>
-                  {option === 'insideRangpur' ? 'Inside Rangpur (Free)' : 'Outside Rangpur (Free)'}
+                  {option === 'insideRangpur'
+                    ? 'Inside Rangpur (Free)'
+                    : 'Outside Rangpur (Free)'}
                 </span>
                 <input
                   type="radio"
@@ -325,11 +340,13 @@ const CustomBazarPage: React.FC = () => {
                   value={option}
                   checked={deliveryOption === option}
                   onChange={handleDeliveryChange}
-                  className="hidden"
+                  className="sr-only"
                 />
                 <span
                   className={`w-5 h-5 rounded-full border-2 flex-shrink-0 ${
-                    deliveryOption === option ? 'border-amber-600 bg-amber-600' : 'border-gray-300'
+                    deliveryOption === option
+                      ? 'border-amber-600 bg-amber-600'
+                      : 'border-gray-300'
                   }`}
                 />
               </label>
@@ -349,6 +366,7 @@ const CustomBazarPage: React.FC = () => {
             onChange={handleAddressChange}
             required
             className="w-full border px-3 py-2 rounded"
+            aria-label="Full name"
           />
 
           <input
@@ -359,6 +377,7 @@ const CustomBazarPage: React.FC = () => {
             onChange={handleAddressChange}
             required
             className="w-full border px-3 py-2 rounded"
+            aria-label="Phone number"
           />
 
           <textarea
@@ -369,6 +388,7 @@ const CustomBazarPage: React.FC = () => {
             required
             rows={3}
             className="w-full border px-3 py-2 rounded"
+            aria-label="Full address"
           />
         </section>
 
@@ -405,13 +425,13 @@ const CustomBazarPage: React.FC = () => {
                 value="cash_on_delivery"
                 checked={paymentMethod === 'cash_on_delivery'}
                 onChange={handlePaymentChange}
-                className="hidden"
+                className="sr-only"
               />
               Cash on Delivery
             </label>
 
             <label
-              className={`cursor-pointer border rounded-lg p-4 flex-1 text-center opacity-50 cursor-not-allowed ${
+              className={`cursor-not-allowed opacity-50 border rounded-lg p-4 flex-1 text-center ${
                 paymentMethod === 'sslcommerz'
                   ? 'border-amber-600 bg-amber-50'
                   : 'border-gray-300 bg-white'
@@ -424,7 +444,7 @@ const CustomBazarPage: React.FC = () => {
                 value="sslcommerz"
                 checked={paymentMethod === 'sslcommerz'}
                 onChange={handlePaymentChange}
-                className="hidden"
+                className="sr-only"
                 disabled
               />
               SSLCommerz
@@ -447,6 +467,7 @@ const CustomBazarPage: React.FC = () => {
             type="submit"
             className="mt-3 bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded transition disabled:opacity-50"
             disabled={isSubmitting}
+            aria-disabled={isSubmitting}
           >
             {isSubmitting ? 'অর্ডার সাবমিট করা হচ্ছে...' : 'অর্ডার সাবমিট করুন'}
           </button>

@@ -1,17 +1,44 @@
 'use client';
 
+import { useState } from 'react';
 import { useSearchParams } from 'next/navigation';
+
 import { useGetAllProductsBySearchQuery } from '@/redux/features/Products/productApi';
 import ProductCard from '@/components/Products/ProductCard';
 import Sidebar from '@/components/shared/Sidebar';
 import Spinner from '@/components/Spinner';
 import { Button } from '@/components/ui/button';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { useState } from 'react';
 import CartDrawer from '@/components/Carts/CartDrawer';
+
+interface Product {
+  _id: string;
+  name: string;
+  title: string;
+  description: string;
+  quantity: number;
+  price: number;
+  images?: string[];
+  // Add other product properties here as needed
+}
+
+interface Meta {
+  totalPages: number;
+}
+
+interface ApiResponse<T> {
+  data: {
+    data: T;
+    meta: Meta;
+  };
+}
 
 const SearchPage = () => {
   const searchParams = useSearchParams();
+  
+if (!searchParams) {
+  return <div>Invalid search parameters</div>;
+}
 
   const getFieldAndValue = () => {
     const entries = Array.from(searchParams.entries());
@@ -23,19 +50,21 @@ const SearchPage = () => {
 
   const { field, value: searchTerm } = getFieldAndValue();
   const [page, setPage] = useState(1);
+  const [cartOpen, setCartOpen] = useState(false);
 
   // Build query params with search term and page
   const queryParams = field && searchTerm
     ? { [field]: searchTerm, page: String(page) }
     : { page: String(page) };
 
+  // We specify the expected response type here for better typing
   const { data, isLoading, isError } = useGetAllProductsBySearchQuery(queryParams, {
     skip: !searchTerm,
-  });
+  }) as { data?: ApiResponse<Product[]>; isLoading: boolean; isError: boolean };
 
-  const result = data?.data?.data || [];
+  const result = data?.data?.data ?? [];
   const meta = data?.data?.meta;
-  const totalPages = meta?.totalPages || 1;
+  const totalPages = meta?.totalPages ?? 1;
 
   const handlePageChange = (newPage: number) => {
     if (newPage >= 1 && newPage <= totalPages) {
@@ -43,14 +72,13 @@ const SearchPage = () => {
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   };
-    const [cartOpen, setCartOpen] = useState(false);
 
   const openCart = () => setCartOpen(true);
   const closeCart = () => setCartOpen(false);
 
-
   return (
     <main className="min-h-screen flex flex-col lg:flex-row md:flex-row bg-white gap-6 overflow-hidden">
+
       {/* Sidebar */}
       <aside className="w-full md:w-64 border-r shadow-sm md:block">
         <Sidebar />
@@ -66,20 +94,19 @@ const SearchPage = () => {
           <p className="text-red-500">Something went wrong while loading products.</p>
         ) : result.length === 0 ? (
           <p className="text-gray-600 text-center mx-auto text-lg font-medium">
-            No products found for "{searchTerm}"
+            No products found for &quot;{searchTerm}&quot;
           </p>
         ) : (
           <>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-              {result.map((product: any) => (
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
+              {result.map((product) => (
                 <div
                   key={product._id}
                   className="w-84 h-[360px] sm:h-[400px] lg:h-[420px] bg-white shadow-md rounded-md overflow-hidden"
                 >
                   <ProductCard 
-                    key={product._id}
-                  product={product}
-                  onOpenCart={openCart}
+                    product={product}
+                    onOpenCart={openCart}
                   />
                 </div>
               ))}
@@ -114,9 +141,9 @@ const SearchPage = () => {
           </>
         )}
       </section>
-      
-            {/* Cart Drawer */}
-            <CartDrawer open={cartOpen} onClose={closeCart} />
+
+      {/* Cart Drawer */}
+      <CartDrawer open={cartOpen} onClose={closeCart} />
     </main>
   );
 };

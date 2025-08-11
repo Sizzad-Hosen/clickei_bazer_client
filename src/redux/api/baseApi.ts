@@ -1,9 +1,9 @@
-import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
-import { RootState } from "../store"; 
+import { createApi, fetchBaseQuery, FetchArgs, FetchBaseQueryError } from "@reduxjs/toolkit/query/react";
+import type { BaseQueryFn } from '@reduxjs/toolkit/query';
+import type { RootState } from "../store";
 import { logout, setUser } from "../features/auth/authSlices";
 
-
-
+// Base fetch query with token header
 const baseQuery = fetchBaseQuery({
   baseUrl: 'http://localhost:8080/api/v1',
   credentials: 'include',
@@ -12,47 +12,52 @@ const baseQuery = fetchBaseQuery({
     if (token) {
       headers.set('authorization', `Bearer ${token}`);
     }
-    
     return headers;
   },
 });
 
+// Define type for the arguments of baseQueryWithRefreshToken
+type BaseQueryArgs = string | FetchArgs;
 
-
-const baseQueryWithRefreshToken = async (args: any, api: any, extraOptions: any) => {
-
+// Define a BaseQueryFn type with expected inputs and outputs
+const baseQueryWithRefreshToken: BaseQueryFn<
+  BaseQueryArgs,
+  unknown,
+  FetchBaseQueryError
+> = async (args, api, extraOptions) => {
+  // Make the initial request
   let result = await baseQuery(args, api, extraOptions);
 
+  // If 401 Unauthorized, try refreshing token
   if (result.error?.status === 401) {
-
-    // Use baseQuery instead of fetch for consistency
     const refreshResult = await baseQuery(
       { url: '/auth/refresh-token', method: 'POST' },
       api,
       extraOptions
     );
-    console.log('Current token:', (api.getState() as RootState).auth.token);
-console.log('Refresh result:', refreshResult);
 
     if (refreshResult.data) {
-      const { data } = refreshResult.data as { data?: { accessToken: string } };
-      
-      if (data?.accessToken) {
+      // Extract the accessToken safely
+      const refreshData = refreshResult.data as { data?: { accessToken: string } };
+      const accessToken = refreshData.data?.accessToken;
+
+      if (accessToken) {
         const user = (api.getState() as RootState).auth.user;
-        
+
         if (user) {
+          // Update user and token in store
           api.dispatch(
             setUser({
               user,
-              token: data.accessToken,
+              token: accessToken,
             })
           );
+
+          // Retry the original query with new token
+          result = await baseQuery(args, api, extraOptions);
         } else {
           api.dispatch(logout());
         }
-
-        // Retry original request with new token
-        result = await baseQuery(args, api, extraOptions);
       } else {
         api.dispatch(logout());
       }
@@ -67,6 +72,18 @@ console.log('Refresh result:', refreshResult);
 export const baseApi = createApi({
   reducerPath: 'baseApi',
   baseQuery: baseQueryWithRefreshToken,
-  tagTypes: ['Services','Categories','SubCategories','Products','Orders','Carts','Profile','Auth','Wishlist','Order','User'],
+  tagTypes: [
+    'Services',
+    'Categories',
+    'SubCategories',
+    'Products',
+    'Orders',
+    'Carts',
+    'Profile',
+    'Auth',
+    'Wishlist',
+    'Order',
+    'User',
+  ],
   endpoints: () => ({}),
 });

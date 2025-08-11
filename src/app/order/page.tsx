@@ -8,11 +8,13 @@ import { useDeleteOrderByIdMutation, useGetAllOrdersByUserIdQuery } from '@/redu
 import { format } from 'date-fns';
 import { toast } from 'sonner';
 import { useDeleteCustomOrderByIdMutation, useGetAllCustomOrdersByUserIdQuery } from '@/redux/features/CustomBazar/customBazarApi';
+import Image from 'next/image';
 
 export default function UserOrdersPage() {
   const { data: response, isLoading, isError, error, refetch } = useGetAllOrdersByUserIdQuery({});
   const orders = response?.data || [];
 
+console.log("orders", orders)
   const { data: responseCustom } = useGetAllCustomOrdersByUserIdQuery({});
   const customBazarOrders = responseCustom?.data;
 
@@ -148,10 +150,12 @@ export default function UserOrdersPage() {
                 <div className="mt-6">
                   <h3 className="font-semibold mb-4">Items:</h3>
                   <ul className="divide-y divide-gray-200 max-h-60 overflow-y-auto">
-                    {order.cart?.items?.map((item: any) => (
+                    {order?.items?.map((item: any) => (
                       <li key={item.productId} className="flex items-center py-3">
-                        <img
-                          src={item.image}
+                        <Image
+                        width={40}
+                        height={40}
+                          src={item?.image}
                           alt={item.title}
                           className="w-16 h-16 object-cover rounded-md border border-gray-300 mr-4"
                         />

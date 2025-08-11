@@ -35,4 +35,8 @@ export interface Product {
   quantity: number;
   price: number;
   images?: string[];
+  discount:number
+  subcategoryId?: string;
+  categoryId?: string;
+  serviceId?: string;  // Add this if your backend sends it
 }

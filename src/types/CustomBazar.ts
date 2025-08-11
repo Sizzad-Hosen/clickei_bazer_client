@@ -19,6 +19,7 @@ export interface TCustomBazerOrderItem {
   pricePerUnit: number;            // From subcategory
   totalPrice: number;              // quantity * pricePerUnit
 }
+
 export type TPaymentStatus = "pending" |"paid"| "success" | "failed";
 
 
@@ -36,6 +37,7 @@ export interface TCustomBazerOrder {
   };
   invoiceId:string;
   siteNote?: string;
+  deliveryOption: "insideRangpur" | "outsideRangpur"
   deletedByUser?: boolean; 
   createdAt?: Date;
   updatedAt?: Date;
