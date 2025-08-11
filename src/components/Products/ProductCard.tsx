@@ -14,7 +14,7 @@ import {
 } from '@/components/ui/dialog';
 
 import { Product } from '@/types/products';
-import { useAddCartMutation } from '@/redux/features/AddToCart/addToCartApi';
+import { useAddCartMutation, useGetAllCartsQuery } from '@/redux/features/AddToCart/addToCartApi';
 import {
   useAddToWishlistMutation,
   useGetWishlistQuery,
@@ -41,6 +41,7 @@ export default function ProductCard({
   onOpenCart,
 }: Props) {
   const [addCart, { isLoading: isAddingToCart }] = useAddCartMutation();
+  const { refetch } = useGetAllCartsQuery({}); // ✅ from the query hook
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
 
   const { data: wishlistData } = useGetWishlistQuery(undefined);
@@ -79,6 +80,10 @@ export default function ProductCard({
           'https://static.vecteezy.com/system/resources/previews/024/183/525/non_2x/avatar-of-a-man-portrait-of-a-young-guy-illustration-of-male-character-in-modern-color-style-vector.jpg',
       }).unwrap();
       toast.success('Added to cart');
+
+          // Force re-fetch updated cart data
+    refetch();
+
       onOpenCart();
     } catch (error) {
       toast.error('Failed to add to cart');
