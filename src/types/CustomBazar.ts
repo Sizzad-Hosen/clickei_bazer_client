@@ -24,7 +24,7 @@ export type TPaymentStatus = "pending" |"paid"| "success" | "failed";
 
 
 export interface TCustomBazerOrder {
- 
+ _id:string
   orderItems: TCustomBazerOrderItem[];
   totalAmount: number;
   status: "pending" | "confirmed" | "shipped" | "delivered" | "cancelled";

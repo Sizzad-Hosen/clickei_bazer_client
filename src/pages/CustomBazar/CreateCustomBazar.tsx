@@ -56,13 +56,12 @@ export default function CustomBazarForm() {
       if (
         !item.subcategory.trim() ||
         !item.unit.trim() ||
-        !item.pricePerUnit.toString().trim()
+        !item.pricePerUnit.trim()
       ) {
         toast.error('All subcategory fields are required');
         return false;
       }
 
-      // Optional: check pricePerUnit is a valid positive number
       if (isNaN(Number(item.pricePerUnit)) || Number(item.pricePerUnit) <= 0) {
         toast.error('Price per unit must be a positive number');
         return false;
@@ -93,11 +92,24 @@ export default function CustomBazarForm() {
       setSubcategories([{ subcategory: '', unit: '', pricePerUnit: '' }]);
       setApiError(null);
     } catch (error: unknown) {
-      // safer error handling
       let message = 'Failed to add';
-      if (typeof error === 'object' && error !== null) {
-        // @ts-ignore
-        message = error?.data?.message || error?.error || message;
+      // safer error handling without ts-ignore
+      if (
+        typeof error === 'object' &&
+        error !== null &&
+        'data' in error &&
+        typeof (error as any).data === 'object' &&
+        (error as any).data !== null &&
+        'message' in (error as any).data
+      ) {
+        message = (error as any).data.message;
+      } else if (
+        typeof error === 'object' &&
+        error !== null &&
+        'error' in error &&
+        typeof (error as any).error === 'string'
+      ) {
+        message = (error as any).error;
       }
       setApiError(message);
       toast.error(message);

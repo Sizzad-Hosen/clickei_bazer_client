@@ -10,7 +10,19 @@ import { Button } from "@/components/ui/button";
 import Spinner from "@/components/Spinner";
 import Swal from "sweetalert2";
 import { MdDelete } from "react-icons/md";
+import { Category, Subcategory } from "@/types/products";
 
+// Define form types to avoid 'any'
+interface SubcategoryForm {
+  name: string;
+  unit?: string;
+  pricePerUnit?: string | number;
+}
+
+interface FormData {
+  category: string;
+  subcategories: SubcategoryForm[];
+}
 
 export default function CustomBazarProductsPage() {
   const { data, isLoading } = useGetAllCustomBazarProductsQuery();
@@ -18,24 +30,29 @@ export default function CustomBazarProductsPage() {
   const [updateCategory] = useUpdateCustomBazarProductMutation();
 
   const [editModalOpen, setEditModalOpen] = useState(false);
-  const [editingCategory, setEditingCategory] = useState<any>(null);
-  const [formData, setFormData] = useState<any>({ category: "", subcategories: [] });
+  const [editingCategory, setEditingCategory] = useState<Category | null>(null);
+
+  const [formData, setFormData] = useState<FormData>({
+    category: "",
+    subcategories: [],
+  });
 
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 8;
 
   if (isLoading) return <Spinner />;
 
-  const categories = Array.isArray(data?.data) ? data.data : [];
+  // Defensive check for data array
+  const categories: Category[] = Array.isArray(data?.data) ? data.data : [];
 
-  // Pagination logic
+  // Pagination
   const totalPages = Math.ceil(categories.length / itemsPerPage);
   const paginatedCategories = categories.slice(
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage
   );
 
- const handleDelete = async (categoryId: string) => {
+  const handleDelete = async (categoryId: string) => {
     const result = await Swal.fire({
       title: "Are you sure?",
       text: "Do you really want to delete this category?",
@@ -61,11 +78,11 @@ export default function CustomBazarProductsPage() {
     }
   };
 
-  const handleEditClick = (category: any) => {
+  const handleEditClick = (category: Category & { subcategories?: Subcategory[] }) => {
     setEditingCategory(category);
     setFormData({
-      category: category.category ?? "",
-      subcategories: (category.subcategories ?? []).map((sub: any) => ({
+      category: category.category ?? category.name ?? "",
+      subcategories: (category.subcategories ?? []).map((sub) => ({
         name: sub.name ?? "",
         unit: sub.unit ?? "",
         pricePerUnit: sub.pricePerUnit ?? "",
@@ -88,7 +105,11 @@ export default function CustomBazarProductsPage() {
     }
   };
 
-  const handleSubcategoryChange = (index: number, field: string, value: string | number) => {
+  const handleSubcategoryChange = (
+    index: number,
+    field: keyof SubcategoryForm,
+    value: string | number
+  ) => {
     const updated = [...formData.subcategories];
     updated[index] = { ...updated[index], [field]: value };
     setFormData({ ...formData, subcategories: updated });
@@ -115,10 +136,10 @@ export default function CustomBazarProductsPage() {
         <div className="text-sm text-muted-foreground">No categories found.</div>
       )}
 
-      {paginatedCategories.map((categoryItem: any) => (
+      {paginatedCategories.map((categoryItem) => (
         <div key={categoryItem._id} className="mb-6 border rounded-lg p-4 shadow">
           <div className="flex justify-between items-center mb-2">
-            <h3 className="text-lg font-semibold">{categoryItem.category}</h3>
+            <h3 className="text-lg font-semibold">{categoryItem.category ?? categoryItem.name}</h3>
             <div className="flex gap-2">
               <button
                 onClick={() => handleEditClick(categoryItem)}
@@ -144,7 +165,7 @@ export default function CustomBazarProductsPage() {
               </tr>
             </thead>
             <tbody>
-              {(categoryItem.subcategories ?? []).map((sub: any, index: number) => (
+              {(categoryItem.subcategories ?? []).map((sub, index) => (
                 <tr key={index}>
                   <td className="p-2 border">{sub.name}</td>
                   <td className="p-2 border">{sub.unit}</td>
@@ -215,14 +236,19 @@ export default function CustomBazarProductsPage() {
             </div>
 
             <div className="space-y-3">
-              {formData.subcategories.map((sub: any, idx: number) => (
-                <div key={idx} className="border p-3 rounded grid grid-cols-12 gap-3 items-center">
+              {formData.subcategories.map((sub, idx) => (
+                <div
+                  key={idx}
+                  className="border p-3 rounded grid grid-cols-12 gap-3 items-center"
+                >
                   <div className="col-span-5">
                     <label className="block text-xs font-medium mb-1">Name</label>
                     <input
                       type="text"
                       value={sub.name}
-                      onChange={(e) => handleSubcategoryChange(idx, "name", e.target.value)}
+                      onChange={(e) =>
+                        handleSubcategoryChange(idx, "name", e.target.value)
+                      }
                       className="border w-full p-2 rounded"
                     />
                   </div>
@@ -232,7 +258,9 @@ export default function CustomBazarProductsPage() {
                     <input
                       type="text"
                       value={sub.unit}
-                      onChange={(e) => handleSubcategoryChange(idx, "unit", e.target.value)}
+                      onChange={(e) =>
+                        handleSubcategoryChange(idx, "unit", e.target.value)
+                      }
                       className="border w-full p-2 rounded"
                     />
                   </div>
@@ -249,14 +277,13 @@ export default function CustomBazarProductsPage() {
                     />
                   </div>
 
-                  <div className="col-span-1  flex justify-end">
+                  <div className="col-span-1 flex justify-end">
                     <button
                       onClick={() => handleRemoveSubcategory(idx)}
-                      className="px-1 p-2 mt-2  py-1 text-sm bg-red-600 text-white rounded hover:bg-red-700"
+                      className="px-1 p-2 mt-2 py-1 text-sm bg-red-600 text-white rounded hover:bg-red-700"
                       title="Remove"
                     >
-                    <MdDelete/>
-                      
+                      <MdDelete />
                     </button>
                   </div>
                 </div>

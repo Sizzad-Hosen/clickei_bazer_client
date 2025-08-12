@@ -4,17 +4,23 @@ interface OrdersApiResponse {
   meta: {
     total: number;
     totalPages: number;
+  limit: number;
+  page: number;
   };
 }
-import { TResponseRedux } from "@/types/global";
+import { TMeta, TResponseRedux } from "@/types/global";
 import { Order } from "@/types/order";
 
-function normalizeMeta(meta: any): { total: number; totalPages: number } {
+function normalizeMeta(meta?: Partial<TMeta>): TMeta {
   return {
     total: meta?.total ?? 0,
     totalPages: meta?.totalPages ?? 0,
+    limit: meta?.limit ?? 0,
+    page: meta?.page ?? 1,
   };
 }
+
+
 export const ordersApi = baseApi.injectEndpoints({
 
   endpoints: (builder) => ({
@@ -25,7 +31,7 @@ export const ordersApi = baseApi.injectEndpoints({
         url: `/orders/track/${invoiceId}`,
         method: "GET",
       }),
-      invalidatesTags: ["Order"],
+      invalidatesTags: ["Orders"],
     }),
 
       addOrder: builder.mutation({
@@ -41,7 +47,7 @@ getAllOrdersByUserId: builder.query({
     url: `/orders/my-orders`,
     method: 'GET',
   }),
-  providesTags: ['Order'],
+  providesTags: ['Orders'],
 }),
 
 getAllOrders: builder.query<OrdersApiResponse, Record<string, any>>({
@@ -61,13 +67,13 @@ getAllOrders: builder.query<OrdersApiResponse, Record<string, any>>({
       method: 'GET',
     };
   },
-  providesTags: ['Products'],
+  providesTags: ['Orders'],
 
   transformResponse: (response: TResponseRedux<Order[]>) => {
     console.log("result", response);
     return {
       data: response.data ?? [],
-          meta: normalizeMeta(response.meta),
+    meta: normalizeMeta(response.meta),
     };
   },
 }),
@@ -93,7 +99,7 @@ updateStatus: builder.mutation<{ success: boolean; message: string },
     method: "PATCH",
     body: { status },
   }),
-  invalidatesTags: ["Order"],
+  invalidatesTags: ["Orders"],
 }),
 
     deleteOrderById: builder.mutation({
@@ -102,7 +108,7 @@ updateStatus: builder.mutation<{ success: boolean; message: string },
         url: `/orders/${id}`,
         method: "DELETE",
       }),
-      invalidatesTags: ["Order"], 
+      invalidatesTags: ["Orders"], 
     }),
 
  

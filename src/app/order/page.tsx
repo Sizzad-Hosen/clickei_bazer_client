@@ -1,27 +1,32 @@
 'use client';
 
 import Swal from 'sweetalert2';
-
 import Sidebar from '@/components/shared/Sidebar';
 import Spinner from '@/components/Spinner';
 import { useDeleteOrderByIdMutation, useGetAllOrdersByUserIdQuery } from '@/redux/features/Order/ordersApi';
+import { useDeleteCustomOrderByIdMutation, useGetAllCustomOrdersByUserIdQuery } from '@/redux/features/CustomBazar/customBazarApi';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
-import { useDeleteCustomOrderByIdMutation, useGetAllCustomOrdersByUserIdQuery } from '@/redux/features/CustomBazar/customBazarApi';
 import Image from 'next/image';
+import { Order, OrderItem } from '@/types/order'; // Assuming you have these types in your types folder
+import { TCustomBazerOrder } from '@/types/CustomBazar';
+
 
 export default function UserOrdersPage() {
+  // Normal Orders Query
   const { data: response, isLoading, isError, error, refetch } = useGetAllOrdersByUserIdQuery({});
-  const orders = response?.data || [];
+  const orders: Order[] = response?.data || [];
 
-console.log("orders", orders)
-  const { data: responseCustom } = useGetAllCustomOrdersByUserIdQuery({});
-  const customBazarOrders = responseCustom?.data;
+  // Custom Bazar Orders Query
+  const { data: customOrdersResponse } = useGetAllCustomOrdersByUserIdQuery();
 
+ const customBazarOrders: TCustomBazerOrder[] = customOrdersResponse?.data || [];
+
+  // Mutations for deleting orders
   const [deleteOrder] = useDeleteOrderByIdMutation();
   const [deleteCustomOrder] = useDeleteCustomOrderByIdMutation();
 
-
+  // Delete normal order
   const handleDelete = async (id: string) => {
     const result = await Swal.fire({
       title: 'Are you sure?',
@@ -45,6 +50,7 @@ console.log("orders", orders)
     }
   };
 
+  // Delete custom bazar order
   const handleCustomOrderDelete = async (id: string) => {
     const result = await Swal.fire({
       title: 'Are you sure?',
@@ -68,6 +74,7 @@ console.log("orders", orders)
     }
   };
 
+  // Loading state
   if (isLoading) {
     return (
       <div className="flex min-h-screen">
@@ -79,13 +86,14 @@ console.log("orders", orders)
     );
   }
 
+  // Error state
   if (isError) {
     return (
       <div className="flex min-h-screen">
         <Sidebar />
         <main className="flex-1 p-8">
           <h2 className="text-red-600 font-semibold text-lg">Failed to load orders</h2>
-          <p>{(error as any)?.data?.message || 'Unknown error occurred'}</p>
+          <p>{(error as { data?: { message?: string } })?.data?.message || 'Unknown error occurred'}</p>
         </main>
       </div>
     );
@@ -93,22 +101,20 @@ console.log("orders", orders)
 
   return (
     <div className="flex min-h-screen bg-gray-100">
-     
-
       <aside>
         <Sidebar />
       </aside>
-
 
       {/* Main Content */}
       <main className="flex-1 p-6 md:p-8 max-w-5xl mx-auto w-full">
         <h1 className="text-3xl font-bold mb-6 text-center md:text-left">Your Orders</h1>
 
+        {/* Normal Orders */}
         {orders.length === 0 ? (
           <p className="text-gray-600 text-center">You have no orders yet.</p>
         ) : (
           <div className="space-y-6">
-            {orders.map((order: any) => (
+            {orders.map((order: Order) => (
               <div
                 key={order._id}
                 className="bg-white shadow rounded-lg p-6 border border-gray-200 relative"
@@ -150,12 +156,12 @@ console.log("orders", orders)
                 <div className="mt-6">
                   <h3 className="font-semibold mb-4">Items:</h3>
                   <ul className="divide-y divide-gray-200 max-h-60 overflow-y-auto">
-                    {order?.items?.map((item: any) => (
+                    {order?.items.map((item: OrderItem) => (
                       <li key={item.productId} className="flex items-center py-3">
                         <Image
-                        width={40}
-                        height={40}
-                          src={item?.image}
+                          width={40}
+                          height={40}
+                          src={item.image || '/placeholder.png'}
                           alt={item.title}
                           className="w-16 h-16 object-cover rounded-md border border-gray-300 mr-4"
                         />
@@ -175,13 +181,14 @@ console.log("orders", orders)
           </div>
         )}
 
-        {customBazarOrders?.length > 0 && (
+        {/* Custom Bazar Orders */}
+        {customBazarOrders.length > 0 && (
           <div className="space-y-6 mt-10">
             <h2 className="text-2xl font-semibold text-center md:text-left text-indigo-700">
               Custom Bazar Orders
             </h2>
 
-            {customBazarOrders.map((customOrder: any) => (
+            {customBazarOrders.map((customOrder) => (
               <div
                 key={customOrder._id}
                 className="bg-white shadow rounded-lg p-6 border border-gray-200 relative"
@@ -216,7 +223,7 @@ console.log("orders", orders)
                 </p>
                 <p>
                   <span className="font-medium">Total:</span>{' '}
-                  <span className="text-green-600 font-semibold">Tk {customOrder.totalAmount}</span>
+                  <span className="text-green-600 font-semibold">Tk {customOrder.totalAmount.toFixed(2)}</span>
                 </p>
                 <p>
                   <span className="font-medium">Payment:</span>{' '}
@@ -232,17 +239,17 @@ console.log("orders", orders)
                 <div className="mt-4">
                   <h3 className="font-semibold mb-2">Items:</h3>
                   <ul className="divide-y divide-gray-200 max-h-60 overflow-y-auto">
-                    {customOrder.orderItems.map((item: any, index: number) => (
+                    {customOrder.orderItems.map((item, index) => (
                       <li key={index} className="py-2">
                         <div className="flex justify-between items-center">
                           <div>
                             <p className="font-medium text-gray-900">{item.subcategoryName}</p>
                             <p className="text-sm text-gray-600">
-                              {item.quantity} {item.unit} × Tk {item.pricePerUnit}
+                              {item.quantity} {item.unit} × Tk {item.pricePerUnit.toFixed(2)}
                             </p>
                           </div>
                           <div className="text-right font-semibold text-gray-900">
-                            Tk {item.totalPrice}
+                            Tk {item.totalPrice.toFixed(2)}
                           </div>
                         </div>
                       </li>

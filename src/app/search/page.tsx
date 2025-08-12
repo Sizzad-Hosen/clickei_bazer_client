@@ -16,10 +16,10 @@ interface Product {
   name: string;
   title: string;
   description: string;
+  discount: number;
   quantity: number;
   price: number;
   images?: string[];
-  // Add other product properties here as needed
 }
 
 interface Meta {
@@ -39,7 +39,10 @@ const SearchPage = () => {
 if (!searchParams) {
   return <div>Invalid search parameters</div>;
 }
+  const [page, setPage] = useState(1);
+  const [cartOpen, setCartOpen] = useState(false);
 
+  // Get field and value from searchParams
   const getFieldAndValue = () => {
     const entries = Array.from(searchParams.entries());
     if (entries.length > 0) {
@@ -49,15 +52,13 @@ if (!searchParams) {
   };
 
   const { field, value: searchTerm } = getFieldAndValue();
-  const [page, setPage] = useState(1);
-  const [cartOpen, setCartOpen] = useState(false);
 
   // Build query params with search term and page
   const queryParams = field && searchTerm
     ? { [field]: searchTerm, page: String(page) }
     : { page: String(page) };
 
-  // We specify the expected response type here for better typing
+  // Fetch products with query params; skip if no searchTerm
   const { data, isLoading, isError } = useGetAllProductsBySearchQuery(queryParams, {
     skip: !searchTerm,
   }) as { data?: ApiResponse<Product[]>; isLoading: boolean; isError: boolean };
@@ -104,7 +105,7 @@ if (!searchParams) {
                   key={product._id}
                   className="w-84 h-[360px] sm:h-[400px] lg:h-[420px] bg-white shadow-md rounded-md overflow-hidden"
                 >
-                  <ProductCard 
+                  <ProductCard
                     product={product}
                     onOpenCart={openCart}
                   />

@@ -1,19 +1,35 @@
-'use client';
+"use client";
 
-import React, { useState, useEffect, ChangeEvent } from "react";
+import React, { useState, ChangeEvent } from "react";
 import {
-  Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
 } from "@/components/ui/table";
 import {
-  Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle,
+  Dialog,
+  DialogTrigger,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
 } from "@/components/ui/dialog";
 import {
-  Select, SelectTrigger, SelectValue, SelectContent, SelectItem,
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
-  Pagination, PaginationContent, PaginationItem, PaginationLink,
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
 } from "@/components/ui/pagination";
 import Spinner from "@/components/Spinner";
 import { toast } from "sonner";
@@ -25,111 +41,73 @@ import {
 } from "@/redux/features/Order/ordersApi";
 import { MdDelete } from "react-icons/md";
 import Swal from "sweetalert2";
-import Image from "next/image"; // Import Next.js Image
+import { Order } from "@/types/order";
 
 const ORDERS_PER_PAGE = 10;
-
-// Define interfaces to avoid `any`
-interface User {
-  name?: string;
-  email?: string;
-  phone?: string;
-}
-
-interface CartItem {
-  title: string;
-  quantity: number;
-  price: number;
-  image?: string;
-}
-
-interface Cart {
-  items: CartItem[];
-}
-
-interface Order {
-  _id: string;
-  invoiceId: string;
-
-  user?: User;
-  cart?: Cart;
-  createdAt?: string;
-  status: string;
-  paymentStatus: string;
-  totalPrice: number;
-  address?: {
-    phone?: string;
-    fullAddress?: string;
-  };
-}
 
 const OrdersPage: React.FC = () => {
   const [page, setPage] = useState<number>(1);
   const [searchInvoiceId, setSearchInvoiceId] = useState<string>("");
-  const [localOrders, setLocalOrders] = useState<Order[]>([]);
-  
 
+  // Destructure refetch from the query hook
+  const {
+    data,
+    isLoading,
+    refetch,
+  } = useGetAllOrdersQuery({
+    page,
+    limit: ORDERS_PER_PAGE,
+    invoiceId: searchInvoiceId.trim() || undefined,
+  });
 
-const { data, isLoading } = useGetAllOrdersQuery({
-  page,
-  limit: ORDERS_PER_PAGE,
-  invoiceId: searchInvoiceId.trim() || undefined,
-});
+  // Use data directly from API (no local state for orders)
+  const orders: Order[] = data?.data?.data || [];
 
-// then
-const orders: Order[] = localOrders.length ? localOrders : data?.data?.data || [];
-console.log("orders", orders)
-const meta = data?.data?.meta || { total: 0, totalPages: 0 };
+  const meta = data?.data?.meta || { total: 0, totalPages: 0 };
 
   const [updateStatus] = useUpdateStatusMutation();
   const [updatePaymentStatus] = useUpdateOrderPaymentStatusMutation();
   const [deleteOrder] = useDeleteOrderByIdMutation();
 
-
-  useEffect(() => {
-    if (data?.data) {
-      setLocalOrders(data.data);
-    }
-  }, [data]);
-
   const handlePageChange = (newPage: number) => setPage(newPage);
 
-  // Type the status params strictly if possible
   const handleUpdateStatus = async (invoiceId: string, newStatus: string) => {
     try {
-      await updateStatus({ invoiceId, status: newStatus }).unwrap();
-      setLocalOrders((prev) =>
-        prev.map((o) => (o.invoiceId === invoiceId ? { ...o, status: newStatus } : o))
-      );
+     const res =  await updateStatus({ invoiceId, status: newStatus }).unwrap();
+         console.log("res status", res)
       toast.success("Order status updated");
+      await refetch(); // refetch fresh data from server
     } catch {
       toast.error("Failed to update status");
     }
   };
 
-  const handleUpdatePaymentStatus = async (invoiceId: string, newStatus: string) => {
+  const handleUpdatePaymentStatus = async (
+    invoiceId: string,
+    newStatus: string
+  ) => {
     try {
-      await updatePaymentStatus({ invoiceId, status: newStatus }).unwrap();
-      setLocalOrders((prev) =>
-        prev.map((o) =>
-          o.invoiceId === invoiceId ? { ...o, paymentStatus: newStatus } : o
-        )
-      );
+     const res = await updatePaymentStatus({ invoiceId, status: newStatus }).unwrap();
+     console.log("res payment", res)
       toast.success("Payment status updated");
+      await refetch(); // refetch fresh data from server
     } catch {
       toast.error("Failed to update payment status");
     }
   };
 
-  // Fix: use typed `order: Order`
   const handlePrintOrder = (order: Order) => {
     const printWindow = window.open("", "PRINT", "width=800,height=800");
     if (!printWindow) return;
 
-    const orderDate = order.createdAt ? new Date(order.createdAt).toLocaleString() : '';
+    const orderDate = order.createdAt
+      ? new Date(order.createdAt).toLocaleString()
+      : "";
 
-    const itemsHTML = order.cart?.items
-      .map((item, index) => `
+    const itemsHTML =
+      order.cart?.items
+        ?.map(
+          (item, index) => `
         <tr>
           <td>${index + 1}</td>
           <td>${item.title}</td>
@@ -137,12 +115,14 @@ const meta = data?.data?.meta || { total: 0, totalPages: 0 };
           <td>${item.price}</td>
           <td>${(item.quantity * item.price).toFixed(2)}</td>
         </tr>
-      `).join("") || '';
+      `
+        )
+        .join("") || "";
 
     const htmlContent = `
       <html>
         <head>
-          <title>Order Invoice - ${ order.invoiceId}</title>
+          <title>Order Invoice - ${order.invoiceId}</title>
           <style>
             body { font-family: Arial, sans-serif; padding: 20px; line-height: 1.6; }
             h1 { text-align: center; margin-bottom: 20px; }
@@ -152,11 +132,13 @@ const meta = data?.data?.meta || { total: 0, totalPages: 0 };
           </style>
         </head>
         <body>
-          <h1>Order Invoice: ${ order.invoiceId}</h1>
+          <h1>Order Invoice: ${order.invoiceId}</h1>
           <p><strong>Order Date:</strong> ${orderDate}</p>
-          <p><strong>Name:</strong> ${order.user?.name ?? ''}</p>
-          <p><strong>Email:</strong> ${order.user?.email ?? ''}</p>
-          <p><strong>Phone:</strong> ${order.user?.phone ?? ''}</p>
+          <p><strong>Name:</strong> ${order.user?.name ?? ""}</p>
+          <p><strong>Email:</strong> ${order.user?.email ?? ""}</p>
+          <p><strong>Phone:</strong> ${order.user?.phone ?? ""}</p>
+          <p><strong>Address:</strong> ${order.address?.fullAddress ?? ""}</p>
+     
           <hr/>
           <table>
             <thead>
@@ -166,7 +148,9 @@ const meta = data?.data?.meta || { total: 0, totalPages: 0 };
               ${itemsHTML}
             </tbody>
           </table>
-          <h3 style="text-align: right;">Total Amount: ৳${order.totalPrice.toFixed(2)}</h3>
+          <h3 style="text-align: right;">Total Amount: ৳${order.totalPrice.toFixed(
+            2
+          )}</h3>
         </body>
       </html>
     `;
@@ -190,9 +174,9 @@ const meta = data?.data?.meta || { total: 0, totalPages: 0 };
     if (result.isConfirmed) {
       try {
         await deleteOrder(id).unwrap();
-        setLocalOrders((prev) => prev.filter((o) => o._id !== id));
-        Swal.fire("Deleted!", "Order deleted successfully.", "success");
         toast.success("Order deleted successfully");
+        await refetch(); // Refetch orders after deletion
+        Swal.fire("Deleted!", "Order deleted successfully.", "success");
       } catch {
         Swal.fire("Error!", "Failed to delete order.", "error");
         toast.error("Failed to delete order");
@@ -203,7 +187,8 @@ const meta = data?.data?.meta || { total: 0, totalPages: 0 };
   return (
     <div className="p-4 space-y-6">
       <h1 className="text-2xl font-bold text-center">Orders</h1>
-      <div className="flex gap-2 justify-center">
+
+      <div className="flex justify-center gap-2">
         <Input
           placeholder="Search by Invoice ID"
           value={searchInvoiceId}
@@ -231,6 +216,7 @@ const meta = data?.data?.meta || { total: 0, totalPages: 0 };
                 <TableHead>Actions</TableHead>
               </TableRow>
             </TableHeader>
+
             <TableBody>
               {orders.map((order) => (
                 <TableRow key={order._id}>
@@ -238,30 +224,36 @@ const meta = data?.data?.meta || { total: 0, totalPages: 0 };
                   <TableCell>{order.user?.name}</TableCell>
                   <TableCell>{order.user?.email}</TableCell>
 
-                  {/* Order Status */}
                   <TableCell>
                     {order.status === "shipped" ? (
                       <span className="text-blue-600 font-semibold">shipped</span>
                     ) : (
                       <Select
-                        value={order.status}
+                        value={order?.orderStatus}
                         onValueChange={(val) =>
                           handleUpdateStatus(order.invoiceId, val)
                         }
                       >
-                        <SelectTrigger><SelectValue /></SelectTrigger>
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
                         <SelectContent>
-                          {["pending", "confirmed", "shipped", "delivered", "cancelled"].map(
-                            (s) => (
-                              <SelectItem key={s} value={s}>{s}</SelectItem>
-                            )
-                          )}
+                          {[
+                            "pending",
+                            "confirmed",
+                            "shipped",
+                            "delivered",
+                            "cancelled",
+                          ].map((s) => (
+                            <SelectItem key={s} value={s}>
+                              {s}
+                            </SelectItem>
+                          ))}
                         </SelectContent>
                       </Select>
                     )}
                   </TableCell>
 
-                  {/* Payment Status */}
                   <TableCell>
                     {order.paymentStatus === "success" ? (
                       <span className="text-green-600 font-semibold">paid</span>
@@ -272,20 +264,22 @@ const meta = data?.data?.meta || { total: 0, totalPages: 0 };
                           handleUpdatePaymentStatus(order.invoiceId, val)
                         }
                       >
-                        <SelectTrigger><SelectValue /></SelectTrigger>
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
                         <SelectContent>
                           {["pending", "success", "failed"].map((s) => (
-                            <SelectItem key={s} value={s}>{s}</SelectItem>
+                            <SelectItem key={s} value={s}>
+                              {s}
+                            </SelectItem>
                           ))}
                         </SelectContent>
                       </Select>
                     )}
                   </TableCell>
 
-                  {/* Total */}
                   <TableCell>৳{order.totalPrice.toFixed(2)}</TableCell>
 
-                  {/* Actions */}
                   <TableCell className="flex gap-2">
                     <Dialog>
                       <DialogTrigger asChild>
@@ -296,10 +290,18 @@ const meta = data?.data?.meta || { total: 0, totalPages: 0 };
                           <DialogTitle>Order - {order.invoiceId}</DialogTitle>
                         </DialogHeader>
                         <div className="space-y-2 text-sm max-h-[400px] overflow-y-auto">
-                          <p><strong>Name:</strong> {order.user?.name}</p>
-                          <p><strong>Email:</strong> {order.user?.email}</p>
-                          <p><strong>Phone:</strong> {order.address?.phone}</p>
-                          <p><strong>Address:</strong> {order.address?.fullAddress}</p>
+                          <p>
+                            <strong>Name:</strong> {order.user?.name}
+                          </p>
+                          <p>
+                            <strong>Email:</strong> {order.user?.email}
+                          </p>
+                          <p>
+                            <strong>Phone:</strong> {order.address?.phone}
+                          </p>
+                          <p>
+                            <strong>Address:</strong> {order.address?.fullAddress}
+                          </p>
                           <hr />
                           <h4 className="font-semibold">Items:</h4>
                           {order.cart?.items?.map((item, idx) => (
@@ -313,10 +315,18 @@ const meta = data?.data?.meta || { total: 0, totalPages: 0 };
                         </div>
                       </DialogContent>
                     </Dialog>
-                    <Button variant="outline" onClick={() => handlePrintOrder(order)}>
+
+                    <Button
+                      variant="outline"
+                      onClick={() => handlePrintOrder(order)}
+                    >
                       Print
                     </Button>
-                    <Button variant="destructive" onClick={() => handleDeleteOrder(order._id)}>
+
+                    <Button
+                      variant="destructive"
+                      onClick={() => handleDeleteOrder(order._id)}
+                    >
                       <MdDelete />
                     </Button>
                   </TableCell>
@@ -331,16 +341,19 @@ const meta = data?.data?.meta || { total: 0, totalPages: 0 };
         <Pagination className="justify-center mt-4">
           <PaginationContent>
             <PaginationItem>
-            <PaginationLink
+              <PaginationLink
                 onClick={() => {
-                  if (page !== 1) handlePageChange(page - 1);
+                  if (page > 1) handlePageChange(page - 1);
                 }}
-                style={{ pointerEvents: page === 1 ? "none" : "auto", opacity: page === 1 ? 0.5 : 1 }}
+                style={{
+                  pointerEvents: page === 1 ? "none" : "auto",
+                  opacity: page === 1 ? 0.5 : 1,
+                }}
               >
                 Prev
               </PaginationLink>
-
             </PaginationItem>
+
             {Array.from({ length: meta.totalPages }, (_, i) => (
               <PaginationItem key={i}>
                 <PaginationLink
@@ -351,16 +364,19 @@ const meta = data?.data?.meta || { total: 0, totalPages: 0 };
                 </PaginationLink>
               </PaginationItem>
             ))}
-            <PaginationItem>
-                  <PaginationLink
-                    onClick={() => {
-                      if (page !== 1) handlePageChange(page + 1);
-                    }}
-                    style={{ pointerEvents: page === 1 ? "none" : "auto", opacity: page === 1 ? 0.5 : 1 }}
-                  >
-                    Next
-                  </PaginationLink>
 
+            <PaginationItem>
+              <PaginationLink
+                onClick={() => {
+                  if (page < meta.totalPages) handlePageChange(page + 1);
+                }}
+                style={{
+                  pointerEvents: page === meta.totalPages ? "none" : "auto",
+                  opacity: page === meta.totalPages ? 0.5 : 1,
+                }}
+              >
+                Next
+              </PaginationLink>
             </PaginationItem>
           </PaginationContent>
         </Pagination>

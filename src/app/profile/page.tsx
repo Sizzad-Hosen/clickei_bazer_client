@@ -18,6 +18,7 @@ import {
 import { FormInput } from "@/components/form/FromInput";
 import { toast } from "sonner";
 import Spinner from "@/components/Spinner";
+import { TGenericErrorResponse } from "@/types/error";
 
 const editableAddressFields = [
   "division",
@@ -151,10 +152,21 @@ export default function ProfilePage() {
       toast.success("✅ Profile updated successfully");
       refetch();
       setModalOpen(false);
-    } catch (error: any) {
-      toast.error(error?.data?.message || "❌ Failed to update profile");
-    }
+    } catch (error: unknown) {
+  if (
+    typeof error === 'object' && 
+    error !== null && 
+    'data' in error &&
+    typeof (error as any).data === 'object' &&
+    (error as any).data !== null
+  ) {
+    const data = (error as any).data as Partial<TGenericErrorResponse>;
+    toast.error(data.message || "❌ Failed to update profile");
+  } else {
+    toast.error("❌ Failed to update profile");
+  }
   };
+}
 
   return (
     <div className="flex flex-col md:flex-row min-h-screen bg-gray-100">

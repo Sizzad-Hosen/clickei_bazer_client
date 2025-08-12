@@ -20,9 +20,9 @@ export const Home = () => {
   const closeCart = () => setCartOpen(false);
 
   // Safely get products array
-const products: Product[] = useMemo(() => {
-  return Array.isArray(data?.data?.data) ? data.data.data : [];
-}, [data]);
+// const products: Product[] = useMemo(() => {
+//   return Array.isArray(data?.data?.data) ? data.data.data : [];
+// }, [data]);
 
 
   return (

@@ -16,6 +16,8 @@ export interface Category {
 export interface Subcategory {
   _id: string;
   name: string;
+  unit?:string;
+  pricePerUnit?:string;
   categoryId: string;
 }
 

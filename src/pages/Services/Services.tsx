@@ -1,7 +1,6 @@
 'use client';
 
 import { ChangeEvent, useState } from 'react';
-import { useRouter } from 'next/navigation';
 import {
   useGetAllServicesQuery,
   useDeleteServiceMutation,
@@ -18,34 +17,32 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
-import { Pencil, Trash2 } from 'lucide-react'; // ✅ Icon library used by ShadCN
+import { Pencil, Trash2 } from 'lucide-react';
 import Spinner from '@/components/Spinner';
+import { Service } from '@/types/products';
 
 const ServicePage = () => {
-  const router = useRouter();
-
   const [deleteService] = useDeleteServiceMutation();
   const [updateService] = useUpdateServiceMutation();
 
   const { data, isLoading, isError } = useGetAllServicesQuery({});
-  const services = Array.isArray(data) ? data : data?.data || [];
+  const services: Service[] = Array.isArray(data) ? data : data?.data || [];
 
   const [isOpen, setIsOpen] = useState(false);
-  const [selectedService, setSelectedService] = useState<any>(null);
-  const [formData, setFormData] = useState({ name: '' });
+  const [selectedService, setSelectedService] = useState<Service | null>(null);
+  const [formData, setFormData] = useState<{ name: string }>({ name: '' });
 
-  const openEditModal = (service: any) => {
+  const openEditModal = (service: Service) => {
     setSelectedService(service);
     setFormData({ name: service.name });
     setIsOpen(true);
   };
 
-  const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
   const handleDelete = async (id: string) => {
-  
     try {
       await deleteService(id).unwrap();
       toast.success('Service deleted successfully');
@@ -56,6 +53,7 @@ const ServicePage = () => {
   };
 
   const handleSave = async () => {
+    if (!selectedService) return;
     try {
       await updateService({ id: selectedService._id, ...formData }).unwrap();
       toast.success('Service updated successfully');
@@ -72,38 +70,37 @@ const ServicePage = () => {
         <h1 className="text-2xl font-bold">All Services</h1>
       </div>
 
-      {isLoading && <Spinner></Spinner>}
+      {isLoading && <Spinner />}
       {isError && <p>Error loading services</p>}
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        {services?.map((service: any) => (
-    <Card
-  key={service._id}
-  className="rounded-2xl border border-gray-200 bg-gradient-to-br from-white via-gray-50 to-gray-100 shadow-lg transition hover:shadow-xl"
->
-  <CardHeader className="text-lg font-semibold text-primary">
-    {service?.name}
-  </CardHeader>
-  <CardContent className="flex justify-end gap-2">
-    <Button
-      variant="outline"
-      size="icon"
-      className="border-gray-300 hover:bg-primary/10"
-      onClick={() => openEditModal(service)}
-    >
-      <Pencil className="w-4 h-4 text-gray-700" />
-    </Button>
-    <Button
-      variant="outline"
-      size="icon"
-      className="border-gray-300 hover:bg-red-50"
-      onClick={() => handleDelete(service._id)}
-    >
-      <Trash2 className="w-4 h-4 text-red-500" />
-    </Button>
-  </CardContent>
-</Card>
-
+        {services.map((service: Service) => (
+          <Card
+            key={service._id}
+            className="rounded-2xl border border-gray-200 bg-gradient-to-br from-white via-gray-50 to-gray-100 shadow-lg transition hover:shadow-xl"
+          >
+            <CardHeader className="text-lg font-semibold text-primary">
+              {service.name}
+            </CardHeader>
+            <CardContent className="flex justify-end gap-2">
+              <Button
+                variant="outline"
+                size="icon"
+                className="border-gray-300 hover:bg-primary/10"
+                onClick={() => openEditModal(service)}
+              >
+                <Pencil className="w-4 h-4 text-gray-700" />
+              </Button>
+              <Button
+                variant="outline"
+                size="icon"
+                className="border-gray-300 hover:bg-red-50"
+                onClick={() => handleDelete(service._id)}
+              >
+                <Trash2 className="w-4 h-4 text-red-500" />
+              </Button>
+            </CardContent>
+          </Card>
         ))}
       </div>
 

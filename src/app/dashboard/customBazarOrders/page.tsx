@@ -33,6 +33,7 @@ import {
 } from '@/components/ui/pagination';
 import Spinner from '@/components/Spinner';
 import {
+
   useDeleteCustomOrderByIdMutation,
   useGetAllCustomBazarOrdersQuery,
   useUpdateCustomBazarOrderStatusMutation,
@@ -41,41 +42,10 @@ import {
 import { toast } from 'sonner';
 import { MdDelete } from 'react-icons/md';
 import Swal from 'sweetalert2';
+import { Order } from '@/types/order';
+import { TMeta } from '@/types/global';
 
-interface OrderItem {
-  subcategoryName: string;
-  unit: string;
-  quantity: number;
-  pricePerUnit: number;
-  totalPrice: number;
-}
 
-interface User {
-  name?: string;
-  email?: string;
-  phone?: string;
-}
-
-interface Address {
-  fullAddress?: string;
-}
-
-interface Order {
-  _id: string;
-  invoiceId: string;
-  user?: User;
-  address?: Address;
-  status: string;
-  paymentStatus?: string;
-  totalAmount?: number;
-  orderItems: OrderItem[];
-}
-
-interface MetaData {
-  total?: number;
-  totalPages?: number;
-  [key: string]: any;
-}
 
 const ORDERS_PER_PAGE = 10;
 
@@ -90,8 +60,16 @@ const CustomBazarOrdersPage: React.FC = () => {
     limit: ORDERS_PER_PAGE,
   });
 
+
+
   const orders: Order[] = data?.data?.data || [];
-  const meta: MetaData = data?.meta || {};
+
+  const meta: TMeta = data?.meta || {
+  total: 0,
+  totalPages: 0,
+  limit: 0,
+  page: 0,
+};
 
   // Mutation for updating order/payment status
   const [updateStatus] = useUpdateCustomBazarOrderStatusMutation();

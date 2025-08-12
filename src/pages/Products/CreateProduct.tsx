@@ -1,6 +1,6 @@
 'use client';
 
-import { ChangeEvent, useState } from 'react';
+import {  useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { FormInput } from '@/components/form/FromInput';
@@ -15,6 +15,7 @@ import { useGetAllServicesQuery } from '@/redux/features/Services/serviceApi';
 import { useGetAllCategoriesQuery } from '@/redux/features/Categories/categoryApi';
 import { useGetAllSubCategoriesQuery } from '@/redux/features/SubCategories/subCategoryApi';
 import { useAddProductMutation } from '@/redux/features/Products/productApi';
+import { Category, Service, Subcategory } from '@/types/products';
 
 const CreateProductPage = () => {
   const router = useRouter();
@@ -194,7 +195,7 @@ const validateDiscount = () => {
               <SelectValue placeholder="Choose service" />
             </SelectTrigger>
             <SelectContent>
-              {serviceData?.data?.map((service: any) => (
+              {serviceData?.data?.map((service: Service) => (
                 <SelectItem key={service._id} value={service._id}>
                   {service.name}
                 </SelectItem>
@@ -211,7 +212,7 @@ const validateDiscount = () => {
               <SelectValue placeholder="Choose category" />
             </SelectTrigger>
             <SelectContent>
-              {categoryData?.data?.map((cat: any) => (
+              {categoryData?.data?.map((cat: Category) => (
                 <SelectItem key={cat._id} value={cat._id}>
                   {cat.name}
                 </SelectItem>
@@ -228,7 +229,7 @@ const validateDiscount = () => {
               <SelectValue placeholder="Choose subcategory" />
             </SelectTrigger>
             <SelectContent>
-              {subCategoryData?.data?.map((sub: any) => (
+              {subCategoryData?.data?.map((sub: Subcategory) => (
                 <SelectItem key={sub._id} value={sub._id}>
                   {sub.name}
                 </SelectItem>

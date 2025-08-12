@@ -2,14 +2,14 @@
 
 import React, { useState } from 'react';
 import { use } from 'react';
-import { useDeleteProductMutation, useGetSingleProductQuery, useUpdateProductMutation } from '@/redux/features/Products/productApi';
+import { useDeleteProductMutation, useGetSingleProductQuery } from '@/redux/features/Products/productApi';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { EditProductModal } from '@/components/Products/EditProductModal';
 import { MdDelete, MdEdit } from 'react-icons/md';
-import Swal from 'sweetalert2'; // install with `npm install sweetalert2`
+import Swal from 'sweetalert2';
 import Spinner from '@/components/Spinner';
 
 const ProductDetailsPage = ({ params }: { params: Promise<{ id: string }> }) => {
@@ -21,11 +21,16 @@ const ProductDetailsPage = ({ params }: { params: Promise<{ id: string }> }) => 
 
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [deleteProduct, { isLoading: isDeleting }] = useDeleteProductMutation();
-  const [updateProduct, { isLoading: isUpdating }] = useUpdateProductMutation();
 
   if (isLoading) return <Spinner />;
-  if (isError || !productExists)
-    return <p className="text-center text-red-600 py-20 font-semibold">Failed to load product.</p>;
+
+  if (isError || !productExists) {
+    return (
+      <p className="text-center text-red-600 py-20 font-semibold">
+        Failed to load product.
+      </p>
+    );
+  }
 
   const handleDelete = async () => {
     const result = await Swal.fire({
@@ -44,14 +49,11 @@ const ProductDetailsPage = ({ params }: { params: Promise<{ id: string }> }) => 
         await deleteProduct(id).unwrap();
         toast.success('Product deleted successfully!');
         router.push('/dashboard/products');
-      } catch (error) {
+      } catch {
         toast.error('Failed to delete product.');
       }
     }
   };
-
-  // The edit logic will be handled inside the EditProductModal
-  // The modal should call your updateProduct mutation internally and then call onClose
 
   return (
     <main className="max-w-4xl mx-auto p-6 bg-white rounded-2xl shadow-lg">
@@ -65,7 +67,12 @@ const ProductDetailsPage = ({ params }: { params: Promise<{ id: string }> }) => 
                 key={i}
                 className="relative w-56 h-56 rounded-lg overflow-hidden flex-shrink-0 shadow-md hover:scale-105 transition-transform duration-300"
               >
-                <Image src={img} alt={`${productExists.name} image ${i + 1}`} fill className="object-cover" />
+                <Image
+                  src={img}
+                  alt={`${productExists.name} image ${i + 1}`}
+                  fill
+                  className="object-cover"
+                />
               </div>
             ))
           ) : (
@@ -94,7 +101,9 @@ const ProductDetailsPage = ({ params }: { params: Promise<{ id: string }> }) => 
           <span className="font-semibold">Published:</span>{' '}
           <span
             className={
-              productExists.isPublished ? 'text-green-600 font-semibold' : 'text-red-600 font-semibold'
+              productExists.isPublished
+                ? 'text-green-600 font-semibold'
+                : 'text-red-600 font-semibold'
             }
           >
             {productExists.isPublished ? 'Yes' : 'No'}
@@ -107,9 +116,8 @@ const ProductDetailsPage = ({ params }: { params: Promise<{ id: string }> }) => 
           onClick={() => setIsEditOpen(true)}
           aria-label="Edit product"
           className="px-6 py-2 flex items-center gap-2"
-          disabled={isUpdating}
         >
-          <MdEdit size={20} /> 
+          <MdEdit size={20} />
         </Button>
         <Button
           variant="destructive"
@@ -118,7 +126,7 @@ const ProductDetailsPage = ({ params }: { params: Promise<{ id: string }> }) => 
           aria-label="Delete product"
           className="px-6 py-2 flex items-center gap-2"
         >
-          <MdDelete size={20} /> 
+          <MdDelete size={20} />
         </Button>
       </section>
 

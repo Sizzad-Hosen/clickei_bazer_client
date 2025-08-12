@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import { FormInput } from "@/components/form/FromInput";
 import { toast } from "sonner";
 import { useCreateUserMutation } from "@/redux/features/Users/userApi";
+import { TGenericErrorResponse } from "@/types/error";
 
 interface FormState {
   name: string;
@@ -65,15 +66,33 @@ const RegisterPage: React.FC = () => {
       return;
     }
 
-    try {
-      await register(form).unwrap();
-      toast.success("Registration successful!");
-      router.push("/login");
-    } catch (err: any) {
-      const errorMsg =
-        err?.data?.errorSources?.[0]?.message || err?.data?.message || "Registration failed";
-      toast.error(errorMsg);
+ try {
+  await register(form).unwrap();
+  toast.success("Registration successful!");
+  router.push("/login");
+} catch (err: unknown) {
+  const isGenericError = (error: any): error is TGenericErrorResponse => {
+    return (
+      error &&
+      typeof error === 'object' &&
+      'errorSources' in error &&
+      Array.isArray(error.errorSources)
+    );
+  };
+
+  let errorMsg = "Registration failed";
+
+  if (typeof err === 'object' && err !== null && 'data' in err) {
+    const errData = (err as any).data;
+    if (isGenericError(errData)) {
+      errorMsg = errData.errorSources[0]?.message || errorMsg;
+    } else if (typeof errData.message === 'string') {
+      errorMsg = errData.message;
     }
+  }
+
+  toast.error(errorMsg);
+}
   };
 
   const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);

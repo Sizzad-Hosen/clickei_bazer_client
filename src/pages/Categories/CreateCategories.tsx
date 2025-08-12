@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 
@@ -17,15 +17,28 @@ import {
 } from '@/components/ui/select';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { useAddCategoryMutation } from '@/redux/features/Categories/categoryApi';
+import { Service } from '@/types/products';
+import { TErrorSources, TGenericErrorResponse } from '@/types/error';
+
+// Type guard for generic error response
+const isGenericError = (err: any): err is TGenericErrorResponse => {
+  return (
+    err &&
+    typeof err === 'object' &&
+    'errorSources' in err &&
+    Array.isArray(err.errorSources)
+  );
+};
 
 const CreateCategoryPage = () => {
   const router = useRouter();
   const [createCategory] = useAddCategoryMutation();
   const { data: serviceData } = useGetAllServicesQuery({});
 
-  const services = Array.isArray(serviceData) ? serviceData : serviceData?.data || [];
+  const services: Service[] =
+    Array.isArray(serviceData) ? serviceData : serviceData?.data ?? [];
 
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<{ name: string; serviceId: string }>({
     name: '',
     serviceId: '',
   });
@@ -37,30 +50,36 @@ const CreateCategoryPage = () => {
   const handleServiceChange = (value: string) => {
     setFormData({ ...formData, serviceId: value });
   };
-const handleSubmit = async (e: React.FormEvent) => {
-  e.preventDefault();
 
-  if (!formData.name || !formData.serviceId) {
-    toast.error('Please fill in all fields');
-    return;
-  }
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
 
-  try {
-    await createCategory(formData).unwrap();
+    if (!formData.name || !formData.serviceId) {
+      toast.error('Please fill in all fields');
+      return;
+    }
 
-    toast.success('Category created successfully!');
-    setFormData({ name: '', serviceId: '' });
-    router.push('/dashboard/categories');
-  } catch (error: any) {
-    if (error?.data?.errorSources) {
-      error.data.errorSources.forEach((err: any) => {
-        toast.error(`${err.path.replace('body.', '')}: ${err.message}`);
-      });
-    } else {
+    try {
+      await createCategory(formData).unwrap();
+
+      toast.success('Category created successfully!');
+      setFormData({ name: '', serviceId: '' });
+      router.push('/dashboard/categories');
+    } catch (error: unknown) {
+      if (typeof error === 'object' && error !== null && 'data' in error) {
+        const errData = (error as any).data;
+
+        if (isGenericError(errData)) {
+          errData.errorSources.forEach((err: TErrorSources[number]) => {
+            toast.error(`${err.path.toString().replace('body.', '')}: ${err.message}`);
+          });
+          return;
+        }
+      }
+
       toast.error('Failed to create category');
     }
-  }
-};
+  };
 
   return (
     <div className="max-w-xl mx-auto py-10 px-4">
@@ -79,19 +98,19 @@ const handleSubmit = async (e: React.FormEvent) => {
             />
 
             <div className="space-y-1">
-              <label htmlFor="serviceId" className="text-sm font-medium text-gray-700">
+              <label
+                htmlFor="serviceId"
+                className="text-sm font-medium text-gray-700"
+              >
                 Select Service
               </label>
-              <Select
-                onValueChange={handleServiceChange}
-                value={formData.serviceId}
-              >
+              <Select onValueChange={handleServiceChange} value={formData.serviceId}>
                 <SelectTrigger className="w-full">
                   <SelectValue placeholder="Select a service" />
                 </SelectTrigger>
                 <SelectContent>
-                  {services.map((service: any) => (
-                    <SelectItem key={service._id} value={service._id.toString()}>
+                  {services.map((service) => (
+                    <SelectItem key={service._id.toString()} value={service._id.toString()}>
                       {service.name}
                     </SelectItem>
                   ))}

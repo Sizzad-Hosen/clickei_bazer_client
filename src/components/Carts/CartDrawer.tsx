@@ -57,38 +57,40 @@ export default function CartDrawer({
     setTotalQuantity(quantity);
     setTotalAmount(amount);
   };
+const handleRemoveItemFromCart = async (productId: string) => {
+  try {
+    await removeItem(productId).unwrap();
 
-  const handleRemoveItemFromCart = async (productId: string) => {
-    try {
-      await removeItem(productId).unwrap();
+    const updatedCart = localCart.filter(item => item.productId !== productId);
+    setLocalCart(updatedCart);
+    calculateTotals(updatedCart);
 
-      const updatedCart = localCart.filter(item => item.productId !== productId);
-      setLocalCart(updatedCart);
-      calculateTotals(updatedCart);
+    toast.success('Item removed from cart');
+  } catch {
+    // Removed 'error' param because it was unused
+    toast.error('Failed to remove item from cart');
+  }
+};
 
-      toast.success('Item removed from cart');
-    } catch (error) {
-      toast.error('Failed to remove item from cart');
-    }
-  };
+const handleUpdateQuantity = async (productId: string, newQuantity: number) => {
+  if (newQuantity < 1) return; // prevent quantity less than 1
 
-  const handleUpdateQuantity = async (productId: string, newQuantity: number) => {
-    if (newQuantity < 1) return; // prevent quantity less than 1
+  try {
+    await updateQty({ data: { id: productId, quantity: newQuantity } }).unwrap();
 
-    try {
-      await updateQty({ data: { id: productId, quantity: newQuantity } }).unwrap();
+    const updatedCart = localCart.map(item =>
+      item.productId === productId ? { ...item, quantity: newQuantity } : item
+    );
+    setLocalCart(updatedCart);
+    calculateTotals(updatedCart);
 
-      const updatedCart = localCart.map(item =>
-        item.productId === productId ? { ...item, quantity: newQuantity } : item
-      );
-      setLocalCart(updatedCart);
-      calculateTotals(updatedCart);
+    toast.success('Quantity updated');
+  } catch {
+    // Removed 'error' param because it was unused
+    toast.error('Failed to update quantity');
+  }
+};
 
-      toast.success('Quantity updated');
-    } catch (error) {
-      toast.error('Failed to update quantity');
-    }
-  };
 
   return (
     <Drawer open={open} onOpenChange={onClose} direction="right">

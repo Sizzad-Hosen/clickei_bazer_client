@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import Image from 'next/image';
 import Link from 'next/link';
 import Spinner from '@/components/Spinner';
+import { Product } from '@/types/products';
 
 const PAGE_SIZE = 10;
 
@@ -30,7 +31,7 @@ console.log("meta", meta)
       <h1 className="text-2xl font-bold mb-6 text-center">All Products</h1>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-        {products.map((product: any) => (
+        {products.map((product: Product) => (
           <Card key={product._id} className="rounded-2xl border shadow-md">
             <CardHeader>
               <div className="h-48 w-full relative overflow-hidden rounded-lg">

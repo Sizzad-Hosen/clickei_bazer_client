@@ -19,13 +19,12 @@ export type TResponse<T> ={
     totalPage:number;
 }
 
-export type TMeta ={
-
-    limit:number;
-    page:number;
-    total:number;
-    totalPage:number;
-}
+export type TMeta = {
+  total: number;
+  totalPages: number; // match backend
+  limit: number;
+  page: number;
+};
 
 export type TQueryParam = {
   name: string;

@@ -2,13 +2,13 @@ import { RootState } from "@/redux/store";
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { REHYDRATE } from "redux-persist";
 
-// Define a typed interface for REHYDRATE action
+// Define a typed interface for REHYDRATE action with safer types instead of `any`
 interface RehydrateAction<T> {
   type: typeof REHYDRATE;
-  payload: {
-    [key: string]: any;  // generic shape for persisted states
-    auth?: T;            // specifically expect auth slice here
-  } | null | undefined;
+  payload:
+    | (Partial<Record<string, unknown>> & { auth?: T })
+    | null
+    | undefined;
 }
 
 export type TUser = {

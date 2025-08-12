@@ -1,7 +1,6 @@
 'use client';
 
 import { ChangeEvent, useState } from 'react';
-import { useRouter } from 'next/navigation';
 import {
   useGetAllCategoriesQuery,
   useDeleteCategoryMutation,
@@ -11,48 +10,59 @@ import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Pencil, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { FormInput } from '@/components/form/FromInput';
 import Spinner from '@/components/Spinner';
-
+import { Category } from '@/types/products';
 
 const CategoriesPage = () => {
-  const router = useRouter();
-
   const { data, isLoading, isError, refetch } = useGetAllCategoriesQuery({});
   const [deleteCategory] = useDeleteCategoryMutation();
   const [updateCategory] = useUpdateCategoryMutation();
 
-  const categories = Array.isArray(data) ? data : data?.data || [];
+  const categories: Category[] = Array.isArray(data)
+    ? data
+    : data?.data || [];
 
   // State for modal
   const [isOpen, setIsOpen] = useState(false);
-  const [selectedCategory, setSelectedCategory] = useState<any>(null);
+
+  const [selectedCategory, setSelectedCategory] = useState<Category | null>(
+    null
+  );
+
   const [formData, setFormData] = useState({ name: '' });
 
-  const openEditModal = (category: any) => {
+  const openEditModal = (category: Category) => {
     setSelectedCategory(category);
     setFormData({ name: category.name });
     setIsOpen(true);
   };
 
-  const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleChange = (
+    e: ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
   const handleDelete = async (id: string) => {
-   
     try {
       await deleteCategory(id).unwrap();
       toast.success('Category deleted successfully!');
       refetch();
-    } catch (error) {
+    } catch {
       toast.error('Failed to delete category');
     }
   };
 
   const handleSave = async () => {
-    
+    if (!selectedCategory) return;
     try {
       await updateCategory({
         id: selectedCategory._id,
@@ -61,7 +71,7 @@ const CategoriesPage = () => {
       toast.success('Category updated!');
       setIsOpen(false);
       refetch();
-    } catch (error) {
+    } catch {
       toast.error('Failed to update category');
     }
   };
@@ -72,13 +82,16 @@ const CategoriesPage = () => {
         <h1 className="text-2xl font-bold">All Categories</h1>
       </div>
 
-      {isLoading && <Spinner></Spinner>}
+      {isLoading && <Spinner />}
       {isError && <p>Failed to load categories</p>}
-      {categories.length === 0 && <p>No categories found.</p>}
+      {!isLoading && categories.length === 0 && <p>No categories found.</p>}
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        {categories.map((category: any) => (
-          <Card key={category._id} className="rounded-2xl border shadow-sm p-4 bg-muted/50">
+        {categories.map((category) => (
+          <Card
+            key={category._id}
+            className="rounded-2xl border shadow-sm p-4 bg-muted/50"
+          >
             <CardHeader className="text-lg font-semibold">{category.name}</CardHeader>
             <CardContent className="flex gap-2">
               <Button
@@ -100,7 +113,7 @@ const CategoriesPage = () => {
         ))}
       </div>
 
-      {/* ✅ Edit Modal */}
+      {/* Edit Modal */}
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>

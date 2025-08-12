@@ -10,6 +10,7 @@ import { useRouter } from 'next/navigation';
 import { useAppSelector } from '@/redux/hook';
 import { selectCurrentUser } from '@/redux/features/auth/authSlices';
 import Image from 'next/image';
+import { Product } from '@/types/products';
 
 type ShippingAddress = {
   fullName: string;
@@ -33,7 +34,7 @@ export default function CheckoutPage() {
   const [paymentMethod, setPaymentMethod] = useState<'cash_on_delivery' | 'sslCommerz'>('cash_on_delivery');
   const [sslCommerzWarning, setSslCommerzWarning] = useState(false);
 
-  const { data, isLoading } = useGetAllCartsQuery({});
+  const { data } = useGetAllCartsQuery({});
 
   const user = useAppSelector(selectCurrentUser)
 
@@ -41,22 +42,49 @@ export default function CheckoutPage() {
 
   type DeliveryOption = 'insideRangpur' | 'outsideRangpur';
   const [deliveryOption, setDeliveryOption] = useState<DeliveryOption>('insideRangpur');
+  
+  type Item = {
+  _id: string;
+  name: string;
+  price: number | string; // price can be string or number, convert later if needed
+  image?: string;
+  quantity: number;
+};
 
-  const cartItems = data?.data?.items.map((item: any) => ({
-    _id: item.productId,
+// Example data shape, you can adjust if you have nested productId:
+type RawItem = {
+  productId: {
+    _id: string;
+    image?: string;
+  };
+  title: string;
+  price: number | string;
+  image?: string;
+  quantity: number;
+};
+
+// Assuming data?.data?.items is RawItem[]
+const cartItems: Item[] =
+  data?.data?.items?.map((item: RawItem) => ({
+    _id: item.productId._id,
     name: item.title,
     price: item.price,
-   image: item.image || item.productId?.image,
+    image: item.image || item.productId.image || '',
     quantity: item.quantity,
   })) ?? [
-    { _id: '1', name: 'Rice 5kg', price: 300, quantity: 1 },
-    { _id: '2', name: 'Oil 1L', price: 180, quantity: 2 },
-    { _id: '3', name: 'Dal 1kg', price: 120, quantity: 1 },
+    { _id: '1', name: 'Rice 5kg', price: 300, quantity: 1, image: '' },
+    { _id: '2', name: 'Oil 1L', price: 180, quantity: 2, image: '' },
+    { _id: '3', name: 'Dal 1kg', price: 120, quantity: 1, image: '' },
   ];
 
   console.log("cart Item", cartItems)
 
-  const subtotal = cartItems.reduce((acc, item) => acc + item.price * item.quantity, 0);
+const subtotal = cartItems.reduce((acc, item) => {
+  const priceNum = typeof item.price === 'string' ? parseFloat(item.price) : item.price;
+  return acc + priceNum * item.quantity;
+}, 0);
+
+
   const subtotalFixed = Number(subtotal.toFixed(2));
   const shippingCost = deliveryOption === 'insideRangpur' ? 0 : 0;
   const grandTotal = +(subtotalFixed + shippingCost).toFixed(2);

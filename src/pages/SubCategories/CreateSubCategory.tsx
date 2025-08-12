@@ -16,6 +16,7 @@ import {
 import { Label } from '@/components/ui/label';
 import { FormInput } from '@/components/form/FromInput';
 import { useAddSubCategoryMutation } from '@/redux/features/SubCategories/subCategoryApi';
+import { Category, Service } from '@/types/products';
 
 const CreateSubcategoryPage = () => {
   const router = useRouter();
@@ -85,7 +86,7 @@ const CreateSubcategoryPage = () => {
               <SelectValue placeholder="Select a service" />
             </SelectTrigger>
             <SelectContent>
-              {services.map((service: any) => (
+              {services.map((service: Service) => (
                 <SelectItem key={service._id} value={service._id}>
                   {service.name}
                 </SelectItem>
@@ -102,7 +103,7 @@ const CreateSubcategoryPage = () => {
               <SelectValue placeholder="Select a category" />
             </SelectTrigger>
             <SelectContent>
-              {categories.map((category: any) => (
+              {categories.map((category: Category) => (
                 <SelectItem key={category._id} value={category._id}>
                   {category.name}
                 </SelectItem>
