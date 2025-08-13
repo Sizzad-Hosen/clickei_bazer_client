@@ -82,13 +82,20 @@ const handleSave = async () => {
     toast.success('Category updated!');
     setIsOpen(false);
     refetch();
-  } catch (error: any) {
-    console.error('Update failed', error);
-    // Optionally parse error to show detailed message
-    toast.error(error?.data?.message || 'Failed to update category');
-  }
-};
+  } catch (error: unknown) {
+  console.error('Update failed', error);
 
+  // Type guard to safely access error properties
+  if (error instanceof Error) {
+    toast.error(error.message || 'Failed to update category');
+  } else if (typeof error === 'object' && error !== null && 'data' in error) {
+   
+    toast.error( 'Failed to update category');
+  } else {
+    toast.error('Failed to update category');
+  }
+}
+}
 
   return (
     <div className="max-w-5xl mx-auto py-10 px-4">

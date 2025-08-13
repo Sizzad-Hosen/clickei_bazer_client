@@ -1,3 +1,5 @@
+"use client"
+
 import SubcategoriesPage from "@/pages/SubCategories/SubCategories"
 
 const SubCategories = () => {

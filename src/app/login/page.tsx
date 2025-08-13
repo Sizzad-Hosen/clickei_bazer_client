@@ -1,4 +1,6 @@
-import React from 'react';
+'use client'; 
+
+
 import LoginPage from '@/pages/Authentication/Login';
 
 const Login = () => {

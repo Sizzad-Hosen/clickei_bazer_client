@@ -23,7 +23,7 @@ const CustomBazarPage: React.FC = () => {
 const { data, isLoading, isError } = useGetAllCustomBazarProductsQuery();
 
   const categories: Category[] = useMemo(() => data?.data ?? [], [data]);
-
+  
 
   const [selections, setSelections] = useState<Record<string, Selection>>({});
 

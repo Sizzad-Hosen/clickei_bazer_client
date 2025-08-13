@@ -13,11 +13,6 @@ interface ProductsResponse {
   meta: TMeta;
 }
 
-// Define the shape of your API response for products list
-interface ProductsApiResponse {
-  data: Product[];
-  meta: TMeta;
-}
 
 export type TSearchQueryParams = Record<string, string | number | undefined>;
 

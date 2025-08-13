@@ -1,5 +1,7 @@
-// app/checkout/page.tsx or page.jsx
 
+
+
+"use client"
 import CheckoutPage from "@/pages/Checkout/Checkout";
 
 export default function Checkout() {

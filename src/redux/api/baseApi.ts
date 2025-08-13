@@ -3,9 +3,16 @@ import type { BaseQueryFn } from '@reduxjs/toolkit/query';
 import type { RootState } from "../store";
 import { logout, setUser } from "../features/auth/authSlices";
 
+const base_url = process.env.NEXT_PUBLIC_API_URL;
+
 // Base fetch query with token header
+
 const baseQuery = fetchBaseQuery({
-  baseUrl: 'http://localhost:8080/api/v1',
+
+  // baseUrl: 'http://localhost:8080/api/v1',
+  
+  baseUrl: `${base_url}`,
+
   credentials: 'include',
   prepareHeaders: (headers, { getState }) => {
     const token = (getState() as RootState).auth.token;

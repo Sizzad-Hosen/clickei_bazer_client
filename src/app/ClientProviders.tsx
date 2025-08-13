@@ -2,7 +2,7 @@
 "use client";
 
 import { ReactNode } from "react";
-import { ReduxProvider } from "@/app/Providers"; // your Redux provider
+import { ReduxProvider } from "./Providers"; // Path correct
 import { Toaster } from "sonner";
 import Navbar from "@/components/shared/Navbar";
 

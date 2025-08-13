@@ -27,6 +27,9 @@ interface FormData {
 export default function CustomBazarProductsPage() {
   // Always declare hooks first
   const { data, isLoading } = useGetAllCustomBazarProductsQuery();
+
+  console.log("data", data)
+  
   const [deleteCategory] = useDeleteCustomProductMutation();
   const [updateCategory] = useUpdateCustomBazarProductMutation();
 
@@ -37,8 +40,9 @@ export default function CustomBazarProductsPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 8;
 
-  // Compute categories safely
   const categories: TCustomProduct[] = Array.isArray(data?.data) ? data.data : [];
+
+
   const totalPages = Math.ceil(categories.length / itemsPerPage);
   const paginatedCategories = categories.slice(
     (currentPage - 1) * itemsPerPage,

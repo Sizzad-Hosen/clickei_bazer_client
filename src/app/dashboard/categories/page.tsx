@@ -1,3 +1,4 @@
+"use client"
 import CategoriesPage from "@/pages/Categories/Categories"
 
 const Categories = () => {

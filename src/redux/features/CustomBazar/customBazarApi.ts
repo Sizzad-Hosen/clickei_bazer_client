@@ -62,15 +62,21 @@ const customBazarApi = baseApi.injectEndpoints({
 getAllCustomBazarProducts: builder.query<TCustomBazarProductsResponse, void>({
   query: () => "/customBazerProducts",
   providesTags: ["CustomProducts"],
-  transformResponse: (response: ApiResponse<TCustomProduct>) => {
-    console.log("res", response.data.data)
+  transformResponse: (response: TResponseRedux<TCustomProduct>) => {
+    // response.data যদি array না হয়, এটাকে array বানানো
+    const dataArray: TCustomProduct[] = Array.isArray(response?.data)
+      ? response.data
+      : response?.data
+        ? [response.data] // single object থাকলে array বানানো
+        : []; // undefined হলে empty array
 
     return {
-      data: response.data.data, 
-      meta: response.data.meta ?? { total: 0, totalPages: 0, limit: 0, page: 1 },
+      data: dataArray,
+      meta: response?.meta ?? { total: 0, page: 1, limit: 10 },
     };
   },
 }),
+
 
     // fetch all custom bazar orders (with query params)
 getAllCustomBazarOrders: builder.query<

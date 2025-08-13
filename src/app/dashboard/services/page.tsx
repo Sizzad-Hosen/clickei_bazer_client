@@ -1,3 +1,4 @@
+"use client"
 import ServicePage from "@/pages/Services/Services"
 
 const Services = () => {

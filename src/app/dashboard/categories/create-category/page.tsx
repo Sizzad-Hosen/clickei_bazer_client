@@ -1,3 +1,4 @@
+"use client"
 import CreateCategoriesPage from '@/pages/Categories/CreateCategories'
 import React from 'react'
 

@@ -1,10 +1,9 @@
 "use client"
 
 import ProtectedRoute from "@/components/ProtectedRoute";
-import { useGetAllOrdersCountQuery, useGetAllOrdersQuery } from "@/redux/features/Order/ordersApi";
+import { useGetAllOrdersCountQuery } from "@/redux/features/Order/ordersApi";
 import { useGetAllServicesQuery } from "@/redux/features/Services/serviceApi";
 import { useGetAllUsersQuery } from "@/redux/features/Users/userApi";
-import { skipToken } from "@reduxjs/toolkit/query";
 
 export default function DashboardPage() {
 const { data: serviceAll } = useGetAllServicesQuery({});

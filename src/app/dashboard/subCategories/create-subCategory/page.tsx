@@ -1,3 +1,4 @@
+"use client"
 import CreateSubCategoryPage from '@/pages/SubCategories/CreateSubCategory'
 import React from 'react'
 

@@ -10,7 +10,8 @@ export const metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
-      <body className={`  antialiased`}>
+      <body className="antialiased">
+        {/* ClientProviders must wrap children */}
         <ClientProviders>{children}</ClientProviders>
       </body>
     </html>
