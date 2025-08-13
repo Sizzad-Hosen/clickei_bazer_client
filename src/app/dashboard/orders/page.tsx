@@ -42,14 +42,15 @@ import {
 import { MdDelete } from "react-icons/md";
 import Swal from "sweetalert2";
 import { Order } from "@/types/order";
+import { TQueryParam } from "@/types/global";
 
 const ORDERS_PER_PAGE = 10;
+
 
 const OrdersPage: React.FC = () => {
   const [page, setPage] = useState<number>(1);
   const [searchInvoiceId, setSearchInvoiceId] = useState<string>("");
 
-  // Destructure refetch from the query hook
   const {
     data,
     isLoading,
@@ -58,12 +59,12 @@ const OrdersPage: React.FC = () => {
     page,
     limit: ORDERS_PER_PAGE,
     invoiceId: searchInvoiceId.trim() || undefined,
-  });
+  } as TQueryParam);
 
-  // Use data directly from API (no local state for orders)
-  const orders: Order[] = data?.data?.data || [];
+const orders = data?.data || [];
+const meta = data?.meta || { total: 0, totalPages: 0 };
 
-  const meta = data?.data?.meta || { total: 0, totalPages: 0 };
+console.log("orders", orders)
 
   const [updateStatus] = useUpdateStatusMutation();
   const [updatePaymentStatus] = useUpdateOrderPaymentStatusMutation();
@@ -73,10 +74,9 @@ const OrdersPage: React.FC = () => {
 
   const handleUpdateStatus = async (invoiceId: string, newStatus: string) => {
     try {
-     const res =  await updateStatus({ invoiceId, status: newStatus }).unwrap();
-         console.log("res status", res)
+      await updateStatus({ invoiceId, status: newStatus }).unwrap();
       toast.success("Order status updated");
-      await refetch(); // refetch fresh data from server
+      await refetch();
     } catch {
       toast.error("Failed to update status");
     }
@@ -87,10 +87,9 @@ const OrdersPage: React.FC = () => {
     newStatus: string
   ) => {
     try {
-     const res = await updatePaymentStatus({ invoiceId, status: newStatus }).unwrap();
-     console.log("res payment", res)
+      await updatePaymentStatus({ invoiceId, status: newStatus }).unwrap();
       toast.success("Payment status updated");
-      await refetch(); // refetch fresh data from server
+      await refetch();
     } catch {
       toast.error("Failed to update payment status");
     }
@@ -105,7 +104,7 @@ const OrdersPage: React.FC = () => {
       : "";
 
     const itemsHTML =
-      order.cart?.items
+      order?.items
         ?.map(
           (item, index) => `
         <tr>
@@ -175,7 +174,7 @@ const OrdersPage: React.FC = () => {
       try {
         await deleteOrder(id).unwrap();
         toast.success("Order deleted successfully");
-        await refetch(); // Refetch orders after deletion
+        await refetch();
         Swal.fire("Deleted!", "Order deleted successfully.", "success");
       } catch {
         Swal.fire("Error!", "Failed to delete order.", "error");
@@ -229,7 +228,7 @@ const OrdersPage: React.FC = () => {
                       <span className="text-blue-600 font-semibold">shipped</span>
                     ) : (
                       <Select
-                        value={order?.orderStatus}
+                        value={order.orderStatus}
                         onValueChange={(val) =>
                           handleUpdateStatus(order.invoiceId, val)
                         }
@@ -304,7 +303,7 @@ const OrdersPage: React.FC = () => {
                           </p>
                           <hr />
                           <h4 className="font-semibold">Items:</h4>
-                          {order.cart?.items?.map((item, idx) => (
+                          {order?.items?.map((item, idx) => (
                             <div key={idx}>
                               <p>
                                 {item.title} x {item.quantity} = ৳

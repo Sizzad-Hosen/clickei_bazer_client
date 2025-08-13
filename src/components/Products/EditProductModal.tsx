@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, ChangeEvent } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -35,15 +35,15 @@ export const EditProductModal = ({
     setForm({ ...product });
   }, [product]);
 
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  ) => {
-    const { name, value, type } = e.target;
-    setForm((prev) => ({
-      ...prev,
-      [name]: type === 'number' ? Number(value) : value,
-    }));
-  };
+const handleChange = (
+  e: ChangeEvent<HTMLInputElement | HTMLSelectElement>
+) => {
+  const { name, value, type } = e.target;
+  setForm((prev) => ({
+    ...prev,
+    [name]: type === 'number' ? (value === '' ? 0 : Number(value)) : value,
+  }));
+};
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

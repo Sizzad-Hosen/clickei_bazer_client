@@ -1,14 +1,21 @@
 "use client"
 
 import ProtectedRoute from "@/components/ProtectedRoute";
-import { useGetAllOrdersQuery } from "@/redux/features/Order/ordersApi";
+import { useGetAllOrdersCountQuery, useGetAllOrdersQuery } from "@/redux/features/Order/ordersApi";
 import { useGetAllServicesQuery } from "@/redux/features/Services/serviceApi";
 import { useGetAllUsersQuery } from "@/redux/features/Users/userApi";
+import { skipToken } from "@reduxjs/toolkit/query";
 
 export default function DashboardPage() {
-  const { data: serviceAll } = useGetAllServicesQuery({});
-  const { data: AllUsers } = useGetAllUsersQuery({});
-  const { data: AllOrders } = useGetAllOrdersQuery({});
+const { data: serviceAll } = useGetAllServicesQuery({});
+const { data: AllUsers } = useGetAllUsersQuery();   
+
+// if no args expected here
+const { data: AllOrders } = useGetAllOrdersCountQuery();
+
+console.log("AllOrders", AllOrders);
+
+const userCount = AllUsers?.data?.data.length ?? 0; 
 
   return (
     <ProtectedRoute allowedRoles={['admin']}>
@@ -28,10 +35,9 @@ export default function DashboardPage() {
 
           <div className="bg-white rounded-2xl shadow-md p-6">
             <p className="text-gray-500">Active Users</p>
-            <h2 className="text-2xl font-semibold">{AllUsers?.data?.data?.length ?? 0}</h2>
+            <h2 className="text-2xl font-semibold">{userCount}</h2>
           </div>
         </div>
-
       </div>
     </ProtectedRoute>
   );

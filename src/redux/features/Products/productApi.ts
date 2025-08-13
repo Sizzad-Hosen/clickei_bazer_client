@@ -1,5 +1,5 @@
 import { baseApi } from "@/redux/api/baseApi";
-import { TResponseRedux } from "@/types/global";
+import { ApiResponse, TMeta, TResponseRedux } from "@/types/global";
 import { Product } from "@/types/products";
 
 export type TPaginationMeta = {
@@ -7,6 +7,17 @@ export type TPaginationMeta = {
   page: number;
   limit: number;
 };
+
+interface ProductsResponse {
+  data: Product[];
+  meta: TMeta;
+}
+
+// Define the shape of your API response for products list
+interface ProductsApiResponse {
+  data: Product[];
+  meta: TMeta;
+}
 
 export type TSearchQueryParams = Record<string, string | number | undefined>;
 
@@ -19,13 +30,14 @@ const productApi = baseApi.injectEndpoints({
   overrideExisting: true,
   endpoints: (builder) => ({
 
-    addProduct: builder.mutation<Product, Partial<Product>>({
-      query: (productInfo) => ({
-        url: '/products/create-product',
-        method: 'POST',
-        body: productInfo,
-      }),
-    }),
+addProduct: builder.mutation<Product, FormData>({
+  query: (formData) => ({
+    url: '/products/create-product',
+    method: 'POST',
+    body: formData,
+  }),
+}),
+
 
     getAllProductsBySearch: builder.query<
       { data: Product[]; meta: TPaginationMeta },
@@ -56,26 +68,52 @@ const productApi = baseApi.injectEndpoints({
       },
     }),
 
-    getAllProducts: builder.query<
-      TResponseRedux<Product[]>,
-      { page?: number; limit?: number }
+getAllProducts: builder.query<
+  { data: Product[]; meta: TMeta },   // transformed return type
+  { page?: number; limit?: number }  // query arg type
+>({
+  query: ({ page = 1, limit = 6 } = {}) => `/products?page=${page}&limit=${limit}`,
+transformResponse: (response: ApiResponse<Product>) => ({
+  data: response.data.data,
+  meta: response.data.meta ?? {
+    total: 0,
+    totalPages: 1,
+    page: 1,
+    limit: 6,  
+  },
+}),
+
+  providesTags: ['Products'],
+}),
+
+
+   getAllRecentProductsBySubcategory: builder.query<
+      ProductsResponse,
+      {  page?: number; limit?: number }
     >({
-      query: ({ page = 1, limit = 6 } = {}) => `/products?page=${page}&limit=${limit}`,
+      query: ({  page = 1, limit = 6 }) =>
+        `/products/sub-products?&page=${page}&limit=${limit}`,
+      // Use typed response here instead of `any`
+  
+  transformResponse: (response: ApiResponse<Product[]>): ProductsResponse => {
+    // Access the correct `data` level; no extra nesting
+   const products: Product[] = Array.isArray(response?.data?.data)
+      ? response.data.data.flat()
+      : [];
+
+    return {
+      data: products,
+      meta: response?.data?.meta ?? { totalPages: 1, total: 0, page: 1, limit: 10 },
+    };
+  },
       providesTags: ['Products'],
     }),
-
-    getAllProductsBySubcategory: builder.query<
-      TResponseRedux<Product[]>,
-      { page?: number; limit?: number }
-    >({
-      query: ({ page = 1, limit = 6 } = {}) => `/products/sub-products?page=${page}&limit=${limit}`,
-      providesTags: ['Products'],
-    }),
-
-    getSingleProduct: builder.query<Product, string>({
-      query: (id) => `/products/${id}`,
-      providesTags: (result, error, id) => [{ type: 'Products', id }],
-    }),
+    
+getSingleProduct: builder.query<Product, string>({
+  query: (id) => `/products/${id}`,
+  transformResponse: (response: { data: Product }) => response.data,
+  providesTags: (result, error, id) => [{ type: 'Products', id }],
+}),
 
     deleteProduct: builder.mutation<void, string>({
       query: (id) => ({
@@ -94,13 +132,28 @@ const productApi = baseApi.injectEndpoints({
       invalidatesTags: ['Products'],
     }),
 
-    getAllProductsBySubcategoryId: builder.query<
-      Product[],
-      { subcategoryId: string; page?: number; limit?: number }
-    >({
-      query: ({ subcategoryId, page = 1, limit = 10 }) =>
-        `/subCategories/allProductsBySubId/${subcategoryId}?page=${page}&limit=${limit}`,
-    }),
+getAllProductsBySubcategoryId: builder.query<
+  ProductsResponse,
+  { subcategoryId: string; page?: number; limit?: number }
+>({
+  query: ({ subcategoryId, page = 1, limit = 10 }) =>
+    `/products/sub-products?subcategoryId=${subcategoryId}&page=${page}&limit=${limit}`,
+
+  transformResponse: (response: ApiResponse<Product[]>): ProductsResponse => {
+    // Access the correct `data` level; no extra nesting
+   const products: Product[] = Array.isArray(response?.data?.data)
+      ? response.data.data.flat()
+      : [];
+
+    return {
+      data: products,
+      meta: response?.data?.meta ?? { totalPages: 1, total: 0, page: 1, limit: 10 },
+    };
+  },
+}),
+
+
+
 
   }),
 });
@@ -113,5 +166,5 @@ export const {
   useGetAllProductsQuery,
   useUpdateProductMutation,
   useGetSingleProductQuery,
-  useGetAllProductsBySubcategoryQuery
+  useGetAllRecentProductsBySubcategoryQuery,
 } = productApi;

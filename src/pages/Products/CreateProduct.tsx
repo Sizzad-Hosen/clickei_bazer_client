@@ -90,6 +90,7 @@ const validateDiscount = () => {
 
     try {
       await addProduct(formData).unwrap();
+      
       toast.success('Product created successfully!');
       router.push('/dashboard/products');
     } catch (err) {

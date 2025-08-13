@@ -33,7 +33,6 @@ import {
 } from '@/components/ui/pagination';
 import Spinner from '@/components/Spinner';
 import {
-
   useDeleteCustomOrderByIdMutation,
   useGetAllCustomBazarOrdersQuery,
   useUpdateCustomBazarOrderStatusMutation,
@@ -42,10 +41,8 @@ import {
 import { toast } from 'sonner';
 import { MdDelete } from 'react-icons/md';
 import Swal from 'sweetalert2';
-import { Order } from '@/types/order';
 import { TMeta } from '@/types/global';
-
-
+import { TCustomBazerOrder } from '@/types/CustomBazar';
 
 const ORDERS_PER_PAGE = 10;
 
@@ -53,25 +50,17 @@ const CustomBazarOrdersPage: React.FC = () => {
   const [invoiceIdSearch, setInvoiceIdSearch] = useState('');
   const [page, setPage] = useState(1);
 
-  // Fetch orders
+  // Fetch orders with pagination and filter
   const { data, isLoading, refetch } = useGetAllCustomBazarOrdersQuery({
     invoiceId: invoiceIdSearch.trim() || undefined,
     page,
     limit: ORDERS_PER_PAGE,
   });
 
+  // Correct data extraction based on API response shape
+  const orders: TCustomBazerOrder[] = data?.data || [];
+  const meta: TMeta = data?.meta || { total: 0, totalPages: 0, limit: 0, page: 0 };
 
-
-  const orders: Order[] = data?.data?.data || [];
-
-  const meta: TMeta = data?.meta || {
-  total: 0,
-  totalPages: 0,
-  limit: 0,
-  page: 0,
-};
-
-  // Mutation for updating order/payment status
   const [updateStatus] = useUpdateCustomBazarOrderStatusMutation();
   const [updatePaymentStatus] = useUpdateCustomOrderPaymentStatusMutation();
   const [deleteOrder] = useDeleteCustomOrderByIdMutation();
@@ -83,21 +72,20 @@ const CustomBazarOrdersPage: React.FC = () => {
     setPage(1);
   };
 
-  const handleStatusChange = async (invoiceId: string, newStatus: string, type: 'order' | 'payment') => {
+  const handleStatusChange = async (
+    invoiceId: string,
+    newStatus: string,
+    type: 'order' | 'payment'
+  ) => {
     try {
-      await updateStatus({ invoiceId, status: newStatus }).unwrap();
-      toast.success(`${type === 'order' ? 'Order' : 'Payment'} status updated to "${newStatus}".`);
-      refetch();
-    } catch (error) {
-      console.error('Failed to update status:', error);
-      toast.error(`Failed to update ${type === 'order' ? 'order' : 'payment'} status.`);
-    }
-  };
-
-  const handlePaymentStatusChange = async (invoiceId: string, newStatus: string, type: 'order' | 'payment') => {
-    try {
-      await updatePaymentStatus({ invoiceId, status: newStatus }).unwrap();
-      toast.success(`${type === 'order' ? 'Order' : 'Payment'} status updated to "${newStatus}".`);
+      if (type === 'order') {
+        await updateStatus({ invoiceId, status: newStatus }).unwrap();
+      } else {
+        await updatePaymentStatus({ invoiceId, status: newStatus }).unwrap();
+      }
+      toast.success(
+        `${type === 'order' ? 'Order' : 'Payment'} status updated to "${newStatus}".`
+      );
       refetch();
     } catch (error) {
       console.error('Failed to update status:', error);
@@ -122,14 +110,14 @@ const CustomBazarOrdersPage: React.FC = () => {
         Swal.fire('Deleted!', 'Custom Order deleted successfully.', 'success');
         toast.success('Custom Order deleted successfully.');
         refetch();
-      } catch (error) {
+      } catch {
         Swal.fire('Error!', 'Failed to delete custom order.', 'error');
         toast.error('Failed to delete custom order.');
       }
     }
   };
 
-  const handlePrintOrder = (order: Order) => {
+  const handlePrintOrder = (order: TCustomBazerOrder) => {
     const printWindow = window.open('', '_blank', 'width=800,height=600');
     if (!printWindow) return;
 
@@ -166,7 +154,7 @@ const CustomBazarOrdersPage: React.FC = () => {
         <p><strong>Phone:</strong> ${order.user?.phone || 'N/A'}</p>
         <p><strong>Address:</strong> ${order.address?.fullAddress || 'N/A'}</p>
         <p><strong>Status:</strong> ${order.status}</p>
-        <p><strong>Total Amount:</strong> ৳${order.totalAmount?.toFixed(2) || '0'}</p>
+        <p><strong>SubTotal Amount:</strong> ৳${order.totalAmount?.toFixed(2) || '0'}</p>
 
         <h2>Order Items</h2>
         <table>
@@ -246,27 +234,13 @@ const CustomBazarOrdersPage: React.FC = () => {
                             <DialogTitle>Order Details</DialogTitle>
                           </DialogHeader>
                           <div className="space-y-2 text-sm max-h-[400px] overflow-y-auto">
-                            <p>
-                              <strong>Invoice:</strong> {order.invoiceId}
-                            </p>
-                            <p>
-                              <strong>Name:</strong> {order.user?.name}
-                            </p>
-                            <p>
-                              <strong>Email:</strong> {order.user?.email}
-                            </p>
-                            <p>
-                              <strong>Phone:</strong> {order.user?.phone}
-                            </p>
-                            <p>
-                              <strong>Address:</strong> {order.address?.fullAddress}
-                            </p>
-                            <p>
-                              <strong>Status:</strong> {order.status}
-                            </p>
-                            <p>
-                              <strong>Total:</strong> ৳{order.totalAmount?.toFixed(2)}
-                            </p>
+                            <p><strong>Invoice:</strong> {order.invoiceId}</p>
+                            <p><strong>Name:</strong> {order.user?.name}</p>
+                            <p><strong>Email:</strong> {order.user?.email}</p>
+                            <p><strong>Phone:</strong> {order.user?.phone}</p>
+                            <p><strong>Address:</strong> {order.address?.fullAddress}</p>
+                            <p><strong>Status:</strong> {order.status}</p>
+                            <p><strong>Total:</strong> ৳{order.totalAmount?.toFixed(2)}</p>
                             <hr />
                             <h4 className="font-medium mt-2">Items:</h4>
                             {order.orderItems.map((item, idx) => (
@@ -285,7 +259,7 @@ const CustomBazarOrdersPage: React.FC = () => {
 
                       <Select
                         value={order.status}
-                        onValueChange={(val) => handleStatusChange(order.invoiceId, val, 'order')}
+                        onValueChange={(val) => handleStatusChange(order.invoiceId as string, val, 'order')}
                       >
                         <SelectTrigger className="w-24 h-8 text-sm">
                           <SelectValue placeholder={order.status} />
@@ -301,7 +275,7 @@ const CustomBazarOrdersPage: React.FC = () => {
 
                       <Select
                         value={order.paymentStatus ?? 'pending'}
-                        onValueChange={(val) => handlePaymentStatusChange(order.invoiceId, val, 'payment')}
+                        onValueChange={(val) => handleStatusChange(order?.invoiceId as string, val, 'payment')}
                       >
                         <SelectTrigger className="w-24 h-8 text-sm">
                           <SelectValue placeholder={order.paymentStatus ?? 'pending'} />
@@ -324,7 +298,7 @@ const CustomBazarOrdersPage: React.FC = () => {
                         Print Order
                       </Button>
 
-                      <Button variant="destructive" onClick={() => handleDeleteOrder(order._id)}>
+                      <Button variant="destructive" onClick={() => handleDeleteOrder(order._id as string)}>
                         <MdDelete />
                       </Button>
                     </div>
@@ -336,20 +310,20 @@ const CustomBazarOrdersPage: React.FC = () => {
         </div>
       )}
 
-      {meta.total && meta.total > ORDERS_PER_PAGE && orders.length > 0 && (
+      {meta.total > ORDERS_PER_PAGE && orders.length > 0 && (
         <Pagination className="justify-center mt-6">
           <PaginationContent>
             <PaginationItem>
-             <PaginationLink
-                 onClick={() => {
-                   if (page !== 1) handlePageChange(page - 1);
-                 }}
-                 style={{ pointerEvents: page === 1 ? "none" : "auto", opacity: page === 1 ? 0.5 : 1 }}
-               >
-                 Prev
-               </PaginationLink>
- 
+              <PaginationLink
+                onClick={() => {
+                  if (page > 1) handlePageChange(page - 1);
+                }}
+                style={{ pointerEvents: page === 1 ? 'none' : 'auto', opacity: page === 1 ? 0.5 : 1 }}
+              >
+                Prev
+              </PaginationLink>
             </PaginationItem>
+
             {Array.from({ length: meta.totalPages || 0 }, (_, i) => (
               <PaginationItem key={i}>
                 <PaginationLink
@@ -360,15 +334,19 @@ const CustomBazarOrdersPage: React.FC = () => {
                 </PaginationLink>
               </PaginationItem>
             ))}
+
             <PaginationItem>
-                   <PaginationLink
-                              onClick={() => {
-                                if (page !== 1) handlePageChange(page + 1);
-                              }}
-                              style={{ pointerEvents: page === 1 ? "none" : "auto", opacity: page === 1 ? 0.5 : 1 }}
-                            >
-                              Next
-                            </PaginationLink>
+              <PaginationLink
+                onClick={() => {
+                  if (page < (meta.totalPages || 1)) handlePageChange(page + 1);
+                }}
+                style={{
+                  pointerEvents: page === (meta.totalPages || 1) ? 'none' : 'auto',
+                  opacity: page === (meta.totalPages || 1) ? 0.5 : 1,
+                }}
+              >
+                Next
+              </PaginationLink>
             </PaginationItem>
           </PaginationContent>
         </Pagination>

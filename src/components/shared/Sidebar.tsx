@@ -32,15 +32,23 @@ interface SidebarProps {
 }
 
 export default function Sidebar({ onSelectSubcategory }: SidebarProps) {
+
+
   const router = useRouter();
   const { data: serviceRes } = useGetAllServicesQuery({});
+
   const services: Service[] = serviceRes?.data || [];
+
+  console.log("data", serviceRes)
 
   const [activeServiceId, setActiveServiceId] = useState<string | null>(null);
   const [activeCategoryId, setActiveCategoryId] = useState<string | null>(null);
 
   const [fetchFullTree, { data: fullTreeData }] = useLazyServiceFullTreeQuery();
+
   const activeCategories: CategoryTree[] = fullTreeData?.data?.categories || [];
+
+console.log("category1", fullTreeData )
 
   const [mobileOpen, setMobileOpen] = useState(false);
 

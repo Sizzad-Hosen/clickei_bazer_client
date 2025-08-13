@@ -10,7 +10,7 @@ import { useRouter } from 'next/navigation';
 import { useAppSelector } from '@/redux/hook';
 import { selectCurrentUser } from '@/redux/features/auth/authSlices';
 import Image from 'next/image';
-import { Product } from '@/types/products';
+
 
 type ShippingAddress = {
   fullName: string;
@@ -177,16 +177,29 @@ const subtotal = cartItems.reduce((acc, item) => {
       setValidationErrors({});
 
       router.push('/order');
-    } catch (error: any) {
-      if (error?.data?.message) {
-        setBackendError(error.data.message);
-      } else if (error?.status === 401) {
-        setBackendError('Unauthorized access. Please login again.');
-      } else {
-        setBackendError('Failed to place order. Please try again.');
-      }
-      toast.error(backendError ?? 'Failed to place order. Please try again.');
-    }
+    } catch (error: unknown) {
+  let backendError = 'Failed to place order. Please try again.';
+
+  if (
+    typeof error === 'object' &&
+    error !== null &&
+    'data' in error &&
+    typeof (error as { data: { message?: string } }).data.message === 'string'
+  ) {
+    backendError = (error as { data: { message: string } }).data.message;
+  } else if (
+    typeof error === 'object' &&
+    error !== null &&
+    'status' in error &&
+    (error as { status: number }).status === 401
+  ) {
+    backendError = 'Unauthorized access. Please login again.';
+  }
+
+  setBackendError(backendError);
+  toast.error(backendError);
+}
+
   };
 
   return (
@@ -367,7 +380,8 @@ const subtotal = cartItems.reduce((acc, item) => {
                                     <span>
                       {item.name} × {item.quantity}
                     </span>
-                    <span>৳ {item.price * item.quantity}</span>
+                <span>৳ { (typeof item.price === 'string' ? parseFloat(item.price) : item.price) * item.quantity }</span>
+
                   </div>
                 ))}
 

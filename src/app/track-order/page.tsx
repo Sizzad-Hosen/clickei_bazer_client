@@ -6,7 +6,8 @@ import { useState } from 'react';
 export default function TrackOrderPage() {
   const [invoiceNumber, setInvoiceNumber] = useState('');
 
-  const [trigger, { data: response, isFetching, error }] = useGetTrackOrderByInvoiceIdMutation();
+  // Use mutation hook
+  const [trigger, { data: response, isLoading, error }] = useGetTrackOrderByInvoiceIdMutation();
 
   // Extract actual order data safely
   const order = response?.data;
@@ -35,10 +36,10 @@ export default function TrackOrderPage() {
         <button
           onClick={handleSearch}
           className="mt-4 w-full bg-blue-600 text-white py-3 rounded hover:bg-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
-          disabled={isFetching}
-          aria-disabled={isFetching}
+          disabled={isLoading}
+          aria-disabled={isLoading}
         >
-          {isFetching ? 'Searching...' : 'Search'}
+          {isLoading ? 'Searching...' : 'Search'}
         </button>
       </div>
 

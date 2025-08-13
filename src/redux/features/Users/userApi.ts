@@ -1,4 +1,5 @@
 import { baseApi } from "@/redux/api/baseApi";
+import { ApiResponse } from "@/types/global";
 import { IUser } from "@/types/user";
 
 const usersApi = baseApi.injectEndpoints({
@@ -13,10 +14,20 @@ const usersApi = baseApi.injectEndpoints({
       }),
     }),
 
- getAllUsers: builder.query<IUser[], void>({
-      query: () => '/users',
-      providesTags: ['User'],
-    }),
+getAllUsers: builder.query<ApiResponse<IUser>, void>({
+  query: () => '/users',
+  providesTags: ['User'],
+  transformResponse: (response: ApiResponse<IUser>) => {
+    // Just return the response as is (or add default meta)
+    return {
+      data: {
+        data: response.data.data,  // IUser[]
+        meta: response.data.meta ?? { total: 0, totalPages: 0, limit: 0, page: 1 },
+      },
+    };
+  },
+})
+
 
   }),
 });

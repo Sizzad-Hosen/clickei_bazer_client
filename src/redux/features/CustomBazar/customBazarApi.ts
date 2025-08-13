@@ -1,9 +1,8 @@
-// src/redux/features/CustomBazar/customBazarApi.ts
+
 import { baseApi } from "@/redux/api/baseApi";
-import { TCustomBazerOrder } from "@/types/CustomBazar";
-import { TResponseRedux } from "@/types/global";
-import { Order } from "@/types/order";
-import { Product } from "@/types/products";
+import { TCustomBazerOrder, TCustomProduct } from "@/types/CustomBazar";
+import { ApiResponse, TMeta, TResponseRedux } from "@/types/global";
+
 
 /** Query params type for search/pagination */
 export type TQueryParams = Record<string, string | number | undefined>;
@@ -17,21 +16,15 @@ export type TRawMeta = {
   page?: number;
 };
 
-/** Normalized meta shape used across the frontend */
-export type TMeta = {
-  total: number;
-  totalPages: number;
-  limit: number;
-  page: number;
-};
 
-/** Normalizes backend meta (handles `totalPage` or `totalPages`) */
-function normalizeMeta(meta?: TRawMeta): TMeta {
-  return {
-    total: meta?.total ?? 0,
-    totalPages: meta?.totalPages ?? meta?.totalPage ?? 0,
-    limit: meta?.limit ?? 0,
-    page: meta?.page ?? 1,
+
+
+interface TCustomBazarProductsResponse {
+  data: TCustomProduct[];
+  meta: {
+    total: number;
+    page: number;
+    limit: number;
   };
 }
 
@@ -41,20 +34,22 @@ export interface CustomOrdersApiResponse {
   meta: TMeta;
 }
 
+
 const customBazarApi = baseApi.injectEndpoints({
   overrideExisting: true,
   endpoints: (builder) => ({
-    // create a custom product (returns Product)
-    addCustomBazarProduct: builder.mutation<Product, Partial<Product>>({
+  
+    
+    addCustomBazarProduct: builder.mutation<TCustomProduct, Partial<TCustomProduct>>({
       query: (product) => ({
         url: "/customBazerProducts/create-customBazerProduct",
         method: "POST",
         body: product,
       }),
-      invalidatesTags: ["CustomOrder"],
+      invalidatesTags: ["CustomProducts"],
     }),
 
-    // create a custom bazar order (returns the created order)
+ 
     addCustomBazarOrder: builder.mutation<TCustomBazerOrder, Partial<TCustomBazerOrder>>({
       query: (orderPayload) => ({
         url: "/customBazerOrders/create-customBazerOrder",
@@ -64,38 +59,49 @@ const customBazarApi = baseApi.injectEndpoints({
       invalidatesTags: ["CustomOrder"],
     }),
 
-    // fetch all custom products
-    getAllCustomBazarProducts: builder.query<Product[], void>({
-      query: () => "/customBazerProducts",
-      providesTags: ["CustomOrder"],
-    }),
+getAllCustomBazarProducts: builder.query<TCustomBazarProductsResponse, void>({
+  query: () => "/customBazerProducts",
+  providesTags: ["CustomProducts"],
+  transformResponse: (response: ApiResponse<TCustomProduct>) => {
+    console.log("res", response.data.data)
+
+    return {
+      data: response.data.data, 
+      meta: response.data.meta ?? { total: 0, totalPages: 0, limit: 0, page: 1 },
+    };
+  },
+}),
 
     // fetch all custom bazar orders (with query params)
-    getAllCustomBazarOrders: builder.query<CustomOrdersApiResponse, TQueryParams>({
-      query: (args) => {
-        const params = new URLSearchParams();
+getAllCustomBazarOrders: builder.query<
+  CustomOrdersApiResponse,
+  TQueryParams
+>({
+  query: (args) => {
+    const params = new URLSearchParams();
 
-        if (args) {
-          Object.entries(args).forEach(([key, value]) => {
-            if (value !== undefined && value !== null && value !== "") {
-              params.append(key, String(value));
-            }
-          });
+    if (args) {
+      Object.entries(args).forEach(([key, value]) => {
+        if (value !== undefined && value !== null && value !== "") {
+          params.append(key, String(value));
         }
+      });
+    }
 
-        return {
-          url: `/customBazerOrders?${params.toString()}`,
-          method: "GET",
-        };
-      },
-      providesTags: ["CustomOrder"],
-      transformResponse: (response: TResponseRedux<TCustomBazerOrder[]>) => {
-        return {
-          data: response.data ?? [],
-          meta: normalizeMeta(response.meta as TRawMeta),
-        };
-      },
-    }),
+    return {
+      url: `/customBazerOrders?${params.toString()}`,
+      method: "GET",
+    };
+  },
+
+  providesTags: ["CustomOrder"],
+
+  transformResponse: (response: ApiResponse<TCustomBazerOrder>) => ({
+  
+    data: response.data.data,  // must be a flat array
+    meta: response.data.meta ?? { total: 0, totalPages: 0, limit: 0, page: 1 },
+  }),
+}),
 
     // update status of a custom bazar order (returns updated order)
     updateCustomBazarOrderStatus: builder.mutation<
@@ -134,20 +140,20 @@ const customBazarApi = baseApi.injectEndpoints({
         url: `/customBazerProducts/${id}`,
         method: "DELETE",
       }),
-      invalidatesTags: ["CustomOrder"],
+      invalidatesTags: ["CustomProducts"],
     }),
 
     // update a custom product (returns updated Product)
     updateCustomBazarProduct: builder.mutation<
-      Product,
-      { id: string; data: Partial<Product> }
+     TCustomProduct,
+      { id: string; data: Partial<TCustomProduct> }
     >({
       query: ({ id, data }) => ({
         url: `/customBazerProducts/${id}`,
         method: "PATCH",
         body: data,
       }),
-      invalidatesTags: ["CustomOrder"],
+      invalidatesTags: ["CustomProducts"],
     }),
 
     // update payment status for a custom order (returns updated custom order)

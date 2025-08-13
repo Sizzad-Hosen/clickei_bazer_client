@@ -194,7 +194,7 @@ export default function UserOrdersPage() {
                 className="bg-white shadow rounded-lg p-6 border border-gray-200 relative"
               >
                 <button
-                  onClick={() => handleCustomOrderDelete(customOrder._id)}
+                  onClick={() => handleCustomOrderDelete(customOrder._id as string)}
                   className="absolute top-4 right-4 border border-red-400 text-red-600 hover:text-red-800 transition rounded p-1"
                   title="Delete Order"
                 >
@@ -245,7 +245,8 @@ export default function UserOrdersPage() {
                           <div>
                             <p className="font-medium text-gray-900">{item.subcategoryName}</p>
                             <p className="text-sm text-gray-600">
-                              {item.quantity} {item.unit} × Tk {item.pricePerUnit.toFixed(2)}
+                         {item.quantity} {item.unit} × Tk {(item.pricePerUnit ?? 0).toFixed(2)}
+
                             </p>
                           </div>
                           <div className="text-right font-semibold text-gray-900">

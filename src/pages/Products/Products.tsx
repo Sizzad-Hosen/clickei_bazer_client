@@ -16,10 +16,13 @@ const ProductsListPage = () => {
   const [page, setPage] = useState(1);
 
   const { data, isLoading, isError } = useGetAllProductsQuery({ page, limit: PAGE_SIZE });
-  const products = data?.data?.data || [];
+
+  
   console.log("products", data)
 
-  const meta = data?.data?.meta;
+ const products = data?.data
+const meta = data?.meta;
+
 
 console.log("meta", meta)
   if (isLoading) return <Spinner></Spinner>

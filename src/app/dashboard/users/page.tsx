@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect,  useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { useGetAllUsersQuery } from '@/redux/features/Users/userApi';
 import Spinner from '@/components/Spinner';
@@ -13,16 +13,23 @@ import {
   PaginationLink,
 } from '@/components/ui/pagination';
 
+
 const USERS_PER_PAGE = 6;
 
 export default function AllUsersPage() {
-  const { data, isLoading, isError } = useGetAllUsersQuery({});
 
-  // Adjust path according to your actual data structure
-  const users = useMemo(() => (Array.isArray(data?.data?.data) ? data.data.data : []), [data]);
+  const { data, isLoading, isError } = useGetAllUsersQuery();
+
+const users = data?.data?.data
+
+const meta = data?.data?.meta ?? { totalPages: 1, total: 0, limit: 6, page: 1 }; // fallback meta
+
+const totalPages = meta.totalPages ?? 1;  // default to 1 page if missing
+
+console.log("users", data?.data?.data)
 
   const [search, setSearch] = useState('');
-  const [filteredUsers, setFilteredUsers] = useState([]);
+  const [filteredUsers, setFilteredUsers] = useState<typeof users>([]);
   const [currentPage, setCurrentPage] = useState(1);
 
   useEffect(() => {
@@ -31,7 +38,7 @@ export default function AllUsersPage() {
     if (!searchTerm) {
       setFilteredUsers(users);
     } else {
-      const filtered = users.filter(
+      const filtered = users?.filter(
         (user) =>
           user?.name?.toLowerCase().includes(searchTerm) ||
           user?.email?.toLowerCase().includes(searchTerm) ||
@@ -42,9 +49,9 @@ export default function AllUsersPage() {
     setCurrentPage(1);
   }, [search, users]);
 
-  const totalPages = Math.ceil(filteredUsers.length / USERS_PER_PAGE);
+
   const startIndex = (currentPage - 1) * USERS_PER_PAGE;
-  const currentUsers = filteredUsers.slice(startIndex, startIndex + USERS_PER_PAGE);
+  const currentUsers = filteredUsers?.slice(startIndex, startIndex + USERS_PER_PAGE);
 
   if (isLoading) return <Spinner />;
   if (isError)
@@ -84,18 +91,17 @@ export default function AllUsersPage() {
               >
                 Phone
               </th>
-             
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
-            {currentUsers.length === 0 ? (
+            {currentUsers?.length === 0 ? (
               <tr>
-                <td colSpan={4} className="text-center py-6 text-gray-500">
+                <td colSpan={3} className="text-center py-6 text-gray-500">
                   No users found.
                 </td>
               </tr>
             ) : (
-              currentUsers.map((user) => (
+              currentUsers?.map((user) => (
                 <tr key={user._id} className="hover:bg-gray-50 transition">
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                     {user.name}
@@ -106,7 +112,6 @@ export default function AllUsersPage() {
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
                     {user.phone}
                   </td>
-                  
                 </tr>
               ))
             )}

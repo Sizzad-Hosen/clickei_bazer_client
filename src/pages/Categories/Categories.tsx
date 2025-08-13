@@ -37,13 +37,17 @@ const CategoriesPage = () => {
     null
   );
 
-  const [formData, setFormData] = useState({ name: '' });
+const [formData, setFormData] = useState<{ name: string; serviceId: string }>({
+  name: '',
+  serviceId: '',  // initialize empty string or some default value
+});
 
-  const openEditModal = (category: Category) => {
-    setSelectedCategory(category);
-    setFormData({ name: category.name });
-    setIsOpen(true);
-  };
+const openEditModal = (category: Category) => {
+  setSelectedCategory(category);
+  setFormData({ name: category.name, serviceId: category._id });
+  setIsOpen(true);
+};
+
 
   const handleChange = (
     e: ChangeEvent<HTMLInputElement | HTMLSelectElement>
@@ -61,20 +65,30 @@ const CategoriesPage = () => {
     }
   };
 
-  const handleSave = async () => {
-    if (!selectedCategory) return;
-    try {
-      await updateCategory({
-        id: selectedCategory._id,
-        ...formData,
-      }).unwrap();
-      toast.success('Category updated!');
-      setIsOpen(false);
-      refetch();
-    } catch {
-      toast.error('Failed to update category');
-    }
-  };
+const handleSave = async () => {
+  if (!selectedCategory) return;
+
+  // Assuming you have serviceId in your form state
+  if (!formData.serviceId) {
+    toast.error('Service is required');
+    return;
+  }
+
+  try {
+    await updateCategory({
+      id: selectedCategory._id,
+      ...formData,
+    }).unwrap();
+    toast.success('Category updated!');
+    setIsOpen(false);
+    refetch();
+  } catch (error: any) {
+    console.error('Update failed', error);
+    // Optionally parse error to show detailed message
+    toast.error(error?.data?.message || 'Failed to update category');
+  }
+};
+
 
   return (
     <div className="max-w-5xl mx-auto py-10 px-4">

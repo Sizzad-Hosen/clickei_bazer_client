@@ -4,31 +4,43 @@ export interface Service {
   name: string;
   slug?: string;
 }
+// ----------------------
+// TYPE DEFINITIONS
+// ----------------------
+export interface CategoryRef {
+  _id: string;
+  name: string;
+}
 
-// Category belongs to Service
+export interface SubcategoryRef {
+  _id: string;
+  name: string;
+}
+
 export interface Category {
   _id: string;
   name: string;
+  category?: CategoryRef; 
   serviceId: string;
+  subcategories?: Subcategory[]; 
 }
 
-// Subcategory belongs to Category
+
 export interface Subcategory {
   _id: string;
   name: string;
-  unit?:string;
-  pricePerUnit?:string;
+  unit?: string;
+  pricePerUnit?: string;
   categoryId: string;
+  subcategory?: SubcategoryRef;
 }
 
-// Product belongs to Subcategory
-
-// Generic API response structure
 export interface ApiResponse<T> {
   status: 'success' | 'fail';
   message?: string;
   data: T;
 }
+
 export interface Product {
   _id: string;
   name: string;
@@ -37,8 +49,10 @@ export interface Product {
   quantity: number;
   price: number;
   images?: string[];
+  isPublished:boolean;
   discount:number
   subcategoryId?: string;
-  categoryId?: string;
-  serviceId?: string;  // Add this if your backend sends it
+categoryId: string | { _id: string; [key: string]: unknown };
+
+  serviceId?: string;  
 }

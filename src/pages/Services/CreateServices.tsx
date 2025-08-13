@@ -18,7 +18,7 @@ interface ApiError {
   };
 }
 
-export const CreateServicePage = () => {
+ const CreateServicePage = () => {
   const [form, setForm] = useState<FormState>({ name: '' });
   const [formError, setFormError] = useState<string>('');
 
@@ -42,6 +42,7 @@ export const CreateServicePage = () => {
       console.log('Service creation response:', res);
 
       toast.success('✅ Service created successfully!');
+     
       setForm({ name: '' });
     } catch (err) {
       const apiError = err as ApiError;
@@ -90,3 +91,4 @@ export const CreateServicePage = () => {
     </div>
   );
 };
+export default CreateServicePage  

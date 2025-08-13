@@ -13,11 +13,19 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useAddCustomBazarProductMutation } from '@/redux/features/CustomBazar/customBazarApi';
+import { UnitType } from '@/types/CustomBazar';
 
 interface Subcategory {
   subcategory: string;
   unit: string;
-  pricePerUnit: string; // keep as string for controlled input, convert on submit
+  pricePerUnit: string; // Controlled input as string
+}
+
+interface ApiErrorResponse {
+  data?: {
+    message?: string;
+  };
+  error?: string;
 }
 
 export default function CustomBazarForm() {
@@ -76,14 +84,14 @@ export default function CustomBazarForm() {
     if (!validate()) return;
 
     try {
-      const res = await addCustomBazar({
-        category,
-        subcategories: subcategories.map((item) => ({
-          name: item.subcategory,
-          unit: item.unit,
-          pricePerUnit: Number(item.pricePerUnit),
-        })),
-      }).unwrap();
+   const res = await addCustomBazar({
+  category,
+  subcategories: subcategories.map((item) => ({
+    name: item.subcategory,
+    unit: item.unit as UnitType,  // assert here
+    pricePerUnit: Number(item.pricePerUnit),
+  })),
+}).unwrap();
 
       console.log('result', res);
 
@@ -93,24 +101,16 @@ export default function CustomBazarForm() {
       setApiError(null);
     } catch (error: unknown) {
       let message = 'Failed to add';
-      // safer error handling without ts-ignore
-      if (
-        typeof error === 'object' &&
-        error !== null &&
-        'data' in error &&
-        typeof (error as any).data === 'object' &&
-        (error as any).data !== null &&
-        'message' in (error as any).data
-      ) {
-        message = (error as any).data.message;
-      } else if (
-        typeof error === 'object' &&
-        error !== null &&
-        'error' in error &&
-        typeof (error as any).error === 'string'
-      ) {
-        message = (error as any).error;
+
+      // Type guard for error shape
+      const err = error as ApiErrorResponse;
+
+      if (err.data && typeof err.data.message === 'string') {
+        message = err.data.message;
+      } else if (typeof err.error === 'string') {
+        message = err.error;
       }
+
       setApiError(message);
       toast.error(message);
     }

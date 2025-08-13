@@ -122,6 +122,17 @@ export default function ProfilePage() {
     const file = e.target.files?.[0] ?? null;
     setImageFile(file);
   };
+  
+  function isErrorWithData(error: unknown): error is { data: Partial<TGenericErrorResponse> } {
+  return (
+    typeof error === 'object' &&
+    error !== null &&
+    'data' in error &&
+    typeof (error as Record<string, unknown>).data === 'object' &&
+    (error as Record<string, unknown>).data !== null
+  );
+}
+
 
   const handleUpdate = async () => {
     try {
@@ -153,19 +164,13 @@ export default function ProfilePage() {
       refetch();
       setModalOpen(false);
     } catch (error: unknown) {
-  if (
-    typeof error === 'object' && 
-    error !== null && 
-    'data' in error &&
-    typeof (error as any).data === 'object' &&
-    (error as any).data !== null
-  ) {
-    const data = (error as any).data as Partial<TGenericErrorResponse>;
-    toast.error(data.message || "❌ Failed to update profile");
+  if (isErrorWithData(error)) {
+    toast.error(error.data.message || "❌ Failed to update profile");
   } else {
     toast.error("❌ Failed to update profile");
   }
-  };
+}
+
 }
 
   return (

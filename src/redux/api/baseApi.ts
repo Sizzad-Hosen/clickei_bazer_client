@@ -83,7 +83,8 @@ export const baseApi = createApi({
     'Auth',
     'Wishlist',
     'User',
-    'CustomOrder'
+    'CustomOrder',
+    'CustomProducts'
   ],
   endpoints: () => ({}),
 });

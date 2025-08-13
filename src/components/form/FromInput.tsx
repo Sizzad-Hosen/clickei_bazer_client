@@ -12,7 +12,7 @@ interface FormInputProps {
   min?:number;
   max?:number;
    step?: number | string;
-  value: string;
+  value: number | string;
   onChange: (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => void;

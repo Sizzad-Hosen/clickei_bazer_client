@@ -8,17 +8,8 @@ interface OrdersApiResponse {
   page: number;
   };
 }
-import { TMeta, TResponseRedux } from "@/types/global";
+import { ApiResponse, TQueryParam } from "@/types/global";
 import { Order } from "@/types/order";
-
-function normalizeMeta(meta?: Partial<TMeta>): TMeta {
-  return {
-    total: meta?.total ?? 0,
-    totalPages: meta?.totalPages ?? 0,
-    limit: meta?.limit ?? 0,
-    page: meta?.page ?? 1,
-  };
-}
 
 
 export const ordersApi = baseApi.injectEndpoints({
@@ -50,7 +41,12 @@ getAllOrdersByUserId: builder.query({
   providesTags: ['Orders'],
 }),
 
-getAllOrders: builder.query<OrdersApiResponse, Record<string, any>>({
+getAllOrdersCount: builder.query<ApiResponse<Order>, void>({
+  query: () => '/orders',
+  providesTags: ['Orders'],
+}),
+
+getAllOrders : builder.query<OrdersApiResponse, TQueryParam>({
   query: (args) => {
     const params = new URLSearchParams();
 
@@ -63,22 +59,18 @@ getAllOrders: builder.query<OrdersApiResponse, Record<string, any>>({
     }
 
     return {
-      url: `/orders?${params.toString()}`, 
+      url: `/orders?${params.toString()}`,
       method: 'GET',
     };
   },
   providesTags: ['Orders'],
-
-  transformResponse: (response: TResponseRedux<Order[]>) => {
-    console.log("result", response);
-    return {
-      data: response.data ?? [],
-    meta: normalizeMeta(response.meta),
-    };
-  },
+  transformResponse: (response: ApiResponse<Order>) => ({
+    data: response.data?.data,
+    meta: response.data.meta ?? { total: 0, totalPages: 0, limit: 0, page: 1 },
+  }),
 }),
 
-// ✅ Update Payment Status Mutation
+
 updateOrderPaymentStatus: builder.mutation<
   Order, // ✅ Response type (if using TypeScript)
   { invoiceId: string; status: string } // ✅ Parameters for the mutation
@@ -124,6 +116,7 @@ export const {
     useUpdateOrderPaymentStatusMutation,
    useGetAllOrdersByUserIdQuery,
    useDeleteOrderByIdMutation,
-   useAddOrderMutation
+   useAddOrderMutation,
+   useGetAllOrdersCountQuery
 
 } = ordersApi;

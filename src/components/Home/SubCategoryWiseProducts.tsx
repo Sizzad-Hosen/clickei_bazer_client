@@ -1,17 +1,23 @@
 'use client';
 
 import React, { useState } from 'react';
-import { useGetAllProductsBySubcategoryQuery } from '@/redux/features/Products/productApi';
+
 import { Button } from '@/components/ui/button';
 import ProductCard from '../Products/ProductCard';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import Spinner from '../Spinner';
+import { useGetAllRecentProductsBySubcategoryQuery } from '@/redux/features/Products/productApi';
 
 interface ProductsBySubcategoryPageProps {
+   
   onOpenCart: () => void;
 }
 
-const ProductsBySubcategoryPage: React.FC<ProductsBySubcategoryPageProps> = ({ onOpenCart }) => {
+
+
+const ProductsBySubcategoryPage: React.FC<ProductsBySubcategoryPageProps> = ({
+  onOpenCart,
+}) => {
   const [page, setPage] = useState(1);
   const limit = 10;
 
@@ -20,13 +26,17 @@ const ProductsBySubcategoryPage: React.FC<ProductsBySubcategoryPageProps> = ({ o
     error,
     isLoading,
     isFetching,
-  } = useGetAllProductsBySubcategoryQuery({ page, limit });
+  } = useGetAllRecentProductsBySubcategoryQuery({
+    page,
+    limit,
+  });
 
   if (isLoading) return <Spinner />;
   if (error) return <div className="text-center py-12 text-red-600">Failed to load products.</div>;
 
-  const products = data?.data?.data || [];
-  const meta = data?.data?.meta;
+  const products = data?.data ?? [];
+  console.log("data", data)
+  const meta = data?.meta;
 
   return (
     <div className="max-w-8xl mx-auto px-4 py-8">
@@ -38,7 +48,7 @@ const ProductsBySubcategoryPage: React.FC<ProductsBySubcategoryPageProps> = ({ o
             <ProductCard
               key={product._id}
               product={product}
-              onOpenCart={onOpenCart} // Pass the open cart function here
+              onOpenCart={onOpenCart}
             />
           ))}
         </div>

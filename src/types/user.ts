@@ -1,4 +1,5 @@
 export interface IUser extends Document {
+  _id:string
   name: string;
   email: string;
   password: string;
@@ -32,3 +33,8 @@ export type CustomerDataType = {
     phone: string;
   };
 };
+export interface TAddress {
+  fullName: string;
+  phoneNumber: string;
+  fullAddress: string;
+}

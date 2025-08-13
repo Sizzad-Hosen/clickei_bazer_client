@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { ChangeEvent, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 
@@ -18,15 +18,16 @@ import {
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { useAddCategoryMutation } from '@/redux/features/Categories/categoryApi';
 import { Service } from '@/types/products';
-import { TErrorSources, TGenericErrorResponse } from '@/types/error';
+import { TGenericErrorResponse } from '@/types/error';
+import { hasDataProperty } from '@/utils/error';
 
 // Type guard for generic error response
-const isGenericError = (err: any): err is TGenericErrorResponse => {
+const isGenericError = (err: unknown): err is TGenericErrorResponse => {
   return (
-    err &&
+    err !== null &&
     typeof err === 'object' &&
     'errorSources' in err &&
-    Array.isArray(err.errorSources)
+    Array.isArray((err as Record<string, unknown>).errorSources)
   );
 };
 
@@ -43,7 +44,7 @@ const CreateCategoryPage = () => {
     serviceId: '',
   });
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
@@ -66,12 +67,16 @@ const CreateCategoryPage = () => {
       setFormData({ name: '', serviceId: '' });
       router.push('/dashboard/categories');
     } catch (error: unknown) {
-      if (typeof error === 'object' && error !== null && 'data' in error) {
-        const errData = (error as any).data;
+      if (hasDataProperty(error)) {
+        const errData = error.data;
 
-        if (isGenericError(errData)) {
-          errData.errorSources.forEach((err: TErrorSources[number]) => {
-            toast.error(`${err.path.toString().replace('body.', '')}: ${err.message}`);
+        if (isGenericError(errData) && Array.isArray(errData.errorSources)) {
+          errData.errorSources.forEach((err) => {
+            if (typeof err.path === 'string') {
+              toast.error(`${err.path.replace('body.', '')}: ${err.message}`);
+            } else {
+              toast.error(err.message);
+            }
           });
           return;
         }

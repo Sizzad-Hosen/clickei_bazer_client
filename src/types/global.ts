@@ -12,11 +12,13 @@ type TError = {
 
 
 export type TResponse<T> ={
+
     data?:T;
     error?:TError;
     meta?:TMeta;
     success:boolean;
     totalPage:number;
+    
 }
 
 export type TMeta = {
@@ -27,8 +29,19 @@ export type TMeta = {
 };
 
 export type TQueryParam = {
+  page?: number;
+  limit?: number;
+  invoiceId?: string;
   name: string;
-  value: string | number | boolean; // Accept multiple types
+  value: string | number | boolean; 
 };
 
 export type TResponseRedux<T> = TResponse<T> & BaseQueryApi;
+
+
+export interface ApiResponse<T> {
+  data: {
+    data: T[];
+    meta?: TMeta;
+  };
+}

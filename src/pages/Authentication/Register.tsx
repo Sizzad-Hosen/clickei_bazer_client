@@ -7,13 +7,19 @@ import { useRouter } from "next/navigation";
 import { FormInput } from "@/components/form/FromInput";
 import { toast } from "sonner";
 import { useCreateUserMutation } from "@/redux/features/Users/userApi";
-import { TGenericErrorResponse } from "@/types/error";
+import { TErrorSources, TGenericErrorResponse } from "@/types/error";
 
 interface FormState {
   name: string;
   email: string;
   password: string;
   phone: string;
+}
+
+// Fix: Extend TErrorSources to include message if your backend returns it
+// Or create a new interface here for error shape you expect
+interface TErrorSourcesWithMessage extends TErrorSources {
+  message?: string;
 }
 
 const RegisterPage: React.FC = () => {
@@ -59,6 +65,19 @@ const RegisterPage: React.FC = () => {
     return Object.keys(newErrors).length === 0;
   };
 
+  function hasDataProperty(obj: unknown): obj is { data: unknown } {
+    return typeof obj === 'object' && obj !== null && 'data' in obj;
+  }
+
+  // Adjusted type guard to support optional message
+  function isErrorData(obj: unknown): obj is TErrorSourcesWithMessage {
+    return (
+      typeof obj === 'object' && obj !== null && (
+        'message' in obj || 'errorSources' in obj
+      )
+    );
+  }
+
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     if (!validateForm()) {
@@ -66,33 +85,37 @@ const RegisterPage: React.FC = () => {
       return;
     }
 
- try {
-  await register(form).unwrap();
-  toast.success("Registration successful!");
-  router.push("/login");
-} catch (err: unknown) {
-  const isGenericError = (error: any): error is TGenericErrorResponse => {
-    return (
-      error &&
-      typeof error === 'object' &&
-      'errorSources' in error &&
-      Array.isArray(error.errorSources)
-    );
-  };
+    try {
+      await register(form).unwrap();
+      toast.success("Registration successful!");
+      router.push("/login");
+    } catch (err: unknown) {
+      const isGenericError = (error): error is TGenericErrorResponse => {
+        return (
+          error &&
+          typeof error === 'object' &&
+          'errorSources' in error &&
+          Array.isArray(error.errorSources)
+        );
+      };
 
-  let errorMsg = "Registration failed";
+      let errorMsg = "Registration failed";
 
-  if (typeof err === 'object' && err !== null && 'data' in err) {
-    const errData = (err as any).data;
-    if (isGenericError(errData)) {
-      errorMsg = errData.errorSources[0]?.message || errorMsg;
-    } else if (typeof errData.message === 'string') {
-      errorMsg = errData.message;
+      if (hasDataProperty(err)) {
+        const errData = err.data;
+
+        if (isGenericError(errData)) {
+          errorMsg = errData.errorSources?.[0]?.message || errorMsg;
+        } else if (
+          isErrorData(errData) && 
+          typeof errData.message === 'string'
+        ) {
+          errorMsg = errData.message;
+        }
+      }
+
+      toast.error(errorMsg);
     }
-  }
-
-  toast.error(errorMsg);
-}
   };
 
   const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
@@ -153,10 +176,12 @@ const RegisterPage: React.FC = () => {
               touched={touched.password}
             />
 
-            <Button variant="default"
-             type="submit" 
-             className="w-full"
-              disabled={isLoading}>
+            <Button
+              variant="default"
+              type="submit"
+              className="w-full"
+              disabled={isLoading}
+            >
               {isLoading ? "Registering..." : "Register"}
             </Button>
           </form>

@@ -13,55 +13,34 @@ import {
 } from '@/redux/features/CustomBazar/customBazarApi';
 import Spinner from '@/components/Spinner';
 import { toast } from 'sonner';
-import { TCustomBazerOrder, TCustomBazerOrderItem } from '@/types/CustomBazar';
+import { Category, Selection, TCustomBazerOrder, TCustomBazerOrderItem } from '@/types/CustomBazar';
+import { TAddress } from '@/types/user';
 
-interface Subcategory {
-  _id: string;
-  name: string;
-  pricePerUnit: number;
-  units?: string[];
-  unit?: string;
-}
-
-interface Category {
-  _id: string;
-  category: string;
-  subcategories: Subcategory[];
-}
-
-interface Selection {
-  selectedSub?: Subcategory; // can be undefined when nothing selected
-  quantity: number;
-  unit: string;
-}
-
-interface Address {
-  fullName: string;
-  phoneNumber: string;
-  fullAddress: string;
-}
 
 const CustomBazarPage: React.FC = () => {
-  const { data, isLoading, isError } = useGetAllCustomBazarProductsQuery();
   const [addCustomBazarOrder, { isLoading: isSubmitting }] = useAddCustomBazarOrderMutation();
 
-  // Memoize categories to avoid re-creating reference on each render
-  const categories: Category[] = useMemo(() => data?.data ?? [], [data?.data]);
+const { data, isLoading, isError } = useGetAllCustomBazarProductsQuery();
+
+  const categories: Category[] = useMemo(() => data?.data ?? [], [data]);
+
 
   const [selections, setSelections] = useState<Record<string, Selection>>({});
-  const [address, setAddress] = useState<Address>({
+
+  const [address, setAddress] = useState<TAddress>({
     fullName: '',
     phoneNumber: '',
     fullAddress: '',
   });
+
   const [siteNote, setSiteNote] = useState('');
   const [paymentMethod, setPaymentMethod] = useState<'cash_on_delivery' | 'sslcommerz'>('cash_on_delivery');
   const [sslCommerzWarning, setSslCommerzWarning] = useState(false);
   const [deliveryOption, setDeliveryOption] = useState<'insideRangpur' | 'outsideRangpur'>('insideRangpur');
 
-  // Initialize selections when categories change
+  // Initialize selections when categories load
   useEffect(() => {
-    if (categories.length === 0) return;
+    if (!categories.length) return;
 
     const initialSelections: Record<string, Selection> = {};
     categories.forEach(cat => {
@@ -77,9 +56,12 @@ const CustomBazarPage: React.FC = () => {
   if (isLoading) return <Spinner />;
   if (isError) return <p className="text-red-500">Failed to load products.</p>;
 
+  // Handlers
   const handleSubcategoryChange = (categoryId: string, subName: string) => {
-    const category = categories.find(cat => cat._id === categoryId);
-    const sub = category?.subcategories.find(s => s.name === subName);
+ const category = categories.find(cat => cat._id === categoryId);
+
+const sub = category?.subcategories?.find(s => s.name === subName);
+
 
     setSelections(prev => ({
       ...prev,
@@ -87,7 +69,7 @@ const CustomBazarPage: React.FC = () => {
         ? {
             selectedSub: sub,
             quantity: 1,
-            unit: sub.units?.[0] ?? sub.unit ?? '',
+            unit: sub.unit?.[0] ?? sub.unit ?? '',
           }
         : {
             selectedSub: undefined,
@@ -172,56 +154,57 @@ const CustomBazarPage: React.FC = () => {
     setDeliveryOption('insideRangpur');
   };
 
-  const handleSubmitOrder = async (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
+const handleSubmitOrder = async (e: FormEvent<HTMLFormElement>) => {
+  e.preventDefault();
 
-    // Basic validation
-    if (!address.fullName.trim() || !address.phoneNumber.trim() || !address.fullAddress.trim()) {
-      toast.error('দয়া করে সকল ঠিকানা তথ্য পূরণ করুন।');
-      return;
-    }
+  if (!address.fullName.trim() || !address.phoneNumber.trim() || !address.fullAddress.trim()) {
+    toast.error('দয়া করে সকল ঠিকানা তথ্য পূরণ করুন।');
+    return;
+  }
 
-    // Prepare order items
-    const orderItems: TCustomBazerOrderItem[] = Object.entries(selections)
-      .filter(([, sel]) => sel.selectedSub !== undefined && sel.quantity > 0)
-      .map(([catId, sel]) => {
-        const product = categories.find(cat => cat._id === catId);
-        if (!product) throw new Error(`Product not found for id ${catId}`);
+  const orderItems: TCustomBazerOrderItem[] = Object.entries(selections)
+  
+    .filter(([, sel]) => sel.selectedSub !== undefined && sel.quantity > 0)
+    .map(([catId, sel], index) => {
+      const product = categories.find(cat => cat._id === catId);
+      if (!product) throw new Error(`Product not found for id ${catId}`);
 
-        return {
-          product: product._id,
-          subcategoryName: sel.selectedSub!.name,
-          unit: sel.unit as 'kg' | 'gm' | 'piece' | 'litre',
-          pricePerUnit: sel.selectedSub!.pricePerUnit,
-          quantity: sel.quantity,
-          totalPrice: sel.selectedSub!.pricePerUnit * sel.quantity,
-        };
-      });
+      return {
+        _id: `${catId}-${index}`,
+        product: product._id, 
+        subcategoryName: sel.selectedSub!.name,
+        unit: sel.selectedSub!.unit, 
+        pricePerUnit: sel.selectedSub!.pricePerUnit,
+        quantity: sel.quantity,
+        totalPrice: sel.selectedSub!.pricePerUnit * sel.quantity,
+      };
+    });
 
-    if (orderItems.length === 0) {
-      toast.error('দয়া করে অন্তত একটি পণ্য নির্বাচন করুন।');
-      return;
-    }
+  if (orderItems.length === 0) {
+    toast.error('দয়া করে অন্তত একটি পণ্য নির্বাচন করুন।');
+    return;
+  }
 
-    const payload: TCustomBazerOrder = {
-      orderItems,
-      status: 'pending',
-      paymentMethod,
-      deliveryOption,
-      address,
-      siteNote,
-    };
-
-    try {
-     const res = await addCustomBazarOrder(payload).unwrap();
-     console.log("res", res)
-      toast.success('✅ অর্ডার সফলভাবে সাবমিট হয়েছে!');
-      resetForm();
-    } catch (error) {
-      console.error('❌ অর্ডার সাবমিট করতে সমস্যা হয়েছে:', error);
-      toast.error('❌ অর্ডার সাবমিট করতে সমস্যা হয়েছে');
-    }
+  const completePayload: TCustomBazerOrder = {
+    orderItems,
+    totalAmount: getTotalPrice(),
+    status: 'pending',
+    paymentMethod,
+    deliveryOption,
+    address,
+    siteNote,
   };
+
+  try {
+    await addCustomBazarOrder(completePayload).unwrap();  
+    toast.success('✅ অর্ডার সফলভাবে সাবমিট হয়েছে!');
+    resetForm();
+  } catch (error) {
+    console.error('❌ অর্ডার সাবমিট করতে সমস্যা হয়েছে:', error);
+    toast.error('❌ অর্ডার সাবমিট করতে সমস্যা হয়েছে');
+  }
+};
+
 
   return (
     <div className="p-4 max-w-4xl mx-auto">
@@ -252,30 +235,26 @@ const CustomBazarPage: React.FC = () => {
                     onChange={e => handleSubcategoryChange(category._id, e.target.value)}
                   >
                     <option value="">Select Subcategory</option>
-                    {category.subcategories.map(sub => (
+                    {category?.subcategories?.map(sub => (
                       <option key={sub._id} value={sub.name}>
                         {sub.name} - {sub.pricePerUnit}৳
                       </option>
                     ))}
                   </select>
                 </div>
-
-                {/* Unit Dropdown */}
-                <div className="md:col-span-1">
-                  {selected && (
-                    <select
-                      className="w-full border px-2 py-1 rounded"
-                      value={selection.unit}
-                      onChange={e => handleUnitChange(category._id, e.target.value)}
-                    >
-                      {(selected.units ?? [selected.unit ?? '']).map(unit => (
-                        <option key={unit} value={unit}>
-                          {unit}
-                        </option>
-                      ))}
-                    </select>
-                  )}
-                </div>
+                
+            {/* Unit Dropdown */}
+            <div className="md:col-span-1">
+              {selected && (
+                <select
+                  className="w-full border px-2 py-1 rounded"
+                  value={selection.unit}
+                  onChange={e => handleUnitChange(category._id, e.target.value)}
+                >
+                  <option value={selected.unit}>{selected.unit}</option>
+                </select>
+              )}
+            </div>
 
                 {/* Quantity Controls */}
                 <div className="md:col-span-4 flex items-center flex-wrap gap-2">

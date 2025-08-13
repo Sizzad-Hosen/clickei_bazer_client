@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import { useState } from "react";
 import {
@@ -10,13 +10,13 @@ import { Button } from "@/components/ui/button";
 import Spinner from "@/components/Spinner";
 import Swal from "sweetalert2";
 import { MdDelete } from "react-icons/md";
-import { Category, Subcategory } from "@/types/products";
 
-// Define form types to avoid 'any'
+import { TCustomProduct, UnitType } from "@/types/CustomBazar";
+
 interface SubcategoryForm {
   name: string;
-  unit?: string;
-  pricePerUnit?: string | number;
+  unit: string;
+  pricePerUnit: number | "";
 }
 
 interface FormData {
@@ -25,27 +25,20 @@ interface FormData {
 }
 
 export default function CustomBazarProductsPage() {
+  // Always declare hooks first
   const { data, isLoading } = useGetAllCustomBazarProductsQuery();
   const [deleteCategory] = useDeleteCustomProductMutation();
   const [updateCategory] = useUpdateCustomBazarProductMutation();
 
   const [editModalOpen, setEditModalOpen] = useState(false);
-  const [editingCategory, setEditingCategory] = useState<Category | null>(null);
+  const [editingCategory, setEditingCategory] = useState<TCustomProduct | null>(null);
 
-  const [formData, setFormData] = useState<FormData>({
-    category: "",
-    subcategories: [],
-  });
-
+  const [formData, setFormData] = useState<FormData>({ category: "", subcategories: [] });
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 8;
 
-  if (isLoading) return <Spinner />;
-
-  // Defensive check for data array
-  const categories: Category[] = Array.isArray(data?.data) ? data.data : [];
-
-  // Pagination
+  // Compute categories safely
+  const categories: TCustomProduct[] = Array.isArray(data?.data) ? data.data : [];
   const totalPages = Math.ceil(categories.length / itemsPerPage);
   const paginatedCategories = categories.slice(
     (currentPage - 1) * itemsPerPage,
@@ -67,7 +60,6 @@ export default function CustomBazarProductsPage() {
       try {
         await deleteCategory(categoryId).unwrap();
         Swal.fire("Deleted!", "Category has been deleted.", "success");
-        // Adjust page if last item deleted
         if (paginatedCategories.length === 1 && currentPage > 1) {
           setCurrentPage((p) => p - 1);
         }
@@ -78,10 +70,10 @@ export default function CustomBazarProductsPage() {
     }
   };
 
-  const handleEditClick = (category: Category & { subcategories?: Subcategory[] }) => {
+  const handleEditClick = (category: TCustomProduct) => {
     setEditingCategory(category);
     setFormData({
-      category: category.category ?? category.name ?? "",
+      category: category.category ?? "",
       subcategories: (category.subcategories ?? []).map((sub) => ({
         name: sub.name ?? "",
         unit: sub.unit ?? "",
@@ -93,15 +85,45 @@ export default function CustomBazarProductsPage() {
 
   const handleUpdate = async () => {
     if (!editingCategory) return;
+
+    if (!formData.category.trim()) {
+      Swal.fire("Validation Error", "Category name is required.", "warning");
+      return;
+    }
+
+    if (
+      formData.subcategories.some(
+        (sub) =>
+          !sub.name.trim() ||
+          !sub.unit.trim() ||
+          sub.pricePerUnit === "" ||
+          Number(sub.pricePerUnit) <= 0
+      )
+    ) {
+      Swal.fire(
+        "Validation Error",
+        "All subcategory fields are required and price must be positive.",
+        "warning"
+      );
+      return;
+    }
+
+    const transformedData: Partial<TCustomProduct> = {
+      category: formData.category.trim(),
+      subcategories: formData.subcategories.map((sub) => ({
+        name: sub.name.trim(),
+        unit: sub.unit as UnitType,
+        pricePerUnit: Number(sub.pricePerUnit),
+      })),
+    };
+
     try {
-      await updateCategory({
-        id: editingCategory._id,
-        data: formData,
-      }).unwrap();
+      await updateCategory({ id: editingCategory._id, data: transformedData }).unwrap();
       setEditModalOpen(false);
       setEditingCategory(null);
     } catch (err) {
       console.error("Update failed", err);
+      Swal.fire("Error", "Failed to update the category.", "error");
     }
   };
 
@@ -132,52 +154,54 @@ export default function CustomBazarProductsPage() {
     <div className="p-4">
       <h2 className="text-xl font-bold mb-4">Custom Bazar Products</h2>
 
-      {categories.length === 0 && (
+      {isLoading && <Spinner />}
+
+      {!isLoading && categories.length === 0 && (
         <div className="text-sm text-muted-foreground">No categories found.</div>
       )}
 
-      {paginatedCategories.map((categoryItem) => (
-        <div key={categoryItem._id} className="mb-6 border rounded-lg p-4 shadow">
-          <div className="flex justify-between items-center mb-2">
-            <h3 className="text-lg font-semibold">{categoryItem.category ?? categoryItem.name}</h3>
-            <div className="flex gap-2">
-              <button
-                onClick={() => handleEditClick(categoryItem)}
-                className="px-3 py-1 text-sm bg-blue-600 text-white rounded hover:bg-blue-700"
-              >
-                Edit
-              </button>
-              <button
-                onClick={() => handleDelete(categoryItem._id)}
-                className="px-3 py-1 text-sm bg-red-600 text-white rounded hover:bg-red-700"
-              >
-                Delete
-              </button>
+      {!isLoading &&
+        paginatedCategories.map((categoryItem) => (
+          <div key={categoryItem._id} className="mb-6 border rounded-lg p-4 shadow">
+            <div className="flex justify-between items-center mb-2">
+              <h3 className="text-lg font-semibold">{categoryItem.category}</h3>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => handleEditClick(categoryItem)}
+                  className="px-3 py-1 text-sm bg-blue-600 text-white rounded hover:bg-blue-700"
+                >
+                  Edit
+                </button>
+                <button
+                  onClick={() => handleDelete(categoryItem._id)}
+                  className="px-3 py-1 text-sm bg-red-600 text-white rounded hover:bg-red-700"
+                >
+                  Delete
+                </button>
+              </div>
             </div>
-          </div>
 
-          <table className="w-full border border-gray-200">
-            <thead>
-              <tr className="bg-gray-100">
-                <th className="p-2 border text-left">Name</th>
-                <th className="p-2 border text-left">Unit</th>
-                <th className="p-2 border text-left">Price Per Unit</th>
-              </tr>
-            </thead>
-            <tbody>
-              {(categoryItem.subcategories ?? []).map((sub, index) => (
-                <tr key={index}>
-                  <td className="p-2 border">{sub.name}</td>
-                  <td className="p-2 border">{sub.unit}</td>
-                  <td className="p-2 border">{sub.pricePerUnit}</td>
+            <table className="w-full border border-gray-200">
+              <thead>
+                <tr className="bg-gray-100">
+                  <th className="p-2 border text-left">Name</th>
+                  <th className="p-2 border text-left">Unit</th>
+                  <th className="p-2 border text-left">Price Per Unit</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      ))}
+              </thead>
+              <tbody>
+                {(categoryItem.subcategories ?? []).map((sub, index) => (
+                  <tr key={index}>
+                    <td className="p-2 border">{sub.name}</td>
+                    <td className="p-2 border">{sub.unit}</td>
+                    <td className="p-2 border">{sub.pricePerUnit}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        ))}
 
-      {/* Pagination Controls */}
       {totalPages > 1 && (
         <div className="flex justify-center gap-4 mt-6">
           <Button
@@ -200,7 +224,6 @@ export default function CustomBazarProductsPage() {
         </div>
       )}
 
-      {/* Edit Modal */}
       {editModalOpen && (
         <div className="fixed inset-0 z-[9999] flex items-center justify-center backdrop-blur-sm bg-black/50">
           <div className="bg-white p-6 rounded-lg w-full max-w-3xl shadow-lg max-h-[90vh] overflow-y-auto">
@@ -212,6 +235,7 @@ export default function CustomBazarProductsPage() {
                   setEditingCategory(null);
                 }}
                 className="text-sm px-2 py-1 rounded bg-gray-100 hover:bg-gray-200"
+                type="button"
               >
                 Close
               </button>
@@ -230,6 +254,7 @@ export default function CustomBazarProductsPage() {
               <button
                 onClick={handleAddSubcategory}
                 className="text-sm px-3 py-1 bg-green-600 text-white rounded hover:bg-green-700"
+                type="button"
               >
                 Add Subcategory
               </button>
@@ -246,9 +271,7 @@ export default function CustomBazarProductsPage() {
                     <input
                       type="text"
                       value={sub.name}
-                      onChange={(e) =>
-                        handleSubcategoryChange(idx, "name", e.target.value)
-                      }
+                      onChange={(e) => handleSubcategoryChange(idx, "name", e.target.value)}
                       className="border w-full p-2 rounded"
                     />
                   </div>
@@ -258,9 +281,7 @@ export default function CustomBazarProductsPage() {
                     <input
                       type="text"
                       value={sub.unit}
-                      onChange={(e) =>
-                        handleSubcategoryChange(idx, "unit", e.target.value)
-                      }
+                      onChange={(e) => handleSubcategoryChange(idx, "unit", e.target.value)}
                       className="border w-full p-2 rounded"
                     />
                   </div>
@@ -269,9 +290,14 @@ export default function CustomBazarProductsPage() {
                     <label className="block text-xs font-medium mb-1">Price Per Unit</label>
                     <input
                       type="number"
+                      min={0}
                       value={sub.pricePerUnit}
                       onChange={(e) =>
-                        handleSubcategoryChange(idx, "pricePerUnit", Number(e.target.value))
+                        handleSubcategoryChange(
+                          idx,
+                          "pricePerUnit",
+                          e.target.value === "" ? "" : Number(e.target.value)
+                        )
                       }
                       className="border w-full p-2 rounded"
                     />
@@ -282,6 +308,7 @@ export default function CustomBazarProductsPage() {
                       onClick={() => handleRemoveSubcategory(idx)}
                       className="px-1 p-2 mt-2 py-1 text-sm bg-red-600 text-white rounded hover:bg-red-700"
                       title="Remove"
+                      type="button"
                     >
                       <MdDelete />
                     </button>
@@ -291,10 +318,12 @@ export default function CustomBazarProductsPage() {
             </div>
 
             <div className="flex justify-end gap-2 mt-6">
-              <Button variant="outline" onClick={() => setEditModalOpen(false)}>
+              <Button variant="outline" onClick={() => setEditModalOpen(false)} type="button">
                 Cancel
               </Button>
-              <Button onClick={handleUpdate}>Save</Button>
+              <Button onClick={handleUpdate} type="button">
+                Save
+              </Button>
             </div>
           </div>
         </div>

@@ -1,9 +1,8 @@
 'use client';
 
 import React, { useState } from 'react';
-import { use } from 'react';
 import { useDeleteProductMutation, useGetSingleProductQuery } from '@/redux/features/Products/productApi';
-import { useRouter } from 'next/navigation';
+import { useRouter, useParams } from 'next/navigation';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
@@ -12,12 +11,17 @@ import { MdDelete, MdEdit } from 'react-icons/md';
 import Swal from 'sweetalert2';
 import Spinner from '@/components/Spinner';
 
-const ProductDetailsPage = ({ params }: { params: Promise<{ id: string }> }) => {
-  const { id } = use(params);
+const ProductDetailsPage = () => {
+  
+const params = useParams();
+const idParam = params?.id;
+const id = Array.isArray(idParam) ? idParam[0] : idParam ?? '';
+
   const router = useRouter();
 
   const { data: product, isLoading, isError } = useGetSingleProductQuery(id);
-  const productExists = product?.data || product;
+
+  const productExists = product
 
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [deleteProduct, { isLoading: isDeleting }] = useDeleteProductMutation();
@@ -32,7 +36,7 @@ const ProductDetailsPage = ({ params }: { params: Promise<{ id: string }> }) => 
     );
   }
 
-  const handleDelete = async () => {
+  const handleDelete = async (id: string) => {
     const result = await Swal.fire({
       title: 'Are you sure?',
       text: 'This action will permanently delete the product.',
@@ -121,7 +125,7 @@ const ProductDetailsPage = ({ params }: { params: Promise<{ id: string }> }) => 
         </Button>
         <Button
           variant="destructive"
-          onClick={handleDelete}
+          onClick={() => handleDelete(id)}  // <-- fixed here
           disabled={isDeleting}
           aria-label="Delete product"
           className="px-6 py-2 flex items-center gap-2"
