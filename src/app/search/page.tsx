@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 
 import { useGetAllProductsBySearchQuery } from '@/redux/features/Products/productApi';
@@ -23,7 +23,7 @@ interface ApiResponse<T> {
   };
 }
 
-const SearchPage = () => {
+const SearchPageContent = () => {
   const searchParams = useSearchParams();
 
   // State
@@ -143,4 +143,10 @@ const SearchPage = () => {
   );
 };
 
-export default SearchPage;
+export default function SearchPage() {
+  return (
+    <Suspense fallback={<div className="flex justify-center items-center h-screen"><Spinner /></div>}>
+      <SearchPageContent />
+    </Suspense>
+  );
+}
