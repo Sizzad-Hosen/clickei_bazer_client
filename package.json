@@ -5,8 +5,10 @@
   "scripts": {
     "dev": "next dev --turbopack",
     "build": "next build",
-    "start": "next start",
-    "lint": "next lint"
+    "start": "node server.js",
+    "start:next": "next start",
+    "lint": "next lint",
+    "postinstall": "next build"
   },
   "dependencies": {
     "@radix-ui/react-avatar": "^1.1.10",
