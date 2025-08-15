@@ -28,8 +28,8 @@ export default function CustomBazarProductsPage() {
   // Always declare hooks first
   const { data, isLoading } = useGetAllCustomBazarProductsQuery();
 
-  console.log("data", data)
-  
+  console.log("data", data?.meta)
+
   const [deleteCategory] = useDeleteCustomProductMutation();
   const [updateCategory] = useUpdateCustomBazarProductMutation();
 
@@ -42,6 +42,7 @@ export default function CustomBazarProductsPage() {
 
   const categories: TCustomProduct[] = Array.isArray(data?.data) ? data.data : [];
 
+console.log("cat", data?.meta)
 
   const totalPages = Math.ceil(categories.length / itemsPerPage);
   const paginatedCategories = categories.slice(

@@ -36,7 +36,7 @@ updateService: builder.mutation({
 }),
 
 serviceFullTree: builder.query({
-  query: (id: string) => `/services/${id}/categories-subcategories-products`,
+  query: (id: string) => `/services/${id}/full-tree`,
   providesTags: ['Services'],
 }),
 
