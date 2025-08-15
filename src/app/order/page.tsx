@@ -3,24 +3,23 @@
 import Swal from 'sweetalert2';
 import Sidebar from '@/components/shared/Sidebar';
 import Spinner from '@/components/Spinner';
+import ProtectedRoute from '@/components/ProtectedRoute';
 import { useDeleteOrderByIdMutation, useGetAllOrdersByUserIdQuery } from '@/redux/features/Order/ordersApi';
 import { useDeleteCustomOrderByIdMutation, useGetAllCustomOrdersByUserIdQuery } from '@/redux/features/CustomBazar/customBazarApi';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
 import Image from 'next/image';
-import { Order, OrderItem } from '@/types/order'; // Assuming you have these types in your types folder
+import { Order, OrderItem } from '@/types/order';
 import { TCustomBazerOrder } from '@/types/CustomBazar';
 
-
-export default function UserOrdersPage() {
+function UserOrdersPage() {
   // Normal Orders Query
   const { data: response, isLoading, isError, error, refetch } = useGetAllOrdersByUserIdQuery({});
   const orders: Order[] = response?.data || [];
 
   // Custom Bazar Orders Query
   const { data: customOrdersResponse } = useGetAllCustomOrdersByUserIdQuery();
-
- const customBazarOrders: TCustomBazerOrder[] = customOrdersResponse?.data || [];
+  const customBazarOrders: TCustomBazerOrder[] = customOrdersResponse?.data || [];
 
   // Mutations for deleting orders
   const [deleteOrder] = useDeleteOrderByIdMutation();
@@ -66,7 +65,7 @@ export default function UserOrdersPage() {
       try {
         await deleteCustomOrder(id).unwrap();
         toast.success('Custom Bazar Order deleted successfully');
-        refetch(); // Re-fetch updated list
+        refetch();
       } catch (err) {
         toast.error('Failed to delete order');
         console.error(err);
@@ -245,8 +244,7 @@ export default function UserOrdersPage() {
                           <div>
                             <p className="font-medium text-gray-900">{item.subcategoryName}</p>
                             <p className="text-sm text-gray-600">
-                         {item.quantity} {item.unit} × Tk {(item.pricePerUnit ?? 0).toFixed(2)}
-
+                              {item.quantity} {item.unit} × Tk {(item.pricePerUnit ?? 0).toFixed(2)}
                             </p>
                           </div>
                           <div className="text-right font-semibold text-gray-900">
@@ -263,5 +261,13 @@ export default function UserOrdersPage() {
         )}
       </main>
     </div>
+  );
+}
+
+export default function ProtectedUserOrdersPage() {
+  return (
+    <ProtectedRoute>
+      <UserOrdersPage />
+    </ProtectedRoute>
   );
 }

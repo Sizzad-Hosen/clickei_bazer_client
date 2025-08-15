@@ -34,6 +34,8 @@ const ProductsBySubcategoryPage: React.FC<ProductsBySubcategoryPageProps> = ({
   if (isLoading) return <Spinner />;
   if (error) return <div className="text-center py-12 text-red-600">Failed to load products.</div>;
 
+
+  
   const products = data?.data ?? [];
   console.log("data", data)
   const meta = data?.meta;

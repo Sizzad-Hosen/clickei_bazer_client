@@ -1,21 +1,12 @@
 'use client';
 
 import { ChangeEvent, useState } from 'react';
-import {
-  useGetAllServicesQuery,
-  useDeleteServiceMutation,
-  useUpdateServiceMutation,
-} from '@/redux/features/Services/serviceApi';
 import { toast } from 'sonner';
+import Swal from 'sweetalert2';
+import { useGetAllServicesQuery, useDeleteServiceMutation, useUpdateServiceMutation } from '@/redux/features/Services/serviceApi';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Pencil, Trash2 } from 'lucide-react';
 import Spinner from '@/components/Spinner';
@@ -25,7 +16,7 @@ const ServicePage = () => {
   const [deleteService] = useDeleteServiceMutation();
   const [updateService] = useUpdateServiceMutation();
 
-  const { data, isLoading, isError } = useGetAllServicesQuery({});
+  const { data, isLoading, isError, refetch } = useGetAllServicesQuery({});
   const services: Service[] = Array.isArray(data) ? data : data?.data || [];
 
   const [isOpen, setIsOpen] = useState(false);
@@ -43,21 +34,38 @@ const ServicePage = () => {
   };
 
   const handleDelete = async (id: string) => {
-    try {
-      await deleteService(id).unwrap();
-      toast.success('Service deleted successfully');
-    } catch (error) {
-      console.error('Delete failed', error);
-      toast.error('Failed to delete service');
+    const result = await Swal.fire({
+      title: 'Are you sure?',
+      text: 'This service will be permanently deleted.',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#6b7280',
+      confirmButtonText: 'Yes, delete it',
+      cancelButtonText: 'Cancel',
+      reverseButtons: true,
+    });
+
+    if (result.isConfirmed) {
+      try {
+        await deleteService(id).unwrap();
+        toast.success('Service deleted successfully');
+        refetch(); // Refresh the service list
+      } catch (error) {
+        console.error('Delete failed', error);
+        toast.error('Failed to delete service');
+      }
     }
   };
 
   const handleSave = async () => {
     if (!selectedService) return;
+
     try {
       await updateService({ id: selectedService._id, ...formData }).unwrap();
       toast.success('Service updated successfully');
       setIsOpen(false);
+      refetch(); // Refresh the service list
     } catch (error) {
       console.error('Update failed', error);
       toast.error('Failed to update service');

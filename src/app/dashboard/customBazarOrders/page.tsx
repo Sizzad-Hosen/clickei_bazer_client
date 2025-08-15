@@ -154,7 +154,7 @@ const CustomBazarOrdersPage: React.FC = () => {
         <p><strong>Phone:</strong> ${order.user?.phone || 'N/A'}</p>
         <p><strong>Address:</strong> ${order.address?.fullAddress || 'N/A'}</p>
         <p><strong>Status:</strong> ${order.status}</p>
-        <p><strong>SubTotal Amount:</strong> ৳${order.totalAmount?.toFixed(2) || '0'}</p>
+        <p><strong>Total Amount:</strong> ৳ ${order.totalAmount?.toFixed(2) || '0'}</p>
 
         <h2>Order Items</h2>
         <table>
@@ -164,7 +164,7 @@ const CustomBazarOrdersPage: React.FC = () => {
               <th>Unit</th>
               <th>Quantity</th>
               <th>Price/Unit</th>
-              <th>Total Price</th>
+              <th>SubTotal Price</th>
             </tr>
           </thead>
           <tbody>

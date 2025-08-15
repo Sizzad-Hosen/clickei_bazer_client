@@ -19,6 +19,7 @@ import { FormInput } from "@/components/form/FromInput";
 import { toast } from "sonner";
 import Spinner from "@/components/Spinner";
 import { TGenericErrorResponse } from "@/types/error";
+import ProtectedRoute from "@/components/ProtectedRoute";
 
 const editableAddressFields = [
   "division",
@@ -39,7 +40,7 @@ type FormData = {
   address: Address;
 };
 
-export default function ProfilePage() {
+function ProfilePage() {
   const [modalOpen, setModalOpen] = useState(false);
   const [addressModalOpen, setAddressModalOpen] = useState(false);
   const [imageFile, setImageFile] = useState<File | null>(null);
@@ -98,7 +99,6 @@ export default function ProfilePage() {
   const profileImage = customerData?.data?.profileImage || "";
   const address = customerData?.data?.address || formData.address;
 
-  // Handler for select (gender)
   const handleChange = (e: ChangeEvent<HTMLSelectElement | HTMLInputElement>) => {
     const { name, value } = e.target;
     if (name === "gender") {
@@ -106,7 +106,6 @@ export default function ProfilePage() {
     }
   };
 
-  // Handler for address inputs
   const handleAddressChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
@@ -122,17 +121,16 @@ export default function ProfilePage() {
     const file = e.target.files?.[0] ?? null;
     setImageFile(file);
   };
-  
-  function isErrorWithData(error: unknown): error is { data: Partial<TGenericErrorResponse> } {
-  return (
-    typeof error === 'object' &&
-    error !== null &&
-    'data' in error &&
-    typeof (error as Record<string, unknown>).data === 'object' &&
-    (error as Record<string, unknown>).data !== null
-  );
-}
 
+  function isErrorWithData(error: unknown): error is { data: Partial<TGenericErrorResponse> } {
+    return (
+      typeof error === "object" &&
+      error !== null &&
+      "data" in error &&
+      typeof (error as Record<string, unknown>).data === "object" &&
+      (error as Record<string, unknown>).data !== null
+    );
+  }
 
   const handleUpdate = async () => {
     try {
@@ -164,14 +162,13 @@ export default function ProfilePage() {
       refetch();
       setModalOpen(false);
     } catch (error: unknown) {
-  if (isErrorWithData(error)) {
-    toast.error(error.data.message || "❌ Failed to update profile");
-  } else {
-    toast.error("❌ Failed to update profile");
-  }
-}
-
-}
+      if (isErrorWithData(error)) {
+        toast.error(error.data.message || "❌ Failed to update profile");
+      } else {
+        toast.error("❌ Failed to update profile");
+      }
+    }
+  };
 
   return (
     <div className="flex flex-col md:flex-row min-h-screen bg-gray-100">
@@ -181,7 +178,7 @@ export default function ProfilePage() {
 
       <div className="flex-1 p-4">
         <div className="bg-white shadow-md rounded-xl p-6 max-w-4xl mx-auto">
-          {/* Profile Image on Top */}
+          {/* Profile Image */}
           <div className="flex justify-center mb-4">
             <Avatar className="w-24 h-24">
               <AvatarImage src={profileImage} alt={user.name} />
@@ -200,7 +197,7 @@ export default function ProfilePage() {
             </p>
           </div>
 
-          {/* Shipping Address */}
+          {/* Address */}
           <div className="mt-4">
             <h4 className="font-semibold text-gray-700 mb-1">Shipping Address:</h4>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm text-gray-700">
@@ -296,5 +293,13 @@ export default function ProfilePage() {
         </DialogContent>
       </Dialog>
     </div>
+  );
+}
+
+export default function WrappedProfilePage() {
+  return (
+    <ProtectedRoute>
+      <ProfilePage />
+    </ProtectedRoute>
   );
 }

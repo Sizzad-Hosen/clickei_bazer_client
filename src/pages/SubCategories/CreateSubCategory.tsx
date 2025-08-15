@@ -27,23 +27,27 @@ const CreateSubcategoryPage = () => {
     categoryId: '',
   });
 
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const [addSubcategory] = useAddSubCategoryMutation();
   const { data: servicesData } = useGetAllServicesQuery({});
   const { data: categoriesData } = useGetAllCategoriesQuery({});
 
-  const services = Array.isArray(servicesData) ? servicesData : servicesData?.data || [];
-  const categories = Array.isArray(categoriesData) ? categoriesData : categoriesData?.data || [];
+  const services: Service[] = servicesData?.data || servicesData || [];
+  const categories: Category[] = categoriesData?.data || categoriesData || [];
 
-  const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
+  const handleChange = (
+    e: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
+  ) => {
+    setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
   const handleServiceChange = (value: string) => {
-    setForm({ ...form, serviceId: value });
+    setForm((prev) => ({ ...prev, serviceId: value }));
   };
 
   const handleCategoryChange = (value: string) => {
-    setForm({ ...form, categoryId: value });
+    setForm((prev) => ({ ...prev, categoryId: value }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -54,12 +58,23 @@ const CreateSubcategoryPage = () => {
       return;
     }
 
+    setIsSubmitting(true);
+
     try {
-      await addSubcategory(form).unwrap();
-      toast.success('Subcategory created successfully');
+      const payload = {
+        name: form.name.trim(),
+        serviceId: form.serviceId,
+        categoryId: form.categoryId,
+      };
+
+      const res = await addSubcategory(payload).unwrap();
+
+      toast.success(res?.message || 'Subcategory created successfully');
       router.push('/dashboard/subCategories');
-    } catch {
-      toast.error('Failed to create subcategory');
+    } catch (err: any) {
+      toast.error(err?.data?.message || 'Failed to create subcategory');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -86,7 +101,7 @@ const CreateSubcategoryPage = () => {
               <SelectValue placeholder="Select a service" />
             </SelectTrigger>
             <SelectContent>
-              {services.map((service: Service) => (
+              {services.map((service) => (
                 <SelectItem key={service._id} value={service._id}>
                   {service.name}
                 </SelectItem>
@@ -103,7 +118,7 @@ const CreateSubcategoryPage = () => {
               <SelectValue placeholder="Select a category" />
             </SelectTrigger>
             <SelectContent>
-              {categories.map((category: Category) => (
+              {categories.map((category) => (
                 <SelectItem key={category._id} value={category._id}>
                   {category.name}
                 </SelectItem>
@@ -112,8 +127,32 @@ const CreateSubcategoryPage = () => {
           </Select>
         </div>
 
-        {/* Submit */}
-        <Button type="submit">Create Subcategory</Button>
+        {/* Submit Button */}
+        <Button type="submit" className="w-full flex items-center justify-center gap-2" disabled={isSubmitting}>
+          {isSubmitting && (
+            <svg
+              className="animate-spin h-5 w-5 text-white"
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+            >
+              <circle
+                className="opacity-25"
+                cx="12"
+                cy="12"
+                r="10"
+                stroke="currentColor"
+                strokeWidth="4"
+              ></circle>
+              <path
+                className="opacity-75"
+                fill="currentColor"
+                d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+              ></path>
+            </svg>
+          )}
+          {isSubmitting ? 'Processing...' : 'Create Subcategory'}
+        </Button>
       </form>
     </div>
   );

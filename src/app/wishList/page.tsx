@@ -3,6 +3,7 @@
 import { Button } from '@/components/ui/button';
 import { useGetWishlistQuery, useRemoveFromWishlistMutation } from '@/redux/features/WishList/wishListApi';
 import { Trash2 } from 'lucide-react';
+import ProtectedRoute from '@/components/ProtectedRoute';
 
 interface Product {
   _id: string;
@@ -16,12 +17,17 @@ interface WishlistItem {
   product: Product;
 }
 
-export default function WishlistPage() {
+function WishlistContent() {
   const { data, isLoading, isError } = useGetWishlistQuery(undefined);
   const [removeFromWishlist] = useRemoveFromWishlistMutation();
 
-  if (isLoading) return <p className="text-center py-8">Loading wishlist...</p>;
-  if (isError || !data?.data?.length) return <p className="text-center py-8">No items in your wishlist.</p>;
+  if (isLoading) {
+    return <p className="text-center py-8">Loading wishlist...</p>;
+  }
+
+  if (isError || !data?.data?.length) {
+    return <p className="text-center py-8">No items in your wishlist.</p>;
+  }
 
   return (
     <div className="p-4 sm:p-6 md:p-10 max-w-7xl mx-auto">
@@ -33,11 +39,15 @@ export default function WishlistPage() {
             className="bg-white shadow-md rounded-xl p-5 flex flex-col justify-between hover:shadow-lg transition-shadow duration-300"
           >
             <div>
-              <h3 className="text-lg font-semibold truncate">{item.product?.name || 'Unnamed Product'}</h3>
+              <h3 className="text-lg font-semibold truncate">
+                {item.product?.name || 'Unnamed Product'}
+              </h3>
               <p className="text-sm text-gray-500 mt-2 line-clamp-3">
                 {item.product?.description || 'No description available.'}
               </p>
-              <p className="text-sm text-gray-700 mt-3 font-medium">Price: ${item.product?.price}</p>
+              <p className="text-sm text-gray-700 mt-3 font-medium">
+                Price: ${item.product?.price}
+              </p>
             </div>
             <Button
               variant="destructive"
@@ -50,5 +60,13 @@ export default function WishlistPage() {
         ))}
       </div>
     </div>
+  );
+}
+
+export default function WishlistPage() {
+  return (
+    <ProtectedRoute>
+      <WishlistContent />
+    </ProtectedRoute>
   );
 }

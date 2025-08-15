@@ -18,7 +18,7 @@ interface ApiError {
   };
 }
 
- const CreateServicePage = () => {
+const CreateServicePage = () => {
   const [form, setForm] = useState<FormState>({ name: '' });
   const [formError, setFormError] = useState<string>('');
 
@@ -42,7 +42,6 @@ interface ApiError {
       console.log('Service creation response:', res);
 
       toast.success('✅ Service created successfully!');
-     
       setForm({ name: '' });
     } catch (err) {
       const apiError = err as ApiError;
@@ -76,8 +75,30 @@ interface ApiError {
 
             {formError && <p className="text-red-500 text-sm">{formError}</p>}
 
-            <Button type="submit" className="w-full" disabled={isLoading}>
-              {isLoading ? 'Submitting...' : 'Submit'}
+            <Button type="submit" className="w-full flex items-center justify-center gap-2" disabled={isLoading}>
+              {isLoading && (
+                <svg
+                  className="animate-spin h-5 w-5 text-white"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                  ></circle>
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+                  ></path>
+                </svg>
+              )}
+              {isLoading ? 'Processing...' : 'Submit'}
             </Button>
 
             {isError && !formError && (
@@ -91,4 +112,5 @@ interface ApiError {
     </div>
   );
 };
-export default CreateServicePage  
+
+export default CreateServicePage;

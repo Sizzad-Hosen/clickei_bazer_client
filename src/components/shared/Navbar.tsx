@@ -13,6 +13,7 @@ import { logout, selectCurrentUser } from '@/redux/features/auth/authSlices';
 import { toast } from 'sonner';
 import { useAppSelector } from '@/redux/hook';
 import type { Product } from '@/types/products';
+import ProtectedRoute from '../ProtectedRoute';
 
 const examplePlaceholders = [
   'potato', 'milk', 'rice', 'apple', 'banana', 'onion', 'bread', 'egg', 'chicken', 'fish',
@@ -234,6 +235,7 @@ const Navbar = () => {
                   aria-orientation="vertical"
                   aria-labelledby="profile-menu-button"
                 >
+              
                   <Link
                     href="/profile"
                     className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
