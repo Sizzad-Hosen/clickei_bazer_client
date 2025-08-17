@@ -84,7 +84,7 @@ console.log("category1", fullTreeData )
         aria-label="Toggle menu"
         onClick={() => setMobileOpen(!mobileOpen)}
         className={`fixed left-2 z-[999] md:hidden bg-white rounded-md p-2 ms-2 shadow-md focus:outline-none focus:ring-2 focus:ring-blue-600
-          ${mobileOpen ? 'top-4' : 'top-32'}
+          ${mobileOpen ? 'top-0' : 'top-4'}
         `}
       >
         {mobileOpen ? <X size={20} /> : <Menu size={24} />}
