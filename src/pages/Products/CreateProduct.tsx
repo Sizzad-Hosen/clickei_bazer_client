@@ -1,13 +1,17 @@
 'use client';
 
-import {  useState } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { FormInput } from '@/components/form/FromInput';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import {
-  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 
@@ -15,7 +19,6 @@ import { useGetAllServicesQuery } from '@/redux/features/Services/serviceApi';
 import { useGetAllCategoriesQuery } from '@/redux/features/Categories/categoryApi';
 import { useGetAllSubCategoriesQuery } from '@/redux/features/SubCategories/subCategoryApi';
 import { useAddProductMutation } from '@/redux/features/Products/productApi';
-import { Category, Service, Subcategory } from '@/types/products';
 
 const CreateProductPage = () => {
   const router = useRouter();
@@ -24,7 +27,7 @@ const CreateProductPage = () => {
   const { data: categoryData } = useGetAllCategoriesQuery({});
   const { data: subCategoryData } = useGetAllSubCategoriesQuery({});
 
-  const [addProduct] = useAddProductMutation();
+  const [addProduct, { isLoading }] = useAddProductMutation();
 
   const [form, setForm] = useState({
     title: '',
@@ -39,65 +42,80 @@ const CreateProductPage = () => {
     isPublished: false,
   });
 
-  const [files, setFiles] = useState<File[]>([]);
+  const [files, setFiles] = useState([]);
 
-const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
-  setForm({
-    ...form,
-    [e.target.name]: e.target.value,
-  });
-};
+  // Map Bangla digits to English
+  const banglaToEnglish = (str) => {
+    if (!str) return '';
+    const map = { '০':'0','১':'1','২':'2','৩':'3','৪':'4','৫':'5','৬':'6','৭':'7','৮':'8','৯':'9' };
+    return str.replace(/[০-৯]/g, (d) => map[d]);
+  };
 
+  const handleChange = (e) => {
+    let value = e.target.value;
 
-  const handleSelect = (field: string, value: string) => {
+    // Allow Bangla or English digits + dot for numeric fields
+    if (['price', 'discount', 'quantity'].includes(e.target.name)) {
+      value = value.replace(/[^0-9০-৯.]/g, '');
+    }
+
+    setForm({ ...form, [e.target.name]: value });
+  };
+
+  const handleSelect = (field, value) => {
     setForm({ ...form, [field]: value });
   };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files) {
-      setFiles(Array.from(e.target.files));
-    }
+  const handleFileChange = (e) => {
+    if (e.target.files) setFiles(Array.from(e.target.files));
   };
 
-  // Simple validation for discount price
-const validateDiscount = () => {
-  if (form.discount) {
-    const discountNum = Number(form.discount);
-    if (discountNum < 0 || discountNum > 100) {
-      toast.error('Discount percentage must be between 0 and 100');
-      return false;
+  const validateDiscount = () => {
+    if (form.discount) {
+      const discountNum = Number(banglaToEnglish(form.discount));
+      if (discountNum < 0 || discountNum > 100) {
+        toast.error('Discount must be between 0 and 100');
+        return false;
+      }
     }
-  }
-  return true;
-};
+    return true;
+  };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-
     if (!validateDiscount()) return;
 
-  const payload = {
-  ...form,
-  price: Number(form.price),
-  discount: form.discount ? Number(form.discount) : 0, // as percent
-  quantity: Number(form.quantity),
-};
-
+    const payload = {
+      ...form,
+      price: Number(banglaToEnglish(form.price)) || 0,
+      discount: Number(banglaToEnglish(form.discount)) || 0,
+      quantity: Number(banglaToEnglish(form.quantity)) || 0,
+    };
 
     const formData = new FormData();
     formData.append('data', JSON.stringify(payload));
     files.forEach((file) => formData.append('file', file));
 
+function isErrorWithMessage(err: unknown): err is { data?: { message?: string } } {
+  return (
+    typeof err === 'object' &&
+    err !== null &&
+    'data' in err &&
+    typeof (err).data === 'object'
+  );
+}
     try {
       await addProduct(formData).unwrap();
-      
       toast.success('Product created successfully!');
       router.push('/dashboard/products');
-    } catch (err) {
-      console.error(err);
-      toast.error('Something went wrong while creating the product');
-    }
-  };
+    } catch (err: unknown) {
+  if (isErrorWithMessage(err)) {
+    toast.error(err.data?.message || 'Something went wrong while creating the product');
+  } else {
+    toast.error('Something went wrong while creating the product');
+  }
+  }
+}
 
   return (
     <div className="max-w-3xl mx-auto py-10 px-6 bg-white rounded-lg shadow-md">
@@ -129,7 +147,6 @@ const validateDiscount = () => {
           <textarea
             name="description"
             value={form.description}
-            
             onChange={handleChange}
             className="w-full px-4 py-2 border rounded-md resize-none focus:outline-amber-500"
             placeholder="Enter product description"
@@ -142,40 +159,32 @@ const validateDiscount = () => {
           <FormInput
             label="Price (৳)"
             name="price"
-            type="number"
+            type="text"
             value={form.price}
             onChange={handleChange}
-            placeholder="Enter price"
-            min={0}
-            step="0.01"
+            placeholder="Enter price (Bangla or English)"
             required
           />
-<FormInput
-  label="Discount (%)"
-  name="discount"
-  type="number"
-  value={form.discount}
-  onChange={handleChange}
-  placeholder="Enter discount percentage (optional)"
-  min={0}
-  max={100}
-  step="0.01"
-/>
-
+          <FormInput
+            label="Discount (%)"
+            name="discount"
+            type="text"
+            value={form.discount}
+            onChange={handleChange}
+            placeholder="Enter discount (Bangla or English)"
+          />
         </div>
 
         <FormInput
           label="Quantity"
           name="quantity"
-          type="number"
+          type="text"
           value={form.quantity}
           onChange={handleChange}
-          placeholder="Enter quantity"
-          min={1}
+          placeholder="Enter quantity (Bangla or English)"
           required
         />
 
-        {/* File Upload */}
         <div>
           <Label className="mb-1 block font-semibold">Upload Images</Label>
           <input
@@ -188,7 +197,6 @@ const validateDiscount = () => {
           />
         </div>
 
-        {/* Service Select */}
         <div>
           <Label className="mb-1 block font-semibold">Select Service</Label>
           <Select onValueChange={(val) => handleSelect('serviceId', val)} value={form.serviceId}>
@@ -196,7 +204,7 @@ const validateDiscount = () => {
               <SelectValue placeholder="Choose service" />
             </SelectTrigger>
             <SelectContent>
-              {serviceData?.data?.map((service: Service) => (
+              {serviceData?.data?.map((service) => (
                 <SelectItem key={service._id} value={service._id}>
                   {service.name}
                 </SelectItem>
@@ -205,7 +213,6 @@ const validateDiscount = () => {
           </Select>
         </div>
 
-        {/* Category Select */}
         <div>
           <Label className="mb-1 block font-semibold">Select Category</Label>
           <Select onValueChange={(val) => handleSelect('categoryId', val)} value={form.categoryId}>
@@ -213,7 +220,7 @@ const validateDiscount = () => {
               <SelectValue placeholder="Choose category" />
             </SelectTrigger>
             <SelectContent>
-              {categoryData?.data?.map((cat: Category) => (
+              {categoryData?.data?.map((cat) => (
                 <SelectItem key={cat._id} value={cat._id}>
                   {cat.name}
                 </SelectItem>
@@ -222,7 +229,6 @@ const validateDiscount = () => {
           </Select>
         </div>
 
-        {/* Subcategory Select */}
         <div>
           <Label className="mb-1 block font-semibold">Select Subcategory</Label>
           <Select onValueChange={(val) => handleSelect('subCategoryId', val)} value={form.subCategoryId}>
@@ -230,7 +236,7 @@ const validateDiscount = () => {
               <SelectValue placeholder="Choose subcategory" />
             </SelectTrigger>
             <SelectContent>
-              {subCategoryData?.data?.map((sub: Subcategory) => (
+              {subCategoryData?.data?.map((sub) => (
                 <SelectItem key={sub._id} value={sub._id}>
                   {sub.name}
                 </SelectItem>
@@ -239,7 +245,6 @@ const validateDiscount = () => {
           </Select>
         </div>
 
-        {/* isPublished toggle */}
         <div className="flex items-center gap-3">
           <Label className="font-semibold">Publish</Label>
           <Switch
@@ -248,8 +253,13 @@ const validateDiscount = () => {
           />
         </div>
 
-        <Button type="submit" variant={"secondary"} className="w-full">
-          Create Product
+        <Button
+          type="submit"
+          variant="secondary"
+          className="w-full flex items-center justify-center gap-2"
+          disabled={isLoading}
+        >
+          {isLoading ? 'Processing...' : 'Create Product'}
         </Button>
       </form>
     </div>

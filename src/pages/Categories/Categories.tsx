@@ -20,6 +20,7 @@ import {
 import { FormInput } from '@/components/form/FromInput';
 import Spinner from '@/components/Spinner';
 import { Category } from '@/types/products';
+import Swal from 'sweetalert2';
 
 const CategoriesPage = () => {
   const { data, isLoading, isError, refetch } = useGetAllCategoriesQuery({});
@@ -30,24 +31,20 @@ const CategoriesPage = () => {
     ? data
     : data?.data || [];
 
-  // State for modal
   const [isOpen, setIsOpen] = useState(false);
-
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(
     null
   );
+  const [formData, setFormData] = useState<{ name: string; serviceId: string }>({
+    name: '',
+    serviceId: '',
+  });
 
-const [formData, setFormData] = useState<{ name: string; serviceId: string }>({
-  name: '',
-  serviceId: '',  // initialize empty string or some default value
-});
-
-const openEditModal = (category: Category) => {
-  setSelectedCategory(category);
-  setFormData({ name: category.name, serviceId: category._id });
-  setIsOpen(true);
-};
-
+  const openEditModal = (category: Category) => {
+    setSelectedCategory(category);
+    setFormData({ name: category.name, serviceId: category._id });
+    setIsOpen(true);
+  };
 
   const handleChange = (
     e: ChangeEvent<HTMLInputElement | HTMLSelectElement>
@@ -56,46 +53,48 @@ const openEditModal = (category: Category) => {
   };
 
   const handleDelete = async (id: string) => {
-    try {
-      await deleteCategory(id).unwrap();
-      toast.success('Category deleted successfully!');
-      refetch();
-    } catch {
-      toast.error('Failed to delete category');
+    // SweetAlert2 confirmation
+    const result = await Swal.fire({
+      title: 'Are you sure?',
+      text: 'This will permanently delete the category!',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Yes, delete it!',
+      cancelButtonText: 'Cancel',
+    });
+
+    if (result.isConfirmed) {
+      try {
+        await deleteCategory(id).unwrap();
+        toast.success('Category deleted successfully!');
+        refetch();
+      } catch {
+        toast.error('Failed to delete category');
+      }
     }
   };
 
-const handleSave = async () => {
-  if (!selectedCategory) return;
+  const handleSave = async () => {
+    if (!selectedCategory) return;
 
-  // Assuming you have serviceId in your form state
-  if (!formData.serviceId) {
-    toast.error('Service is required');
-    return;
-  }
+    if (!formData.name) {
+      toast.error('Category name is required');
+      return;
+    }
 
-  try {
-    await updateCategory({
-      id: selectedCategory._id,
-      ...formData,
-    }).unwrap();
-    toast.success('Category updated!');
-    setIsOpen(false);
-    refetch();
-  } catch (error: unknown) {
-  console.error('Update failed', error);
-
-  // Type guard to safely access error properties
-  if (error instanceof Error) {
-    toast.error(error.message || 'Failed to update category');
-  } else if (typeof error === 'object' && error !== null && 'data' in error) {
-   
-    toast.error( 'Failed to update category');
-  } else {
-    toast.error('Failed to update category');
-  }
-}
-}
+    try {
+      await updateCategory({
+        id: selectedCategory._id,
+        ...formData,
+      }).unwrap();
+      toast.success('Category updated!');
+      setIsOpen(false);
+      refetch();
+    } catch (error: unknown) {
+      console.error('Update failed', error);
+      toast.error('Failed to update category');
+    }
+  };
 
   return (
     <div className="max-w-5xl mx-auto py-10 px-4">

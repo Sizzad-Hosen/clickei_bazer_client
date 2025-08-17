@@ -3,6 +3,7 @@
 import React, { ChangeEvent, useState } from 'react';
 import { toast } from 'sonner';
 import { Pencil, Trash2 } from 'lucide-react';
+import Swal from 'sweetalert2';
 
 import { useGetAllCategoriesQuery } from '@/redux/features/Categories/categoryApi';
 import { useGetAllServicesQuery } from '@/redux/features/Services/serviceApi';
@@ -103,14 +104,29 @@ const SubcategoriesPage: React.FC = () => {
     setFormData({ ...formData, serviceId: value });
   };
 
+  // SweetAlert2 confirm delete
   const handleDelete = async (id: string) => {
-    try {
-      await deleteSubcategory(id).unwrap();
-      toast.success('Subcategory deleted successfully!');
-      refetch();
-    } catch (error) {
-      console.error(error);
-      toast.error('Failed to delete subcategory');
+    const result = await Swal.fire({
+      title: 'Are you sure?',
+      text: 'This subcategory will be permanently deleted!',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#6b7280',
+      confirmButtonText: 'Yes, delete it!',
+      cancelButtonText: 'Cancel',
+      reverseButtons: true,
+    });
+
+    if (result.isConfirmed) {
+      try {
+        await deleteSubcategory(id).unwrap();
+        toast.success('Subcategory deleted successfully!');
+        refetch();
+      } catch (error) {
+        console.error(error);
+        toast.error('Failed to delete subcategory');
+      }
     }
   };
 

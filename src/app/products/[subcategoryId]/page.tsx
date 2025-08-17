@@ -28,6 +28,8 @@ const ProductListBySubcategory = () => {
   const params = useParams();
   const subcategoryId = typeof params?.subcategoryId === 'string' ? params.subcategoryId : '';
 
+console.log("sub id", subcategoryId)
+
   const [page, setPage] = useState(1);
   const [cartOpen, setCartOpen] = useState(false);
   const [breadcrumbs, setBreadcrumbs] = useState<BreadcrumbItem[]>([]);
@@ -41,6 +43,9 @@ const ProductListBySubcategory = () => {
 
   // useMemo to avoid array recreation every render
   const products: Product[] = useMemo(() => productRes?.data || [], [productRes?.data]);
+
+  console.log("product", productRes)
+  
   const meta = productRes?.meta;
   const totalPages = meta?.totalPages || 1;
 

@@ -12,7 +12,14 @@ interface ProductsResponse {
   data: Product[];
   meta: TMeta;
 }
-
+interface ProductsApiResponse {
+  success: boolean;
+  message: string;
+  data: {
+    products: Product[];
+    meta: TMeta;
+  };
+}
 
 export type TSearchQueryParams = Record<string, string | number | undefined>;
 
@@ -86,7 +93,7 @@ transformResponse: (response: ApiResponse<Product>) => ({
       ProductsResponse,
       {  page?: number; limit?: number }
     >({
-      query: ({  page = 1, limit = 6 }) =>
+      query: ({  page = 1, limit = 10 }) =>
         `/products/sub-products?&page=${page}&limit=${limit}`,
       // Use typed response here instead of `any`
   
@@ -127,27 +134,21 @@ getSingleProduct: builder.query<Product, string>({
       invalidatesTags: ['Products'],
     }),
 
+// this is subcategory api but use this page by mistake
 getAllProductsBySubcategoryId: builder.query<
-  ProductsResponse,
-  { subcategoryId: string; page?: number; limit?: number }
+  ProductsResponse, // return type
+  { subcategoryId: string; page?: number; limit?: number } // query params
 >({
   query: ({ subcategoryId, page = 1, limit = 10 }) =>
-    `/products/sub-products?subcategoryId=${subcategoryId}&page=${page}&limit=${limit}`,
+    `/subCategories/allProductsBySubId/${subcategoryId}?page=${page}&limit=${limit}`,
 
-  transformResponse: (response: ApiResponse<Product[]>): ProductsResponse => {
-    // Access the correct `data` level; no extra nesting
-   const products: Product[] = Array.isArray(response?.data?.data)
-      ? response.data.data.flat()
-      : [];
-
+  transformResponse: (response: ProductsApiResponse): ProductsResponse => {
     return {
-      data: products,
-      meta: response?.data?.meta ?? { totalPages: 1, total: 0, page: 1, limit: 10 },
+      data: response.data.products,
+      meta: response.data.meta,
     };
   },
 }),
-
-
 
 
   }),
