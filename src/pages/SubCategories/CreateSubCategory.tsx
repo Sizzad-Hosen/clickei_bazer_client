@@ -71,9 +71,13 @@ const CreateSubcategoryPage = () => {
 
       toast.success(res?.message || 'Subcategory created successfully');
       router.push('/dashboard/subCategories');
-    } catch (err: any) {
-      toast.error(err?.data?.message || 'Failed to create subcategory');
-    } finally {
+    } catch (err: unknown) {
+  if (err && typeof err === 'object' && 'data' in err) {
+    const error = err as { data?: { message?: string } };
+    toast.error(error.data?.message ?? 'Failed to create subcategory');
+  } else {
+    toast.error('Failed to create subcategory');
+  }} finally {
       setIsSubmitting(false);
     }
   };

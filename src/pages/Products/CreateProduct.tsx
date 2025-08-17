@@ -101,7 +101,7 @@ function isErrorWithMessage(err: unknown): err is { data?: { message?: string } 
     typeof err === 'object' &&
     err !== null &&
     'data' in err &&
-    typeof (err as any).data === 'object'
+    typeof (err).data === 'object'
   );
 }
     try {

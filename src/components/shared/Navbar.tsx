@@ -13,7 +13,6 @@ import { logout, selectCurrentUser } from '@/redux/features/auth/authSlices';
 import { toast } from 'sonner';
 import { useAppSelector } from '@/redux/hook';
 import type { Product } from '@/types/products';
-import ProtectedRoute from '../ProtectedRoute';
 
 const examplePlaceholders = [
   'potato', 'milk', 'rice', 'apple', 'banana', 'onion', 'bread', 'egg', 'chicken', 'fish',
