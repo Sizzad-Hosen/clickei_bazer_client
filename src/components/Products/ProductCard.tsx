@@ -159,13 +159,13 @@ export default function ProductCard({
         <div className="p-4 flex flex-col flex-grow">
           <div className="flex-grow">
             <h3 className="font-medium text-lg line-clamp-1 mb-1">{product.title}</h3>
-            <div className="flex items-center gap-2">
+            <div className="flex flex-col lg:flex-row md:flex-row xl:flex-row items-center gap-2">
               {product.discount && product.discount > 0 ? (
                 <>
                   <span className="text-red-600 font-bold text-xl">
                     ৳{discountedPrice.toFixed(2)}
                   </span>
-                  <span className="line-through text-gray-400 text-sm">
+                  <span className="line-through text-gray-400  text-sm">
                     ৳{product.price.toFixed(2)}
                   </span>
                 </>
@@ -176,7 +176,7 @@ export default function ProductCard({
           </div>
 
           {/* Action Buttons */}
-          <div className="flex flex-col md:flex-col xl:flex-row lg:flex-row gap-2 sm:flex-row sm:gap-3 md:gap-4">
+          <div className="flex flex-col pt-2 md:flex-col xl:flex-row lg:flex-row gap-2 sm:flex-row sm:gap-3 md:gap-4">
             <Button
               variant="outline"
               className="w-full sm:flex-1 h-10"
@@ -200,147 +200,157 @@ export default function ProductCard({
         </div>
       </div>
 
-      {/* Product Details Modal */}
-      <Dialog open={isDetailsOpen} onOpenChange={setIsDetailsOpen}>
-        <DialogContent className="sm:max-w-xl md:max-w-2xl lg:max-w-3xl max-h-[90vh] overflow-y-auto p-6">
-          <DialogHeader className="flex justify-between items-start">
-            <DialogTitle className="text-2xl">{product.title}</DialogTitle>
+   {/* Product Details Modal */}
+<Dialog open={isDetailsOpen} onOpenChange={setIsDetailsOpen}>
+  <DialogContent className="sm:max-w-3xl lg:max-w-5xl max-h-[95vh] overflow-y-auto p-6 rounded-2xl shadow-xl">
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+      {/* LEFT SIDE - MAIN IMAGE */}
+      <div className="flex flex-col items-center">
+        <div className="relative w-full h-96 bg-gray-100 rounded-lg overflow-hidden">
+          <Image
+            src={
+              product.images?.[0]
+                ? product.images[0]
+                : "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT2U2akySBgSHUK-foX-9SGFmLk6zEuGYNNqw&s"
+            }
+            alt={product.title || "Product"}
+            fill
+            className="object-cover"
+            priority
+          />
+        </div>
 
-            <button
-              onClick={handleToggleWishlist}
-              className="bg-white rounded-full p-1 shadow hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              aria-label={isInWishlist ? 'Remove from wishlist' : 'Add to wishlist'}
-              type="button"
-            >
-              {isInWishlist ? (
-                <Heart className="text-red-500 h-5 w-5" />
-              ) : (
-                <HeartOff className="text-gray-400 h-5 w-5" />
-              )}
-            </button>
-          </DialogHeader>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
-            <div className="relative w-full h-64 bg-gray-100 rounded-lg overflow-hidden">
-              <Image
-                src={
-                  product.images?.[0]
-                    ? product.images[0]
-                    : 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT2U2akySBgSHUK-foX-9SGFmLk6zEuGYNNqw&s'
-                }
-                alt={product.title || 'Avatar'}
-                fill
-                className="object-cover"
-                sizes="(max-width: 768px) 100vw, 50vw"
-                priority={true}
-              />
-            </div>
-
-            <div className="space-y-4">
-              <div>
-                <h3 className="text-lg font-semibold mb-2">Description</h3>
-                <p className="text-gray-600">{product.description ?? 'No description available.'}</p>
+        {/* Thumbnails (More Images) */}
+        {product.images && product.images.length > 1 && (
+          <div className="flex gap-3 mt-4 overflow-x-auto">
+            {product.images.map((img, i) => (
+              <div
+                key={i}
+                className="relative w-20 h-20 bg-gray-200 rounded-md overflow-hidden cursor-pointer hover:ring-2 hover:ring-blue-500"
+                onClick={() => {
+                  // Replace main image logic if needed
+                }}
+              >
+                <Image
+                  src={img}
+                  alt={`${product.title} ${i + 1}`}
+                  fill
+                  className="object-cover"
+                />
               </div>
-
-              <div>
-                <h3 className="text-lg font-semibold mb-2">Price</h3>
-                <div className="flex items-center gap-2">
-                  {product.discount && product.discount > 0 ? (
-                    <>
-                      <span className="text-red-600 font-bold text-2xl">
-                        ৳{discountedPrice.toFixed(2)}
-                      </span>
-                      <span className="line-through text-gray-400 text-lg">
-                        ৳{product.price.toFixed(2)}
-                      </span>
-                    </>
-                  ) : (
-                    <span className="font-bold text-2xl">৳{product.price.toFixed(2)}</span>
-                  )}
-                </div>
-              </div>
-
-              <div className="pt-4">
-                <Button
-                  variant="secondary"
-                  className="w-full h-12"
-                  onClick={() => {
-                    handleAddToCart();
-                    setIsDetailsOpen(false);
-                  }}
-                  disabled={isAddingToCart}
-                  type="button"
-                >
-                  <ShoppingCart className="h-5 w-5 mr-2" />
-                  {isAddingToCart ? 'Adding to Cart...' : 'Add to Cart'}
-                </Button>
-              </div>
-            </div>
+            ))}
           </div>
+        )}
+      </div>
 
-          {/* More Images Section */}
-          {product.images && product.images.length > 1 && (
-            <div className="mt-6">
-              <h3 className="text-lg font-semibold mb-3">More Images</h3>
-              <div className="grid grid-cols-3 gap-2">
-                {product.images.slice(1).map((image, index) => (
-                  <div
-                    key={index}
-                    className="relative aspect-square bg-gray-100 rounded-md overflow-hidden"
-                  >
-                    <Image
-                      src={image}
-                      alt={`${product.title} ${index + 1}`}
-                      fill
-                      className="object-cover"
-                      sizes="100px"
-                    />
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
+      {/* RIGHT SIDE - DETAILS */}
+      <div className="space-y-6">
+        {/* Header */}
+        <div className="flex justify-between items-start">
+          <DialogTitle className="text-2xl font-bold text-gray-800">
+            {product.title}
+          </DialogTitle>
+          <button
+            onClick={handleToggleWishlist}
+            className="bg-white rounded-full p-2  pt-2 shadow hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            aria-label={
+              isInWishlist ? "Remove from wishlist" : "Add to wishlist"
+            }
+            type="button"
+          >
+            {isInWishlist ? (
+              <Heart className="text-red-500 h-6 w-6" />
+            ) : (
+              <HeartOff className="text-gray-400 h-6 w-6" />
+            )}
+          </button>
+        </div>
 
-          {/* Recommended Products Section */}
-          {recommendedProducts.length > 0 && (
-            <div className="mt-8">
-              <h3 className="text-lg font-semibold mb-3">Recommended Products</h3>
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-                {recommendedProducts.map((recProd) => (
-                  <div
-                    key={recProd._id}
-                    className="border rounded-lg p-3 hover:shadow-md cursor-pointer"
-                    onClick={() => {
-                      setIsDetailsOpen(false);
-                      router.push(`/products/${recProd._id}`);
-                    }}
-                    role="button"
-                    tabIndex={0}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter' || e.key === ' ') {
-                        setIsDetailsOpen(false);
-                        router.push(`/products/${recProd._id}`);
-                      }
-                    }}
-                  >
-                    <div className="relative aspect-square w-full bg-gray-100 rounded-md overflow-hidden mb-2">
-                      <Image
-                        src={recProd.images?.[0] || '/avatar-placeholder.png'}
-                        alt={recProd.title}
-                        fill
-                        className="object-cover"
-                        sizes="100px"
-                      />
-                    </div>
-                    <p className="text-sm font-medium line-clamp-2">{recProd.title}</p>
-                    <p className="text-sm font-semibold text-primary">৳{recProd.price}</p>
-                  </div>
-                ))}
+        {/* Description */}
+        <div>
+          <h3 className="text-lg font-semibold mb-2">Description</h3>
+          <p className="text-gray-600 leading-relaxed">
+            {product.description ?? "No description available."}
+          </p>
+        </div>
+
+        {/* Price */}
+        <div>
+          <h3 className="text-lg font-semibold mb-2">Price</h3>
+          <div className="flex items-center gap-3">
+            {product.discount && product.discount > 0 ? (
+              <>
+                <span className="text-red-600 font-bold text-3xl">
+                  ৳{discountedPrice.toFixed(2)}
+                </span>
+                <span className="line-through text-gray-400 text-lg">
+                  ৳{product.price.toFixed(2)}
+                </span>
+              </>
+            ) : (
+              <span className="font-bold text-3xl">
+                ৳{product.price.toFixed(2)}
+              </span>
+            )}
+          </div>
+        </div>
+
+        {/* Buttons */}
+        <div className="flex flex-col sm:flex-row gap-4 pt-4">
+          <Button
+            variant="secondary"
+            className="flex-1 h-12 text-lg"
+            onClick={() => {
+              handleAddToCart();
+              setIsDetailsOpen(false);
+            }}
+            disabled={isAddingToCart}
+            type="button"
+          >
+            <ShoppingCart className="h-5 w-5 mr-2" />
+            {isAddingToCart ? "Adding..." : "Add to Cart"}
+          </Button>
+
+        </div>
+      </div>
+    </div>
+
+    {/* Recommended Products */}
+    {recommendedProducts.length > 0 && (
+      <div className="mt-10">
+        <h3 className="text-lg font-semibold mb-4">Recommended Products</h3>
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-5">
+          {recommendedProducts.map((recProd) => (
+            <div
+              key={recProd._id}
+              className="border rounded-lg p-3 hover:shadow-lg transition cursor-pointer"
+              onClick={() => {
+                setIsDetailsOpen(false);
+                router.push(`/products/${recProd._id}`);
+              }}
+            >
+              <div className="relative aspect-square w-full bg-gray-100 rounded-md overflow-hidden mb-2">
+                <Image
+                  src={recProd.images?.[0] || "/avatar-placeholder.png"}
+                  alt={recProd.title}
+                  fill
+                  className="object-cover"
+                />
               </div>
+              <p className="text-sm font-medium line-clamp-2">
+                {recProd.title}
+              </p>
+              <p className="text-sm font-semibold text-primary">
+                ৳{recProd.price}
+              </p>
             </div>
-          )}
-        </DialogContent>
-      </Dialog>
+          ))}
+        </div>
+      </div>
+    )}
+  </DialogContent>
+</Dialog>
+
     </>
   );
 }

@@ -38,6 +38,7 @@ const Navbar = () => {
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
   const [placeholderIndex, setPlaceholderIndex] = useState(0);
 
+
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   // Rotate placeholder
@@ -256,23 +257,63 @@ const Navbar = () => {
               </Button>
 
               {profileDropdownOpen && (
-        <div className="border border-gray-200 bg-white shadow-lg overflow-auto max-h-96 w-[300px] z-80 absolute right-0 mt-2 rounded">
-            {admin.role !== 'admin' && (
-              <>
-                <Link href="/profile" className="block px-4 py-2 text-gray-700 hover:bg-gray-100 rounded">Your Profile</Link>
-                <Link href="/order" className="block px-4 py-2 text-gray-700 hover:bg-gray-100 rounded">Your Orders</Link>
-                <Link href="/wishList" className="block px-4 py-2 text-gray-700 hover:bg-gray-100 rounded">Your WishList</Link>
-                <Link href="/track-order" className="block px-4 py-2 text-gray-700 hover:bg-gray-100 rounded">Track Order</Link>
-                <Link href="/change-password" className="block px-4 py-2 text-gray-700 hover:bg-gray-100 rounded">Change Password</Link>
-                <button onClick={handleLogout} className="w-full text-left px-4 py-2 text-red-600 hover:bg-red-100 rounded">Logout</button>
-              </>
-            )}
-
-            {admin.role === 'admin' && (
-              <Link href="/dashboard" className="block px-4 py-2 text-gray-700 hover:bg-gray-100 rounded">Dashboard</Link>
-            )}
-          </div>
-
+                <div
+                  className="absolute right-0 mt-2 w-56 rounded-md border border-gray-200 bg-white shadow-lg z-50 overflow-auto max-h-96"
+                  role="menu"
+                  aria-orientation="vertical"
+                  aria-labelledby="profile-menu-button"
+                >
+                  <Link
+                    href="/profile"
+                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                    role="menuitem"
+                    onClick={() => setProfileDropdownOpen(false)}
+                  >
+                    Your Profile
+                  </Link>
+                  <Link
+                    href="/order"
+                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                    role="menuitem"
+                    onClick={() => setProfileDropdownOpen(false)}
+                  >
+                    Your Orders
+                  </Link>
+                  <Link
+                    href="/wishList"
+                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                    role="menuitem"
+                    onClick={() => setProfileDropdownOpen(false)}
+                  >
+                    Your WishList
+                  </Link>
+                  <Link
+                    href="/track-order"
+                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                    role="menuitem"
+                    onClick={() => setProfileDropdownOpen(false)}
+                  >
+                    Track Order
+                  </Link>
+                  <Link
+                    href="/change-password"
+                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                    role="menuitem"
+                    onClick={() => setProfileDropdownOpen(false)}
+                  >
+                    Change Password
+                  </Link>
+                  <button
+                    className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-100"
+                    onClick={() => {
+                      setProfileDropdownOpen(false);
+                      handleLogout();
+                    }}
+                    role="menuitem"
+                  >
+                    Logout
+                  </button>
+                </div>
               )}
             </div>
           )}

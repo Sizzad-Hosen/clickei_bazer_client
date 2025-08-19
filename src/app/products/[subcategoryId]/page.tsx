@@ -155,7 +155,7 @@ console.log("sub id", subcategoryId)
           <h2 className="text-2xl font-bold mb-6">Products</h2>
 
           {isLoading ? (
-            <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-4  sm:grid-cols-2 lg:grid-cols-5 xl:grid-cols-6 gap-4">
               {Array.from({ length: 10 }).map((_, idx) => (
                 <Skeleton key={idx} className="h-80 w-full rounded-xl" />
               ))}
@@ -172,7 +172,7 @@ console.log("sub id", subcategoryId)
               <p className="text-gray-500 italic">No products found in this subcategory</p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 md:grid-cols-3 xl:grid-cols-5 gap-3">
+            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-5 md:grid-cols-4  gap-3">
               {products.map((product) => (
                 <ProductCard key={product._id} product={product} onOpenCart={openCart} />
               ))}

@@ -1,33 +1,80 @@
 export default function Footer() {
   return (
-    <footer className="bg-gray-100 text-center p-4 text-sm text-gray-600">
-      © 2025 CLICKEIBAZZER — All rights reserved.
+    <footer className="bg-gray-900 text-gray-300 text-sm">
+    
 
-       {/* Top Contact Bar */}
-            <div className="bg-gray-900 text-sm text-amber-600 px-4 py-2 flex justify-around items-center flex-wrap gap-2">
-              <h1 className="font-medium">
-                Contact:{' '}
-                <a href="mailto:clickeibazer2025july@gmail.com" className="text-lime-600 hover:underline">
-                  clickeibazar2025july@gmail.com
-                </a>{' '}
-                | Phone:{' '}
-                <a href="tel:01745455353" className="text-lime-600 hover:underline">
-                  01745455353
-                </a>
-              </h1>
-              <a
-                href="https://www.facebook.com/share/1Fh8DHu1UG/"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-lime-600 hover:underline flex items-center gap-1"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24" className="w-4 h-4">
-                  <path d="M22 12a10 10 0 1 0-11.63 9.87v-7H8v-3h2.37V9.5c0-2.3 1.37-3.57 3.47-3.57.7 0 1.44.12 1.44.12v1.58H14.6c-1.14 0-1.5.71-1.5 1.44V12h2.56l-.41 3h-2.15v7A10 10 0 0 0 22 12z" />
-                </svg>
-                Facebook
+      {/* MAIN FOOTER CONTENT */}
+      <div className="max-w-7xl mx-auto px-4 py-10 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8">
+        {/* ABOUT US */}
+        <div>
+          <h2 className="text-white font-semibold mb-3">About Us</h2>
+          <p className="text-gray-400 text-sm leading-relaxed">
+            CLICKEIBAZZER is your trusted online marketplace for groceries, 
+            fresh foods, electronics, and more. We ensure quality products 
+            and fast delivery at your doorstep.
+          </p>
+        </div>
+
+        {/* QUICK LINKS */}
+        <div>
+          <h2 className="text-white font-semibold mb-3">Quick Links</h2>
+          <ul className="space-y-2">
+            <li><a href="/about" className="hover:text-amber-500">About Us</a></li>
+            <li><a href="/contact" className="hover:text-amber-500">Contact Us</a></li>
+            <li><a href="/refund-policy" className="hover:text-amber-500">Refund Policy</a></li>
+            <li><a href="/terms" className="hover:text-amber-500">Terms & Conditions</a></li>
+          </ul>
+        </div>
+
+        {/* CONTACT INFO */}
+        <div>
+          <h2 className="text-white font-semibold mb-3">Contact Info</h2>
+          <ul className="space-y-2">
+            <li>Email: 
+              <a href="mailto:clickeibazer2025july@gmail.com" className="ml-1 text-lime-500 hover:underline">
+                clickeibazer2025july@gmail.com
               </a>
-            </div>
-            
+            </li>
+            <li>Phone: 
+              <a href="tel:01745455353" className="ml-1 text-lime-500 hover:underline">
+                01745455353
+              </a>
+            </li>
+            <li>WhatsApp: 
+              <a href="https://wa.me/8801745455353" target="_blank" rel="noopener noreferrer" className="ml-1 text-lime-500 hover:underline">
+                Chat Now
+              </a>
+            </li>
+            <li>Address: Rangpur, Bangladesh</li>
+          </ul>
+        </div>
+
+        {/* FOLLOW US */}
+        <div>
+          <h2 className="text-white font-semibold mb-3">Follow Us</h2>
+          <div className="flex gap-4">
+            <a
+              href="https://www.facebook.com/share/1Fh8DHu1UG/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-gray-400 hover:text-amber-500"
+            >
+              Facebook
+            </a>
+            <a
+              href="mailto:clickeibazer2025july@gmail.com"
+              className="text-gray-400 hover:text-amber-500"
+            >
+              Email
+            </a>
+          </div>
+        </div>
+      </div>
+
+      {/* COPYRIGHT */}
+      <div className="bg-gray-800 text-center py-4 text-gray-400 text-xs">
+        © 2025 CLICKEIBAZZER — All rights reserved.
+      </div>
     </footer>
   );
 }
