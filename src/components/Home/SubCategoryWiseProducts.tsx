@@ -42,6 +42,7 @@ const ProductsBySubcategoryPage: React.FC<ProductsBySubcategoryPageProps> = ({
 
   return (
     <div className="max-w-8xl mx-auto px-4 py-8">
+      <h2 className='font-bold p-5 text-2xl '>Recommended Products for you</h2>
       {products.length === 0 ? (
         <p className="text-center text-gray-500">No products found.</p>
       ) : (

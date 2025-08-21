@@ -19,10 +19,9 @@ export default function Footer() {
         <div>
           <h2 className="text-white font-semibold mb-3">Quick Links</h2>
           <ul className="space-y-2">
-            <li><a href="/about" className="hover:text-amber-500">About Us</a></li>
-            <li><a href="/contact" className="hover:text-amber-500">Contact Us</a></li>
-            <li><a href="/refund-policy" className="hover:text-amber-500">Refund Policy</a></li>
-            <li><a href="/terms" className="hover:text-amber-500">Terms & Conditions</a></li>
+            <li><a href="#" className="hover:text-amber-500">About Us</a></li>
+            <li><a href="#" className="hover:text-amber-500">Refund Policy</a></li>
+            <li><a href="#" className="hover:text-amber-500">Terms & Conditions</a></li>
           </ul>
         </div>
 

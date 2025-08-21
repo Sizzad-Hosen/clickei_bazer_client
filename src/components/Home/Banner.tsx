@@ -47,8 +47,8 @@ export default function BannerSlider() {
   }, [currentIndex]);
 
   return (
-    <div className="relative w-full max-w-8xl mb-12 mx-auto overflow-hidden rounded-lg shadow-lg">
-      <div className="relative h-[300px] md:h-[400px] lg:h-[500px]">
+    <div className="relative w-[90%] sm:w-[75%] md:w-[80%] lg:w-[90%] xl:w-[100%] mb-12 mx-auto overflow-hidden rounded-lg shadow-lg">
+      <div className="relative h-[200px] sm:h-[250px] md:h-[300px] lg:h-[400px] xl:h-[500px]">
         {banners.map((banner, index) => (
           <div
             key={banner.id}
@@ -61,7 +61,6 @@ export default function BannerSlider() {
               alt={banner.alt}
               fill
               style={{ objectFit: "cover" }}
-             
               sizes="100vw"
               loading="lazy"
             />
@@ -75,7 +74,7 @@ export default function BannerSlider() {
           <button
             key={idx}
             onClick={() => setCurrentIndex(idx)}
-            className={`w-4 h-4 rounded-full transition-colors duration-300 ${
+            className={`w-3 h-3 sm:w-4 sm:h-4 rounded-full transition-colors duration-300 ${
               idx === currentIndex ? "bg-amber-500" : "bg-gray-300 hover:bg-gray-400"
             }`}
             aria-label={`Show banner ${idx + 1}`}

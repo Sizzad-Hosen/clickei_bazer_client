@@ -46,18 +46,16 @@ import { TCustomBazerOrder } from '@/types/CustomBazar';
 
 const ORDERS_PER_PAGE = 10;
 
-const CustomBazarOrdersPage: React.FC = () => {
+const AllCustomBazarOrders: React.FC = () => {
   const [invoiceIdSearch, setInvoiceIdSearch] = useState('');
   const [page, setPage] = useState(1);
 
-  // Fetch orders with pagination and filter
   const { data, isLoading, refetch } = useGetAllCustomBazarOrdersQuery({
     invoiceId: invoiceIdSearch.trim() || undefined,
     page,
     limit: ORDERS_PER_PAGE,
   });
 
-  // Correct data extraction based on API response shape
   const orders: TCustomBazerOrder[] = data?.data || [];
   const meta: TMeta = data?.meta || { total: 0, totalPages: 0, limit: 0, page: 0 };
 
@@ -189,7 +187,7 @@ const CustomBazarOrdersPage: React.FC = () => {
         <Input
           value={invoiceIdSearch}
           onChange={onSearchChange}
-          placeholder="Search by Invoice ID only"
+          placeholder="Search by Invoice ID"
           className="max-w-md w-full"
         />
       </div>
@@ -223,13 +221,12 @@ const CustomBazarOrdersPage: React.FC = () => {
                   <TableCell>৳{order.totalAmount?.toFixed(2) || '0'}</TableCell>
                   <TableCell>
                     <div className="flex items-center gap-2 flex-wrap">
+                      {/* Details Dialog */}
                       <Dialog>
                         <DialogTrigger asChild>
-                          <Button size="sm" variant="outline">
-                            Details
-                          </Button>
+                          <Button size="sm" variant="outline">Details</Button>
                         </DialogTrigger>
-                        <DialogContent>
+                        <DialogContent className="max-w-lg">
                           <DialogHeader>
                             <DialogTitle>Order Details</DialogTitle>
                           </DialogHeader>
@@ -257,6 +254,7 @@ const CustomBazarOrdersPage: React.FC = () => {
                         </DialogContent>
                       </Dialog>
 
+                      {/* Order Status */}
                       <Select
                         value={order.status}
                         onValueChange={(val) => handleStatusChange(order.invoiceId as string, val, 'order')}
@@ -266,25 +264,22 @@ const CustomBazarOrdersPage: React.FC = () => {
                         </SelectTrigger>
                         <SelectContent>
                           {['pending', 'confirmed', 'shipped', 'delivered', 'cancelled'].map((s) => (
-                            <SelectItem key={s} value={s}>
-                              {s}
-                            </SelectItem>
+                            <SelectItem key={s} value={s}>{s}</SelectItem>
                           ))}
                         </SelectContent>
                       </Select>
 
+                      {/* Payment Status */}
                       <Select
                         value={order.paymentStatus ?? 'pending'}
-                        onValueChange={(val) => handleStatusChange(order?.invoiceId as string, val, 'payment')}
+                        onValueChange={(val) => handleStatusChange(order.invoiceId as string, val, 'payment')}
                       >
                         <SelectTrigger className="w-24 h-8 text-sm">
                           <SelectValue placeholder={order.paymentStatus ?? 'pending'} />
                         </SelectTrigger>
                         <SelectContent>
                           {['pending', 'paid', 'success', 'failed'].map((s) => (
-                            <SelectItem key={s} value={s}>
-                              {s}
-                            </SelectItem>
+                            <SelectItem key={s} value={s}>{s}</SelectItem>
                           ))}
                         </SelectContent>
                       </Select>
@@ -295,10 +290,10 @@ const CustomBazarOrdersPage: React.FC = () => {
                         size="sm"
                         onClick={() => handlePrintOrder(order)}
                       >
-                        Print Order
+                        Print
                       </Button>
 
-                      <Button variant="destructive" onClick={() => handleDeleteOrder(order._id as string)}>
+                      <Button variant="destructive" size="sm" onClick={() => handleDeleteOrder(order._id as string)}>
                         <MdDelete />
                       </Button>
                     </div>
@@ -310,14 +305,13 @@ const CustomBazarOrdersPage: React.FC = () => {
         </div>
       )}
 
+      {/* Pagination */}
       {meta.total > ORDERS_PER_PAGE && orders.length > 0 && (
         <Pagination className="justify-center mt-6">
           <PaginationContent>
             <PaginationItem>
               <PaginationLink
-                onClick={() => {
-                  if (page > 1) handlePageChange(page - 1);
-                }}
+                onClick={() => page > 1 && handlePageChange(page - 1)}
                 style={{ pointerEvents: page === 1 ? 'none' : 'auto', opacity: page === 1 ? 0.5 : 1 }}
               >
                 Prev
@@ -337,13 +331,8 @@ const CustomBazarOrdersPage: React.FC = () => {
 
             <PaginationItem>
               <PaginationLink
-                onClick={() => {
-                  if (page < (meta.totalPages || 1)) handlePageChange(page + 1);
-                }}
-                style={{
-                  pointerEvents: page === (meta.totalPages || 1) ? 'none' : 'auto',
-                  opacity: page === (meta.totalPages || 1) ? 0.5 : 1,
-                }}
+                onClick={() => page < (meta.totalPages || 1) && handlePageChange(page + 1)}
+                style={{ pointerEvents: page === (meta.totalPages || 1) ? 'none' : 'auto', opacity: page === (meta.totalPages || 1) ? 0.5 : 1 }}
               >
                 Next
               </PaginationLink>
@@ -355,4 +344,4 @@ const CustomBazarOrdersPage: React.FC = () => {
   );
 };
 
-export default CustomBazarOrdersPage;
+export default AllCustomBazarOrders;

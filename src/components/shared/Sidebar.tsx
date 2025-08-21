@@ -50,7 +50,7 @@ export default function Sidebar({ onSelectSubcategory }: SidebarProps) {
       <button
         aria-label="Toggle menu"
         onClick={() => setMobileOpen(!mobileOpen)}
-        className={`fixed left-2 z-[999] md:hidden bg-white rounded-md p-2 shadow-md ${mobileOpen ? 'top-0' : 'top-10'}`}
+        className={`fixed left-4 z-[999] md:hidden bg-white rounded-md p-1 shadow-md ${mobileOpen ? 'top-0' : 'top-8'}`}
       >
         {mobileOpen ? <X size={20} /> : <Menu size={24} />}
       </button>

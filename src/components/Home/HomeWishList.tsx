@@ -25,7 +25,7 @@ export default function WishlistHome({ onOpenCart }: WishlistHomeProps) {
 
   return (
     <section className="mt-10 space-y-4">
-      <h3 className="text-xl font-semibold">Your Favorite</h3>
+      <h3 className="font-bold p-3 text-2xl">Your Favorite</h3>
 
       {isLoading ? (
         <Spinner />

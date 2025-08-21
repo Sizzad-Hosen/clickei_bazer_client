@@ -40,11 +40,17 @@ export interface ApiResponse<T> {
   message?: string;
   data: T;
 }
+export interface IProductSize {
+  label: string;
+  price: number;
+}
 
 export interface Product {
   _id: string;
   name: string;
   title: string;
+  stock:string
+  sizes: IProductSize[];
   description: string;
   quantity: number;
   price: number;

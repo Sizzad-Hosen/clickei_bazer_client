@@ -3,6 +3,13 @@ export interface OrderItem {
   title: string;
   image?: string;
   quantity: number;
+  discount?: number;
+  price: number;
+   selectedSize: IProductSize; 
+}
+
+export interface IProductSize {
+  label: string;
   price: number;
 }
 
@@ -11,9 +18,13 @@ export interface Order {
   _id: string;
   invoiceId: string;
   status: string;
+  selectedSize: IProductSize; 
   paymentStatus: string;
+  paymentMethod?:string;
+
+  discount?: number;
   totalPrice: number;
-totalAmount?:number;
+grandTotal:number;
   orderStatus:string;
   user?: {
     name?: string;

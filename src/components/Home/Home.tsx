@@ -8,6 +8,8 @@ import CartDrawer from '../Carts/CartDrawer';
 
 import AllService from './AllService';
 
+import ProductsBySubcategoryPage from './SubCategoryWiseProducts';
+
 export default function Home() {
   
   const [cartOpen, setCartOpen] = useState(false);
@@ -28,7 +30,10 @@ export default function Home() {
       <main className="flex-1 overflow-y-auto h-screen p-4 md:p-6">
         {/* Banner */}
         <BannerSlider />
-<AllService></AllService>
+       <AllService></AllService>
+ 
+
+<ProductsBySubcategoryPage onOpenCart={openCart} ></ProductsBySubcategoryPage>
 
         {/* Wishlist */}
         <WishlistHome onOpenCart={openCart} />

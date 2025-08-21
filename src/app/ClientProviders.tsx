@@ -11,9 +11,12 @@ export default function ClientProviders({ children }: { children: ReactNode }) {
   return (
     <ReduxProvider>
       <Toaster richColors position="top-center" />
-      <Navbar />
-      {children}
-      <Footer></Footer>
+      <div className="flex flex-col min-h-screen">
+        <Navbar />
+        {/* Make main content grow to fill space */}
+        <main className="flex-1">{children}</main>
+        <Footer />
+      </div>
     </ReduxProvider>
   );
 }

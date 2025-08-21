@@ -18,13 +18,18 @@ import { toast } from 'sonner';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 
-// CartItem টাইপ ডিফাইন করা হলো
+// CartItem type
 interface CartItem {
   productId: string;
   title: string;
   price: number;
+  discount?: number;
   quantity: number;
   image?: string;
+  selectedSize?: {
+    label: string;
+    price: number;
+  };
 }
 
 export default function CartDrawer({
@@ -34,15 +39,17 @@ export default function CartDrawer({
   open: boolean;
   onClose: () => void;
 }) {
-  const { data, isLoading } = useGetAllCartsQuery({});
+  const { data, isLoading, refetch } = useGetAllCartsQuery({});
   const [updateQty] = useUpdateCartsQuantityMutation();
   const [removeItem] = useRemoveCartMutation();
 
-  // Local cart state টাইপসহ
   const [localCart, setLocalCart] = useState<CartItem[]>([]);
-  const [totalAmount, setTotalAmount] = useState(0);
+  const [subtotal, setSubtotal] = useState(0);
+  const [totalDiscount, setTotalDiscount] = useState(0);
+  const [grandTotal, setGrandTotal] = useState(0);
   const [totalQuantity, setTotalQuantity] = useState(0);
 
+  // Load cart from backend
   useEffect(() => {
     if (data?.data?.items) {
       setLocalCart(data.data.items);
@@ -50,47 +57,60 @@ export default function CartDrawer({
     }
   }, [data]);
 
-  // totals calculate করার জন্য ফাংশন (CartItem[] টাইপ সহ)
+  // Function to calculate totals
   const calculateTotals = (items: CartItem[]) => {
-    const quantity = items.reduce((sum, item) => sum + item.quantity, 0);
-    const amount = items.reduce((sum, item) => sum + item.quantity * item.price, 0);
-    setTotalQuantity(quantity);
-    setTotalAmount(amount);
+    let subtotalCalc = 0;
+    let discountCalc = 0;
+    let quantityCalc = 0;
+
+    items.forEach(item => {
+      const itemPrice = item.selectedSize?.price ?? item.price;
+      const itemDiscount = item.discount ? (itemPrice * item.discount) / 100 : 0;
+      subtotalCalc += itemPrice * item.quantity;
+      discountCalc += itemDiscount * item.quantity;
+      quantityCalc += item.quantity;
+    });
+
+    setSubtotal(subtotalCalc);
+    setTotalDiscount(discountCalc);
+    setGrandTotal(subtotalCalc - discountCalc);
+    setTotalQuantity(quantityCalc);
   };
-const handleRemoveItemFromCart = async (productId: string) => {
-  try {
-    await removeItem(productId).unwrap();
 
-    const updatedCart = localCart.filter(item => item.productId !== productId);
-    setLocalCart(updatedCart);
-    calculateTotals(updatedCart);
+  // Remove item
+  const handleRemoveItemFromCart = async (productId: string) => {
+    try {
+      await removeItem(productId).unwrap();
+      await refetch();
+      toast.success('Item removed from cart');
+    } catch {
+      toast.error('Failed to remove item from cart');
+    }
+  };
 
-    toast.success('Item removed from cart');
-  } catch {
-    // Removed 'error' param because it was unused
-    toast.error('Failed to remove item from cart');
-  }
-};
+  // ✅ Correct update quantity
+  const handleUpdateQuantity = async (productId: string, newQuantity: number) => {
+    if (newQuantity < 1) return;
 
-const handleUpdateQuantity = async (productId: string, newQuantity: number) => {
-  if (newQuantity < 1) return; // prevent quantity less than 1
+    try {
+      await updateQty({ data: { id: productId, quantity: newQuantity } }).unwrap();
 
-  try {
-    await updateQty({ data: { id: productId, quantity: newQuantity } }).unwrap();
+      // update local state immediately
+      const updatedCart = localCart.map(item =>
+        item.productId === productId ? { ...item, quantity: newQuantity } : item
+      );
 
-    const updatedCart = localCart.map(item =>
-      item.productId === productId ? { ...item, quantity: newQuantity } : item
-    );
-    setLocalCart(updatedCart);
-    calculateTotals(updatedCart);
+      setLocalCart(updatedCart);
+      calculateTotals(updatedCart);
 
-    toast.success('Quantity updated');
-  } catch {
-    // Removed 'error' param because it was unused
-    toast.error('Failed to update quantity');
-  }
-};
+      // Optional: re-fetch backend for sync
+      await refetch();
 
+      toast.success('Quantity updated');
+    } catch {
+      toast.error('Failed to update quantity');
+    }
+  };
 
   return (
     <Drawer open={open} onOpenChange={onClose} direction="right">
@@ -100,22 +120,26 @@ const handleUpdateQuantity = async (productId: string, newQuantity: number) => {
           <DrawerDescription>{totalQuantity} item(s) in your cart</DrawerDescription>
         </DrawerHeader>
 
-        <div className="p-4 space-y-4 overflow-auto max-h-[70vh]">
+        <div className="p-4 space-y-4 overflow-auto max-h-[60vh]">
           {isLoading ? (
             <p className="text-gray-500">Loading cart...</p>
           ) : localCart.length === 0 ? (
             <p className="text-gray-500 italic">Your cart is empty.</p>
           ) : (
-            localCart.map((item, index) => {
+            localCart.map(item => {
               const imageSrc =
                 item.image && (item.image.startsWith('http') || item.image.startsWith('/'))
                   ? item.image
                   : '/placeholder.png';
 
+              const itemPrice = item.selectedSize?.price ?? item.price;
+              const itemDiscount = item.discount ? (itemPrice * item.discount) / 100 : 0;
+              const totalItemPrice = (itemPrice - itemDiscount) * item.quantity;
+
               return (
                 <div
-                  key={`${item.productId}-${index}`}
-                  className="flex gap-3 items-center border-b pb-3"
+                  key={item.productId}
+                  className="flex gap-3 items-start border-b pb-3"
                 >
                   <Image
                     src={imageSrc}
@@ -124,18 +148,29 @@ const handleUpdateQuantity = async (productId: string, newQuantity: number) => {
                     height={80}
                     className="rounded object-cover"
                   />
+
                   <div className="flex-1">
                     <p className="font-medium">{item.title}</p>
-                    <p className="text-sm">
-                      ৳{item.price} x {item.quantity}
+
+                    {item.selectedSize && (
+                      <p className="text-sm text-gray-600">
+                        Size: {item.selectedSize.label} - ৳{item.selectedSize.price.toFixed(2)}
+                      </p>
+                    )}
+
+                    <p className="text-sm text-gray-600">
+                      Price: ৳{itemPrice.toFixed(2)}{' '}
+                      {item.discount ? `(Discount: ${item.discount}%)` : ''}
                     </p>
-                    <div className="flex items-center gap-2 mt-1">
+                    <p className="text-sm font-semibold">
+                      Total: ৳{totalItemPrice.toFixed(2)}
+                    </p>
+
+                    <div className="flex items-center gap-2 mt-2">
                       <Button
                         size="sm"
                         variant="outline"
-                        onClick={() =>
-                          handleUpdateQuantity(item.productId, Math.max(1, item.quantity - 1))
-                        }
+                        onClick={() => handleUpdateQuantity(item.productId, item.quantity - 1)}
                       >
                         -
                       </Button>
@@ -143,14 +178,13 @@ const handleUpdateQuantity = async (productId: string, newQuantity: number) => {
                       <Button
                         size="sm"
                         variant="outline"
-                        onClick={() =>
-                          handleUpdateQuantity(item.productId, item.quantity + 1)
-                        }
+                        onClick={() => handleUpdateQuantity(item.productId, item.quantity + 1)}
                       >
                         +
                       </Button>
                     </div>
                   </div>
+
                   <Button
                     variant="destructive"
                     size="icon"
@@ -164,8 +198,17 @@ const handleUpdateQuantity = async (productId: string, newQuantity: number) => {
           )}
         </div>
 
-        <div className="p-4 border-t">
-          <p className="text-lg font-bold">Total: ৳ {totalAmount.toFixed(2)}</p>
+        {/* Cart Summary */}
+        <div className="p-4 border-t space-y-2">
+          <p className="flex justify-between">
+            <span>Subtotal:</span> <span>৳ {subtotal.toFixed(2)}</span>
+          </p>
+          <p className="flex justify-between text-red-600">
+            <span>Total Discount:</span> <span>- ৳ {totalDiscount.toFixed(2)}</span>
+          </p>
+          <p className="flex justify-between font-bold text-lg">
+            <span>Grand Total:</span> <span>৳ {grandTotal.toFixed(2)}</span>
+          </p>
 
           <Link href="/checkout">
             <Button className="mt-4 w-full bg-green-600 hover:bg-green-700 text-white">
