@@ -26,21 +26,24 @@ const Navbar = () => {
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
   const [isClient, setIsClient] = useState(false);
 
-  const dropdownRef = useRef<HTMLDivElement>(null);
+  const dropdownRefDesktop = useRef<HTMLDivElement>(null);
+  const dropdownRefMobile = useRef<HTMLDivElement>(null);
 
-  // Ensure client-side rendering for things like window/document
   useEffect(() => setIsClient(true), []);
 
-  // Debounce search query
+  // Debounce search
   useEffect(() => {
     const timer = setTimeout(() => setDebouncedQuery(query.trim()), 400);
     return () => clearTimeout(timer);
   }, [query]);
 
-  // Close dropdowns if click outside
+  // Close dropdowns if clicked outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+      if (dropdownRefDesktop.current && !dropdownRefDesktop.current.contains(event.target as Node)) {
+        setShowSearchDropdown(false);
+      }
+      if (dropdownRefMobile.current && !dropdownRefMobile.current.contains(event.target as Node)) {
         setShowSearchDropdown(false);
       }
       if (profileDropdownOpen && !(event.target as HTMLElement).closest('#profile-dropdown')) {
@@ -127,6 +130,24 @@ const Navbar = () => {
           )}
         </div>
 
+        {/* MOBILE SEARCH */}
+        <div className="mt-2 w-full md:hidden flex flex-col" ref={dropdownRefMobile}>
+          <div className="relative w-full">
+            <input
+              type="text"
+              value={query}
+              onChange={e => { setQuery(e.target.value); setShowSearchDropdown(true); }}
+              onKeyDown={handleKeyDown}
+              placeholder="Search ..."
+              className="w-full h-12 pl-4 pr-12 border-2 border-amber-600 bg-white rounded-md text-sm"
+            />
+            <button onClick={handleSearch} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-amber-600">
+              <Search size={20} />
+            </button>
+            {renderSuggestions()}
+          </div>
+        </div>
+
         {/* MOBILE SIDEBAR */}
         {sidebarOpen && (
           <div className="fixed inset-0 z-50 flex justify-end">
@@ -161,7 +182,8 @@ const Navbar = () => {
             <Image src={logo} alt="ClickeiBazer Logo" width={120} height={60} className="object-contain" />
           </Link>
 
-          <div className="flex w-full max-w-2xl relative" ref={dropdownRef}>
+          {/* DESKTOP SEARCH */}
+          <div className="flex w-full max-w-2xl relative" ref={dropdownRefDesktop}>
             <input
               type="text"
               value={query}
@@ -176,16 +198,13 @@ const Navbar = () => {
             {renderSuggestions()}
           </div>
 
+          {/* PROFILE / DASHBOARD */}
           <div className="relative" id="profile-dropdown">
             {user ? (
               <Button variant="secondary" onClick={() => setProfileDropdownOpen(prev => !prev)}>
-                {user.role === 'admin' ?
-               <Link href="/dashboard" className="flex items-center gap-2">
-                  Dashboard 
-                  </Link>
-                 
-                 : 'User Home'
-                 }
+                {user.role === 'admin' ? (
+                  <Link href="/dashboard">Dashboard</Link>
+                ) : 'User Home'}
               </Button>
             ) : (
               <Link href="/login" className="px-4 py-2 border-amber-600 bg-amber-200 text-gray-700 hover:bg-gray-100 rounded">Login</Link>
@@ -202,7 +221,6 @@ const Navbar = () => {
             )}
           </div>
         </div>
-
       </div>
     </nav>
   );
