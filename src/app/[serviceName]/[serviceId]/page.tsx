@@ -1,26 +1,47 @@
-'use client';
+"use client";
 
-import { useParams } from 'next/navigation';
-import Link from 'next/link';
-import { useState, useEffect, useCallback } from 'react';
-import { useLazyServiceHomeFullTreeQuery } from '@/redux/features/Services/serviceApi';
-import Spinner from '@/components/Spinner';
-import Sidebar from '@/components/shared/Sidebar';
+import { useParams } from "next/navigation";
+import Link from "next/link";
+import { useState, useEffect, useCallback } from "react";
+import { useLazyServiceHomeFullTreeQuery } from "@/redux/features/Services/serviceApi";
+import Spinner from "@/components/Spinner";
+import Sidebar from "@/components/shared/Sidebar";
+
+// Define types
+interface Category {
+  category: {
+    _id: string;
+    name: string;
+  };
+  subcategories?: Subcategory[];
+}
+
+interface Subcategory {
+  subcategory: {
+    _id: string;
+    name: string;
+  };
+}
+
+interface ServiceResponse {
+  data: {
+    categories: Category[];
+  };
+}
 
 export default function ServicePage() {
   const params = useParams();
   const serviceName = params?.serviceName as string;
   const serviceId = params?.serviceId as string;
-  console.log('Service Name:', serviceId)
 
   const [fetchFullTree, { isFetching }] = useLazyServiceHomeFullTreeQuery();
-  const [categories, setCategories] = useState<any[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [activeService, setActiveService] = useState<string | null>(serviceId || null);
 
   const fetchCategories = useCallback(
     async (id: string) => {
       try {
-        const res: any = await fetchFullTree(id).unwrap();
+        const res: ServiceResponse = await fetchFullTree(id).unwrap();
         setCategories(res?.data?.categories || []);
       } catch (err) {
         console.error(err);
@@ -60,8 +81,8 @@ export default function ServicePage() {
 
         {categories.length ? (
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 xl:grid-cols-5 gap-6">
-            {categories.map((cat: any, index: number) => {
-              const colors = ['bg-yellow-100', 'bg-green-100', 'bg-blue-100', 'bg-pink-100', 'bg-purple-100'];
+            {categories.map((cat, index) => {
+              const colors = ["bg-yellow-100", "bg-green-100", "bg-blue-100", "bg-pink-100", "bg-purple-100"];
               const bgColor = colors[index % colors.length];
 
               return (

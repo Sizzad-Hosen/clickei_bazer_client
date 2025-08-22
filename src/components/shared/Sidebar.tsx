@@ -1,5 +1,4 @@
 'use client';
-
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { ChevronDown, ChevronRight, Menu, X } from 'lucide-react';
@@ -31,7 +30,7 @@ export default function Sidebar({ onSelectSubcategory }: SidebarProps) {
     // Always fetch, even if the same service
     await fetchFullTree(serviceId)
       .unwrap()
-      .then((res: any) => {
+      .then((res) => {
         setCategories(res?.data?.categories || []);
         setActiveServiceId(serviceId);
         setActiveCategoryId(null); // reset active category

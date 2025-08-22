@@ -7,8 +7,6 @@ import { useGetAllCartsQuery } from '@/redux/features/AddToCart/addToCartApi';
 import { useAddOrderMutation } from '@/redux/features/Order/ordersApi';
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
-import { useAppSelector } from '@/redux/hook';
-import { selectCurrentUser } from '@/redux/features/auth/authSlices';
 import Image from 'next/image';
 
 type ShippingAddress = {
@@ -44,11 +42,10 @@ export default function CheckoutPage() {
   const [deliveryOption, setDeliveryOption] = useState<'insideRangpur' | 'outsideRangpur'>('insideRangpur');
 
   const { data } = useGetAllCartsQuery({});
-  const user = useAppSelector(selectCurrentUser);
   const router = useRouter();
   const [addOrder] = useAddOrderMutation();
 
-  const cartItems: Item[] = data?.data?.items?.map((item: any) => ({
+  const cartItems: Item[] = data?.data?.items?.map((item) => ({
     _id: item.productId,
     name: item.title,
     price: item.price,
@@ -134,11 +131,13 @@ export default function CheckoutPage() {
       await addOrder(orderPayload).unwrap();
       toast.success('Order placed successfully!');
       router.push('/order');
-    } catch (error: any) {
-      const msg = error?.data?.message || 'Failed to place order. Please try again.';
-      setBackendError(msg);
-      toast.error(msg);
-    }
+    } catch (error) {
+  // Type-safe error handling
+  const err = error as { data?: { message?: string } } | undefined;
+  const msg = err?.data?.message || 'Failed to place order. Please try again.';
+  setBackendError(msg);
+  toast.error(msg);
+}
   };
 
   return (

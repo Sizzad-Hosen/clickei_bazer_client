@@ -121,7 +121,18 @@ const Navbar = () => {
           </div>
           {isClient && (
             <button onClick={() => setSidebarOpen(true)}>
-              <MoreVertical size={24} className="text-white" />
+            { user ? (
+  <button onClick={() => setSidebarOpen(true)}>
+    <MoreVertical size={24} className="text-white" />
+  </button>
+) : (
+  <Link href="/login">
+    <Button variant="secondary" className="px-3 py-1 text-sm">
+      Login
+    </Button>
+  </Link>
+)}
+             
             </button>
           )}
         </div>
@@ -152,7 +163,7 @@ const Navbar = () => {
               )}
             </div>
           </div>
-        )}
+        )} 
 
         {/* MOBILE SEARCH */}
         <div className="mt-2 w-full md:hidden flex mb-4 flex-col" ref={dropdownRef}>

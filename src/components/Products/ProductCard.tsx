@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { toast } from 'sonner';
@@ -27,7 +27,7 @@ interface WishlistItem {
   product: Product | null;
 }
 
-export default function ProductCard({ product, recommendedProducts = [], onOpenCart }: Props) {
+export default function ProductCard({ product, onOpenCart }: Props) {
   const [addCart, { isLoading: isAddingToCart }] = useAddCartMutation();
   const { refetch } = useGetAllCartsQuery({});
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
@@ -102,7 +102,7 @@ export default function ProductCard({ product, recommendedProducts = [], onOpenC
 
   return (
     <>
-  <div className="relative rounded-lg border bg-white shadow-sm hover:shadow-md transition-all w-full flex flex-col overflow-hidden">
+<div className="relative rounded-lg border bg-white shadow-sm hover:shadow-md transition-all w-full flex flex-col overflow-hidden">
   {/* Wishlist Icon Top-Right */}
   <button
     onClick={handleToggleWishlist}
@@ -110,11 +110,7 @@ export default function ProductCard({ product, recommendedProducts = [], onOpenC
     aria-label={isInWishlist ? "Remove from wishlist" : "Add to wishlist"}
     type="button"
   >
-    {isInWishlist ? (
-      <Heart className="text-red-500 h-5 w-5" />
-    ) : (
-      <HeartOff className="text-gray-400 h-5 w-5" />
-    )}
+    {isInWishlist ? <Heart className="text-red-500 h-5 w-5" /> : <HeartOff className="text-gray-400 h-5 w-5" />}
   </button>
 
   {/* Discount Badge Top-Left */}
@@ -126,48 +122,57 @@ export default function ProductCard({ product, recommendedProducts = [], onOpenC
 
   {/* Product Image */}
   <motion.div
-    className="relative w-full bg-gray-100 overflow-hidden 
-               aspect-[4/3] sm:aspect-square" // 📌 smaller ratio on mobile
+    className="relative w-full bg-gray-100 overflow-hidden aspect-[4/3] sm:aspect-square"
     whileHover={{ scale: 1.02 }}
     transition={{ type: "spring", stiffness: 400, damping: 10 }}
   >
     <Image
-      src={
-        product.images?.[0] ??
-        "https://static.vecteezy.com/system/resources/previews/024/183/525/non_2x/avatar-of-a-man-portrait-of-a-young-guy-illustration-of-male-character-in-modern-color-style-vector.jpg"
-      }
+      src={product.images?.[0] ?? "/placeholder.jpg"}
       alt={product.title}
       fill
       className="object-cover"
       sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-      priority={true}
+      priority
     />
   </motion.div>
 
   {/* Product Info */}
-  <div className="p-3 flex flex-col">
-    <h3 className="font-medium text-base line-clamp-1 mb-1">
-      {product.title}
-    </h3>
+  <div className="p-3 flex flex-col flex-1">
+
+  <div className="flex justify-between items-center flex-nowrap mb-2">
+  {/* Product Title */}
+  <h3 className="font-medium text-base truncate">{product.title}</h3>
+
+  {/* Stock Status */}
+  <div className="flex-shrink-0">
+    {product.stock ? (
+      <span className="inline-block px-2 py-1 text-green-700 bg-green-100 text-xs font-semibold rounded">
+        In Stock
+      </span>
+    ) : (
+      <span className="inline-block px-2 py-1 text-red-700 bg-red-100 text-xs font-semibold rounded">
+        Out of Stock
+      </span>
+    )}
+
+</div>
+
+
+    </div>
 
     {/* Price Section */}
     <div className="flex items-center gap-2 mb-2">
       {product.discount && product.discount > 0 ? (
         <>
-          <span className="text-red-600 font-bold text-lg">
-            ৳{discountedPrice}
-          </span>
-          <span className="line-through text-gray-400 text-sm">
-            ৳{selectedSize?.price.toFixed(2)}
-          </span>
+          <span className="text-red-600 font-bold text-lg">৳{discountedPrice}</span>
+          <span className="line-through text-gray-400 text-sm">৳{selectedSize?.price.toFixed(2)}</span>
         </>
       ) : (
-        <span className="font-bold text-lg">
-          ৳{selectedSize?.price.toFixed(2)}
-        </span>
+        <span className="font-bold text-lg">৳{selectedSize?.price.toFixed(2)}</span>
       )}
     </div>
 
+   
     {/* Select Size Button */}
     {product.sizes?.length > 0 && (
       <Button
@@ -187,17 +192,16 @@ export default function ProductCard({ product, recommendedProducts = [], onOpenC
         onClick={() => setIsDetailsOpen(true)}
         type="button"
       >
-        <Eye className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
-        Details
+        <Eye className="h-3 w-3 sm:h-4 sm:w-4 mr-1" /> Details
       </Button>
       <Button
         variant="secondary"
         className="w-full sm:w-1/2 h-8 sm:h-9 text-xs sm:text-sm"
         onClick={handleAddToCart}
-        disabled={isAddingToCart}
+        disabled={isAddingToCart || !product.stock} // disable if out of stock
         type="button"
       >
-        <ShoppingCart className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
+        <ShoppingCart className="h-3 w-3 sm:h-4 sm:w-4 mr-1" /> 
         {isAddingToCart ? "Adding..." : "Add to Cart"}
       </Button>
     </div>
@@ -207,9 +211,7 @@ export default function ProductCard({ product, recommendedProducts = [], onOpenC
   <Dialog open={isSizeModalOpen} onOpenChange={setIsSizeModalOpen}>
     <DialogContent className="sm:max-w-md rounded-xl">
       <DialogHeader>
-        <DialogTitle className="text-lg font-semibold">
-          Select Size
-        </DialogTitle>
+        <DialogTitle className="text-lg font-semibold">Select Size</DialogTitle>
       </DialogHeader>
       <div className="grid gap-3 mt-4">
         {product.sizes?.map((size, idx) => {
@@ -239,6 +241,7 @@ export default function ProductCard({ product, recommendedProducts = [], onOpenC
     </DialogContent>
   </Dialog>
 </div>
+
 
 
       {/* Product Details Modal */}

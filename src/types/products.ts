@@ -49,7 +49,7 @@ export interface Product {
   _id: string;
   name: string;
   title: string;
-  stock:string
+   stock: boolean;  // must be boolean
   sizes: IProductSize[];
   description: string;
   quantity: number;
@@ -57,8 +57,8 @@ export interface Product {
   images?: string[];
   isPublished:boolean;
   discount:number
-  subcategoryId?: string;
+  subcategoryId: string;
 categoryId: string | { _id: string; [key: string]: unknown };
-
-  serviceId?: string;  
+ subCategoryId: string;
+  serviceId: string;  
 }

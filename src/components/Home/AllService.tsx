@@ -1,9 +1,8 @@
 "use client";
-
-import { useState } from "react";
 import Link from "next/link";
 import { useGetAllServicesQuery, useLazyServiceHomeFullTreeQuery } from "@/redux/features/Services/serviceApi";
 import Spinner from "../Spinner";
+import { Service } from "@/types/products";
 
 export default function AllService() {
   const { data: response, isLoading } = useGetAllServicesQuery({});
@@ -21,7 +20,7 @@ export default function AllService() {
       <h1 className="text-3xl font-bold mb-6 text-center">Our Services</h1>
 
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-6">
-        {serviceRes?.map((service: any, index: number) => {
+        {serviceRes?.map((service: Service, index: number) => {
           const colors = ["bg-blue-100","bg-green-100","bg-yellow-100","bg-pink-100","bg-purple-100","bg-orange-100","bg-teal-100","bg-red-100"];
           const borderColors = ["border-blue-500","border-green-500","border-yellow-500","border-pink-500","border-purple-500","border-orange-500","border-teal-500","border-red-500"];
           const bgColor = colors[index % colors.length];

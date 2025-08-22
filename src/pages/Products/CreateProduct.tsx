@@ -40,7 +40,7 @@ const CreateProductPage = () => {
     description: '',
     price: '',
     discount: '',
-    stock: '',
+    stock: true, // stock as boolean now
     serviceId: '',
     categoryId: '',
     subCategoryId: '',
@@ -53,15 +53,19 @@ const CreateProductPage = () => {
   // Map Bangla digits to English
   const banglaToEnglish = (str: string) => {
     if (!str) return '';
-    const map: Record<string, string> = { '০':'0','১':'1','২':'2','৩':'3','৪':'4','৫':'5','৬':'6','৭':'7','৮':'8','৯':'9' };
+    const map: Record<string, string> = {
+      '০':'0','১':'1','২':'2','৩':'3','৪':'4','৫':'5','৬':'6','৭':'7','৮':'8','৯':'9'
+    };
     return str.replace(/[০-৯]/g, (d) => map[d]);
   };
 
-  const handleChange = ( e: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+  const handleChange = (
+    e: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
+  ) => {
     let value = e.target.value;
 
     // Allow Bangla or English digits + dot for numeric fields
-    if (['price', 'discount', 'stock'].includes(e.target.name)) {
+    if (['price', 'discount'].includes(e.target.name)) {
       value = value.replace(/[^0-9০-৯.]/g, '');
     }
 
@@ -110,7 +114,7 @@ const CreateProductPage = () => {
       ...form,
       price: Number(banglaToEnglish(form.price)) || 0,
       discount: Number(banglaToEnglish(form.discount)) || 0,
-      stock: banglaToEnglish(form.stock), // Keep stock as string
+      // stock stays boolean
       sizes: form.sizes.map(s => ({ label: s.label, price: Number(banglaToEnglish(s.price)) || 0 })),
     };
 
@@ -119,7 +123,13 @@ const CreateProductPage = () => {
     files.forEach((file) => formData.append('file', file));
 
     function isErrorWithMessage(err: unknown): err is { data?: { message?: string } } {
-      return typeof err === 'object' && err !== null && 'data' in err && typeof (err as any).data === 'object';
+      return (
+        typeof err === 'object' &&
+        err !== null &&
+        'data' in err &&
+        typeof (err as { data?: unknown }).data === 'object' &&
+        (err as { data?: unknown }).data !== null
+      );
     }
 
     try {
@@ -193,15 +203,14 @@ const CreateProductPage = () => {
           />
         </div>
 
-        <FormInput
-          label="Stock"
-          name="stock"
-          type="text"
-          value={form.stock}
-          onChange={handleChange}
-          placeholder="Enter stock (Bangla or English)"
-          required
-        />
+        {/* Stock as Switch */}
+        <div className="flex items-center gap-3">
+          <Label className="font-semibold">In Stock</Label>
+          <Switch
+            checked={form.stock}
+            onCheckedChange={(val) => setForm({ ...form, stock: val })}
+          />
+        </div>
 
         {/* Sizes Section */}
         <div>
@@ -224,12 +233,17 @@ const CreateProductPage = () => {
                 className="px-3 py-2 border rounded-md w-1/2"
                 required
               />
-              <Button type="button" variant="destructive" onClick={() => handleRemoveSize(index)}>Remove</Button>
+              <Button type="button" variant="destructive" onClick={() => handleRemoveSize(index)}>
+                Remove
+              </Button>
             </div>
           ))}
-          <Button className='text-black bg-amber-400 hover:text-black' type="button" onClick={handleAddSize}>Add Size</Button>
+          <Button className='text-black bg-amber-400 hover:text-black' type="button" onClick={handleAddSize}>
+            Add Size
+          </Button>
         </div>
 
+        {/* File Upload */}
         <div>
           <Label className="mb-1 block font-semibold">Upload Images</Label>
           <input
@@ -242,6 +256,7 @@ const CreateProductPage = () => {
           />
         </div>
 
+        {/* Select Service */}
         <div>
           <Label className="mb-1 block font-semibold">Select Service</Label>
           <Select onValueChange={(val) => handleSelect('serviceId', val)} value={form.serviceId}>
@@ -258,6 +273,7 @@ const CreateProductPage = () => {
           </Select>
         </div>
 
+        {/* Select Category */}
         <div>
           <Label className="mb-1 block font-semibold">Select Category</Label>
           <Select onValueChange={(val) => handleSelect('categoryId', val)} value={form.categoryId}>
@@ -274,6 +290,7 @@ const CreateProductPage = () => {
           </Select>
         </div>
 
+        {/* Select Subcategory */}
         <div>
           <Label className="mb-1 block font-semibold">Select Subcategory</Label>
           <Select onValueChange={(val) => handleSelect('subCategoryId', val)} value={form.subCategoryId}>
@@ -290,6 +307,7 @@ const CreateProductPage = () => {
           </Select>
         </div>
 
+        {/* Publish */}
         <div className="flex items-center gap-3">
           <Label className="font-semibold">Publish</Label>
           <Switch

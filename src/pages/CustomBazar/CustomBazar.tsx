@@ -12,6 +12,7 @@ import {
   Selection,
   TCustomBazerOrder,
   TCustomBazerOrderItem,
+  UnitType,
 } from '@/types/CustomBazar';
 import { TAddress } from '@/types/user';
 import { useRouter } from 'next/navigation';
@@ -153,24 +154,31 @@ const CustomBazarPage: React.FC = () => {
       toast.error('দয়া করে সকল ঠিকানা তথ্য পূরণ করুন।');
       return;
     }
+const validUnits: UnitType[] = ["kg", "gm", "litre", "piece"];
 
-    const orderItems: TCustomBazerOrderItem[] = Object.entries(selections)
-      .flatMap(([catId, selArr]) =>
-        selArr.map((sel, index) => {
-          const product = categories.find(cat => cat._id === catId);
-          if (!product) throw new Error(`Product not found for id ${catId}`);
+const orderItems: TCustomBazerOrderItem[] = Object.entries(selections)
+  .flatMap(([catId, selArr]) =>
+    selArr.map((sel, index) => {
+      const product = categories.find(cat => cat._id === catId);
+      if (!product) throw new Error(`Product not found for id ${catId}`);
 
-          return {
-            _id: `${catId}-${index}`,
-            product: product._id,
-            subcategoryName: sel.selectedSub!.name,
-            unit: sel.unit,
-            pricePerUnit: sel.selectedSub!.pricePerUnit,
-            quantity: sel.quantity,
-            totalPrice: sel.selectedSub!.pricePerUnit * sel.quantity,
-          };
-        })
-      );
+      // ensure unit matches UnitType
+      const unit: UnitType | undefined = validUnits.includes(sel.unit as UnitType)
+        ? (sel.unit as UnitType)
+        : undefined;
+
+      return {
+        _id: `${catId}-${index}`,
+        product: product._id,
+        subcategoryName: sel.selectedSub!.name,
+        unit,
+        pricePerUnit: sel.selectedSub!.pricePerUnit,
+        quantity: sel.quantity,
+        totalPrice: sel.selectedSub!.pricePerUnit * sel.quantity,
+      };
+    })
+  );
+
 
     if (orderItems.length === 0) {
       toast.error('দয়া করে অন্তত একটি পণ্য নির্বাচন করুন।');
@@ -257,10 +265,9 @@ const CustomBazarPage: React.FC = () => {
                         +
                       </button>
                     </div>
-
-                    <span className="font-semibold">
-                      {sel.selectedSub?.pricePerUnit! * sel.quantity}৳
-                    </span>
+          <span className="font-semibold">
+            {(sel.selectedSub?.pricePerUnit ?? 0) * sel.quantity}৳
+          </span>
 
                     <button
                       type="button"

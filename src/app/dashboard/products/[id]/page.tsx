@@ -98,9 +98,13 @@ const ProductDetailsPage = () => {
           <span className="font-semibold">Price:</span>{' '}
           <span className="text-green-600 font-semibold">৳ {productExists.price}</span>
         </p>
-        <p>
-          <span className="font-semibold">Stock:</span> {productExists.stock || 'N/A'}
-        </p>
+      <p>
+  <span className="font-semibold">Stock:</span>{' '}
+  <span className={productExists.stock ? 'text-green-600 font-semibold' : 'text-red-600 font-semibold'}>
+    {productExists.stock ? 'Yes' : 'No'}
+  </span>
+</p>
+
         <div>
           <span className="font-semibold">Sizes:</span>
           {productExists.sizes.length > 0 ? (
