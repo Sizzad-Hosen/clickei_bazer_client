@@ -114,11 +114,13 @@ export default function ProductCard({ product, onOpenCart }: Props) {
   </button>
 
   {/* Discount Badge Top-Left */}
-  {product.discount && product.discount > 0 && (
-    <div className="absolute top-2 left-2 z-10 bg-red-600 text-white text-xs font-bold px-2 py-1 rounded shadow-md select-none">
-      {product.discount}% OFF
-    </div>
-  )}
+
+{Number(product.discount) > 0 && (
+  <div className="absolute top-2 left-2 z-10 bg-red-600 text-white text-xs font-bold px-2 py-1 rounded shadow-md select-none">
+    {product.discount}% OFF
+  </div>
+)}
+
 
   {/* Product Image */}
   <motion.div

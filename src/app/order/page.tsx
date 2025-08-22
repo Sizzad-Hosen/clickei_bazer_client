@@ -161,9 +161,10 @@ function UserOrdersPage() {
 
                 <p>
                   <span className="font-medium">GrandTotal:</span>{' '}
-                  <span className="text-green-600 font-semibold">
-                    Tk {order?.grandTotal.toFixed(2) || '0.00'}
-                  </span>
+              <span className="text-green-600 font-semibold">
+  Tk {(order?.grandTotal ?? 0).toFixed(2)}
+</span>
+
                 </p>
 
                 <div className="mt-6">

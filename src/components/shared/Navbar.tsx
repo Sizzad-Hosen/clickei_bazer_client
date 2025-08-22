@@ -4,7 +4,6 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { useGetAllProductsBySearchQuery } from '@/redux/features/Products/productApi';
 import { Search, MoreVertical, X } from 'lucide-react';
 import Image from 'next/image';
 import logo from '../../../public/clickeiBazer-png.png';
@@ -12,6 +11,7 @@ import { useDispatch } from 'react-redux';
 import { logout, selectCurrentUser } from '@/redux/features/auth/authSlices';
 import { toast } from 'sonner';
 import { useAppSelector } from '@/redux/hook';
+import { useGetAllProductsBySearchQuery } from '@/redux/features/Products/productApi';
 import type { Product } from '@/types/products';
 
 const Navbar = () => {
@@ -28,31 +28,29 @@ const Navbar = () => {
 
   const dropdownRef = useRef<HTMLDivElement>(null);
 
+  // Ensure client-side rendering for things like window/document
   useEffect(() => setIsClient(true), []);
 
-  // ✅ Debounce logic
+  // Debounce search query
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setDebouncedQuery(query.trim());
-    }, 400);
+    const timer = setTimeout(() => setDebouncedQuery(query.trim()), 400);
     return () => clearTimeout(timer);
   }, [query]);
 
-  // ✅ Close dropdown if clicked outside
+  // Close dropdowns if click outside
   useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
+    const handleClickOutside = (event: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         setShowSearchDropdown(false);
       }
       if (profileDropdownOpen && !(event.target as HTMLElement).closest('#profile-dropdown')) {
         setProfileDropdownOpen(false);
       }
-    }
+    };
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [profileDropdownOpen]);
 
-  // ✅ API call with debounced query
   const { data, isFetching } = useGetAllProductsBySearchQuery(
     debouncedQuery ? { title: debouncedQuery } : {},
     { skip: !debouncedQuery }
@@ -74,8 +72,7 @@ const Navbar = () => {
     router.push('/login');
   };
 
-  // ✅ Suggestions dropdown
-  const renderSuggestions = () =>
+  const renderSuggestions = () => 
     showSearchDropdown &&
     debouncedQuery &&
     !isFetching &&
@@ -89,7 +86,7 @@ const Navbar = () => {
             onClick={() => setShowSearchDropdown(false)}
           >
             <div className="flex items-center gap-3">
-              {item.images && item.images.length > 0 && (
+              {item.images?.[0] && (
                 <Image
                   src={item.images[0]}
                   alt={item.title || item.name}
@@ -108,39 +105,32 @@ const Navbar = () => {
       </div>
     );
 
+  if (!isClient) return null;
+
   return (
     <nav className="bg-gray-800 border-b border-gray-700 shadow-sm sticky top-0 z-50 w-full">
       <div className="max-w-7xl mx-auto px-4 py-2">
 
-        {/* MOBILE TOP ROW */}
+        {/* MOBILE NAVBAR */}
         <div className="flex items-center justify-between md:hidden">
-          <div className="flex-1 flex justify-center">
-            <Link href="/">
-              <Image src={logo} alt="ClickeiBazer Logo" width={100} height={40} className="object-contain" />
-            </Link>
-          </div>
-          {isClient && (
+          <Link href="/" className="flex-1 flex justify-center">
+            <Image src={logo} alt="ClickeiBazer Logo" width={100} height={40} className="object-contain" />
+          </Link>
+          {user ? (
             <button onClick={() => setSidebarOpen(true)}>
-            { user ? (
-  <button onClick={() => setSidebarOpen(true)}>
-    <MoreVertical size={24} className="text-white" />
-  </button>
-) : (
-  <Link href="/login">
-    <Button variant="secondary" className="px-3 py-1 text-sm">
-      Login
-    </Button>
-  </Link>
-)}
-             
+              <MoreVertical size={24} className="text-white" />
             </button>
+          ) : (
+            <Link href="/login">
+              <Button variant="secondary" className="px-3 py-1 text-sm">Login</Button>
+            </Link>
           )}
         </div>
 
         {/* MOBILE SIDEBAR */}
         {sidebarOpen && (
           <div className="fixed inset-0 z-50 flex justify-end">
-            <div className="fixed inset-0 bg-black/50" onClick={() => setSidebarOpen(false)}></div>
+            <div className="fixed inset-0 bg-black/50" onClick={() => setSidebarOpen(false)} />
             <div id="mobile-sidebar" className="relative w-64 bg-white h-full shadow-lg p-2 flex flex-col">
               <button className="self-end mb-4" onClick={() => setSidebarOpen(false)}>
                 <X size={24} />
@@ -163,28 +153,7 @@ const Navbar = () => {
               )}
             </div>
           </div>
-        )} 
-
-        {/* MOBILE SEARCH */}
-        <div className="mt-2 w-full md:hidden flex mb-4 flex-col" ref={dropdownRef}>
-          <div className="flex w-full relative">
-            <input
-              type="text"
-              value={query}
-              onChange={e => {
-                setQuery(e.target.value);
-                setShowSearchDropdown(true);
-              }}
-              onKeyDown={handleKeyDown}
-              placeholder="Search ..."
-              className="w-full h-12 pl-4 pr-12 border-2 border-amber-600 bg-white rounded-md text-sm"
-            />
-            <button onClick={handleSearch} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-amber-600">
-              <Search size={20} />
-            </button>
-            {renderSuggestions()}
-          </div>
-        </div>
+        )}
 
         {/* DESKTOP NAVBAR */}
         <div className="hidden md:flex items-center justify-between mt-2">
@@ -192,15 +161,11 @@ const Navbar = () => {
             <Image src={logo} alt="ClickeiBazer Logo" width={120} height={60} className="object-contain" />
           </Link>
 
-          {/* Search */}
           <div className="flex w-full max-w-2xl relative" ref={dropdownRef}>
             <input
               type="text"
               value={query}
-              onChange={e => {
-                setQuery(e.target.value);
-                setShowSearchDropdown(true);
-              }}
+              onChange={e => { setQuery(e.target.value); setShowSearchDropdown(true); }}
               onKeyDown={handleKeyDown}
               placeholder="Search ..."
               className="w-full h-12 pl-4 pr-12 border-2 border-amber-600 bg-white rounded-md text-sm"
@@ -211,35 +176,27 @@ const Navbar = () => {
             {renderSuggestions()}
           </div>
 
-          {/* Profile */}
-          {user ? (
-            user.role === 'admin' ? (
-              <Link href="/dashboard" className="px-4 py-2 border-amber-600 bg-amber-200 text-gray-700 hover:bg-gray-100 rounded">
-                Dashboard
-              </Link>
+          <div className="relative" id="profile-dropdown">
+            {user ? (
+              <Button variant="secondary" onClick={() => setProfileDropdownOpen(prev => !prev)}>
+                {user.role === 'admin' ? 'Dashboard' : 'User Home'}
+              </Button>
             ) : (
-              <div className="relative" id="profile-dropdown">
-                <Button variant="secondary" onClick={() => setProfileDropdownOpen(prev => !prev)}>
-                  User Home
-                </Button>
-                {profileDropdownOpen && (
-                  <div className="absolute right-0 mt-2 w-56 rounded-md border border-gray-200 bg-white shadow-lg z-50 overflow-auto max-h-96">
-                    <Link href="/profile" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" onClick={() => setProfileDropdownOpen(false)}>Your Profile</Link>
-                    <Link href="/order" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" onClick={() => setProfileDropdownOpen(false)}>Your Orders</Link>
-                    <Link href="/wishList" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" onClick={() => setProfileDropdownOpen(false)}>Your WishList</Link>
-                    <Link href="/track-order" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" onClick={() => setProfileDropdownOpen(false)}>Track Order</Link>
-                    <Link href="/change-password" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" onClick={() => setProfileDropdownOpen(false)}>Change Password</Link>
-                    <button className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-100" onClick={handleLogout}>Logout</button>
-                  </div>
-                )}
+              <Link href="/login" className="px-4 py-2 border-amber-600 bg-amber-200 text-gray-700 hover:bg-gray-100 rounded">Login</Link>
+            )}
+            {profileDropdownOpen && user && user.role !== 'admin' && (
+              <div className="absolute right-0 mt-2 w-56 rounded-md border border-gray-200 bg-white shadow-lg z-50 overflow-auto max-h-96">
+                <Link href="/profile" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" onClick={() => setProfileDropdownOpen(false)}>Your Profile</Link>
+                <Link href="/order" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" onClick={() => setProfileDropdownOpen(false)}>Your Orders</Link>
+                <Link href="/wishList" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" onClick={() => setProfileDropdownOpen(false)}>Your WishList</Link>
+                <Link href="/track-order" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" onClick={() => setProfileDropdownOpen(false)}>Track Order</Link>
+                <Link href="/change-password" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" onClick={() => setProfileDropdownOpen(false)}>Change Password</Link>
+                <button className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-100" onClick={handleLogout}>Logout</button>
               </div>
-            )
-          ) : (
-            <Link href="/login" className="px-4 py-2 border-amber-600 bg-amber-200 text-gray-700 hover:bg-gray-100 rounded">
-              Login
-            </Link>
-          )}
+            )}
+          </div>
         </div>
+
       </div>
     </nav>
   );
