@@ -59,7 +59,7 @@ export default function Sidebar({ onSelectSubcategory }: SidebarProps) {
       )}
 
       {/* Sidebar */}
-      <aside className={`fixed top-0 left-0 h-full w-72 bg-gray-100 p-4 border-r border-gray-200 shadow-md transform transition-transform duration-300 z-50 md:static md:translate-x-0 ${mobileOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+      <aside className={`fixed top-0 left-0 h-full w-72 bg-gray-100 p-3 border-r border-gray-200 shadow-md transform transition-transform duration-300 z-50 md:static md:translate-x-0 ${mobileOpen ? 'translate-x-0' : '-translate-x-full'}`}>
         <div className="mb-6">
           <h1 className="text-xl md:text-2xl font-bold text-gray-800 mb-4 text-center">Our Services</h1>
           <hr className="border-t border-dashed border-gray-400 my-2" />
@@ -68,7 +68,7 @@ export default function Sidebar({ onSelectSubcategory }: SidebarProps) {
           </Link>
         </div>
 
-        <div className="space-y-1 overflow-y-auto max-h-[calc(100vh-140px)]">
+        <div className="space-y-1  overflow-y-auto max-h-[calc(100vh-140px)]">
           {services.map(service => (
             <div key={service._id}>
               <button
@@ -80,7 +80,7 @@ export default function Sidebar({ onSelectSubcategory }: SidebarProps) {
               </button>
 
               {activeServiceId === service._id && categories.length > 0 && (
-                <div className="ml-2 md:ml-3 mt-1 space-y-1">
+                <div className="ml-2 md:ml-3 mt-1  space-y-1">
                   {categories.map(({ category, subcategories }) => (
                     <div key={category._id}>
                       <button

@@ -179,7 +179,13 @@ const Navbar = () => {
           <div className="relative" id="profile-dropdown">
             {user ? (
               <Button variant="secondary" onClick={() => setProfileDropdownOpen(prev => !prev)}>
-                {user.role === 'admin' ? 'Dashboard' : 'User Home'}
+                {user.role === 'admin' ?
+               <Link href="/dashboard" className="flex items-center gap-2">
+                  Dashboard 
+                  </Link>
+                 
+                 : 'User Home'
+                 }
               </Button>
             ) : (
               <Link href="/login" className="px-4 py-2 border-amber-600 bg-amber-200 text-gray-700 hover:bg-gray-100 rounded">Login</Link>
