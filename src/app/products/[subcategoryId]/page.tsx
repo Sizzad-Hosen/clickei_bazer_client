@@ -34,7 +34,7 @@ console.log("sub id", subcategoryId)
   const [cartOpen, setCartOpen] = useState(false);
   const [breadcrumbs, setBreadcrumbs] = useState<BreadcrumbItem[]>([]);
 
-  const limit = 10;
+  const limit = 16;
 
   const { data: productRes, isLoading, isError } = useGetAllProductsBySubcategoryIdQuery(
     { subcategoryId, page, limit },

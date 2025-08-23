@@ -71,11 +71,11 @@ export default function CategoryPage() {
 
   // Fetch products
   const { data: productsData, isLoading: productsLoading } = useGetAllProductsBySubcategoryIdQuery(
-    { subcategoryId: selectedSubcategoryId || "", page, limit: 6 },
+    { subcategoryId: selectedSubcategoryId || "", page, limit: 16 },
     { skip: !selectedSubcategoryId }
   );
 
-  const meta: TMeta = productsData?.meta || { total: 0, page: 1, limit: 6, totalPages: 1 };
+  const meta: TMeta = productsData?.meta || { total: 0, page: 1, limit: 10, totalPages: 1 };
 
   if (isFetching) return <Spinner />;
 

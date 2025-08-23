@@ -19,7 +19,7 @@ const ProductsBySubcategoryPage: React.FC<ProductsBySubcategoryPageProps> = ({
   onOpenCart,
 }) => {
   const [page, setPage] = useState(1);
-  const limit = 10;
+  const limit = 16;
 
   const {
     data,

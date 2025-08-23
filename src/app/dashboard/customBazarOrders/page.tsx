@@ -245,6 +245,7 @@ const AllCustomBazarOrders: React.FC = () => {
                                 <p>
                                   <strong>{item.subcategoryName}</strong> ({item.unit}) x {item.quantity}
                                 </p>
+                                <p>Size : {item.unit}</p>
                                 <p>
                                   Price/unit: ৳{item.pricePerUnit} | Total: ৳{item.totalPrice}
                                 </p>

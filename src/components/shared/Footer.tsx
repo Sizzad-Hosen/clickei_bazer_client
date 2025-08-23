@@ -31,7 +31,7 @@ export default function Footer() {
           <ul className="space-y-2">
             <li>Email: 
               <a href="mailto:clickeibazer2025july@gmail.com" className="ml-1 text-lime-500 hover:underline">
-                clickeibazer2025july@gmail.com
+                clickeibazar2025july@gmail.com
               </a>
             </li>
             <li>Phone: 
