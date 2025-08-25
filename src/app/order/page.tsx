@@ -279,7 +279,7 @@ function UserOrdersPage() {
                             <div>
                               <p className="font-medium text-gray-900">{item.subcategoryName}</p>
                               <p className="text-sm text-gray-600">
-                                {item.quantity} {item.unit} × Tk {(item.pricePerUnit ?? 0).toFixed(2)}
+                                {item.quantity}  × Tk {(item.pricePerUnit ?? 0).toFixed(2)}
                               </p>
                             </div>
                             <div className="text-right font-semibold text-gray-900">

@@ -116,7 +116,7 @@ const Navbar = () => {
 
         {/* MOBILE NAVBAR */}
         <div className="flex items-center justify-between md:hidden">
-          <Link href="/" className="flex-1 flex justify-center">
+          <Link href="/" className="flex-1 ps-4 flex justify-center">
             <Image src={logo} alt="ClickeiBazer Logo" width={100} height={40} className="object-contain" />
           </Link>
           {user ? (
