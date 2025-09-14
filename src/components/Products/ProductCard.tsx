@@ -103,148 +103,162 @@ export default function ProductCard({ product, onOpenCart }: Props) {
   return (
     <>
 <div className="relative rounded-lg border bg-white shadow-sm hover:shadow-md transition-all w-full flex flex-col overflow-hidden">
-  {/* Wishlist Icon Top-Right */}
-  <button
-    onClick={handleToggleWishlist}
-    className="absolute top-2 right-2 z-10 bg-white rounded-full p-1 shadow hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
-    aria-label={isInWishlist ? "Remove from wishlist" : "Add to wishlist"}
-    type="button"
-  >
-    {isInWishlist ? <Heart className="text-red-500 h-5 w-5" /> : <HeartOff className="text-gray-400 h-5 w-5" />}
-  </button>
+      {/* Wishlist Icon */}
+      <button
+        onClick={handleToggleWishlist}
+        className="absolute top-2 right-2 z-10 bg-white rounded-full p-1 shadow hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+        aria-label={isInWishlist ? "Remove from wishlist" : "Add to wishlist"}
+        type="button"
+      >
+        {isInWishlist ? (
+          <Heart className="text-red-500 h-5 w-5" />
+        ) : (
+          <HeartOff className="text-gray-400 h-5 w-5" />
+        )}
+      </button>
 
-  {/* Discount Badge Top-Left */}
-
-{Number(product.discount) > 0 && (
-  <div className="absolute top-2 left-2 z-10 bg-red-600 text-white text-xs font-bold px-2 py-1 rounded shadow-md select-none">
-    {product.discount}% OFF
-  </div>
-)}
-
-
-  {/* Product Image */}
-  <motion.div
-    className="relative w-full bg-gray-100 overflow-hidden aspect-[4/3] sm:aspect-square"
-    whileHover={{ scale: 1.02 }}
-    transition={{ type: "spring", stiffness: 400, damping: 10 }}
-  >
-    <Image
-      src={product.images?.[0] ?? "/placeholder.jpg"}
-      alt={product.title}
-      fill
-      className="object-cover"
-      sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-      priority
-    />
-  </motion.div>
-
-  {/* Product Info */}
-  <div className="p-3 flex flex-col flex-1">
-
-  <div className="flex justify-between items-center flex-nowrap mb-2">
-  {/* Product Title */}
-  <h3 className="font-medium text-base truncate">{product.title}</h3>
-
-  {/* Stock Status */}
-  <div className="flex-shrink-0">
-    {product.stock ? (
-      <span className="inline-block px-2 py-1 text-green-700 bg-green-100 text-xs font-semibold rounded">
-        In Stock
-      </span>
-    ) : (
-      <span className="inline-block px-2 py-1 text-red-700 bg-red-100 text-xs font-semibold rounded">
-        Out of Stock
-      </span>
-    )}
-
-</div>
-
-
-    </div>
-
-    {/* Price Section */}
-    <div className="flex items-center gap-2 mb-2">
-      {product.discount && product.discount > 0 ? (
-        <>
-          <span className="text-red-600 font-bold text-lg">৳{discountedPrice}</span>
-          <span className="line-through text-gray-400 text-sm">৳{selectedSize?.price.toFixed(2)}</span>
-        </>
-      ) : (
-        <span className="font-bold text-lg">৳{selectedSize?.price.toFixed(2)}</span>
+      {/* Discount Badge */}
+      {Number(product.discount) > 0 && product.stock && (
+        <div className="absolute top-2 left-2 z-10 bg-red-600 text-white text-xs font-bold px-2 py-1 rounded shadow-md select-none">
+          {product.discount}% OFF
+        </div>
       )}
-    </div>
 
-   
-    {/* Select Size Button */}
-    {product.sizes?.length > 0 && (
-      <Button
-        variant="outline"
-        className="mb-3 w-full h-8 text-sm"
-        onClick={() => setIsSizeModalOpen(true)}
+      {/* Product Image */}
+      <motion.div
+        className="relative w-full bg-gray-100 overflow-hidden aspect-[4/3] sm:aspect-square"
+        whileHover={{ scale: 1.02 }}
+        transition={{ type: "spring", stiffness: 400, damping: 10 }}
       >
-        {selectedSize ? `Size: ${selectedSize.label}` : "Select Size"}
-      </Button>
-    )}
+        <Image
+          src={product.images?.[0] ?? "/placeholder.jpg"}
+          alt={product.title}
+          fill
+          className={`object-cover ${!product.stock ? "opacity-50" : ""}`}
+          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+          priority
+        />
 
-    {/* Action Buttons */}
-    <div className="flex flex-col sm:flex-row gap-2 mt-auto">
-      <Button
-        variant="outline"
-        className="w-full sm:w-1/2 h-8 sm:h-9 text-xs sm:text-sm"
-        onClick={() => setIsDetailsOpen(true)}
-        type="button"
-      >
-        <Eye className="h-3 w-3 sm:h-4 sm:w-4 mr-1" /> Details
-      </Button>
-      <Button
-        variant="secondary"
-        className="w-full sm:w-1/2 h-8 sm:h-9 text-xs sm:text-sm"
-        onClick={handleAddToCart}
-        disabled={isAddingToCart || !product.stock} // disable if out of stock
-        type="button"
-      >
-        <ShoppingCart className="h-3 w-3 sm:h-4 sm:w-4 mr-1" /> 
-        {isAddingToCart ? "Adding..." : "Add to Cart"}
-      </Button>
-    </div>
-  </div>
+        {/* Out of Stock Overlay */}
+        {!product.stock && (
+          <div className="absolute inset-0 flex items-center justify-center bg-black/40">
+            <span className="text-white font-semibold text-sm sm:text-base bg-red-600 px-3 py-1 rounded">
+              Out of Stock
+            </span>
+          </div>
+        )}
+      </motion.div>
 
-  {/* Size Selection Modal */}
-  <Dialog open={isSizeModalOpen} onOpenChange={setIsSizeModalOpen}>
-    <DialogContent className="sm:max-w-md rounded-xl">
-      <DialogHeader>
-        <DialogTitle className="text-lg font-semibold">Select Size</DialogTitle>
-      </DialogHeader>
-      <div className="grid gap-3 mt-4">
-        {product.sizes?.map((size, idx) => {
-          const isActive = selectedSize?.label === size.label;
-          return (
-            <button
-              key={idx}
-              onClick={() => {
-                setSelectedSize(size);
-                setIsSizeModalOpen(false);
-              }}
-              className={`flex items-center justify-between w-full px-4 py-3 rounded-lg border text-sm font-medium transition ${
-                isActive
-                  ? "border-blue-600 bg-blue-50 text-blue-700"
-                  : "border-gray-300 hover:bg-gray-100"
-              }`}
-            >
-              <span>{size.label}</span>
-              <div className="flex items-center gap-2">
-                <span>৳{size.price.toFixed(2)}</span>
-                {isActive && <Check className="h-4 w-4 text-blue-600" />}
-              </div>
-            </button>
-          );
-        })}
+      {/* Product Info */}
+      <div className="p-3 flex flex-col flex-1">
+
+      <div className="flex flex-col md:flex-row justify-between mb-2">
+
+          {/* Product Title */}
+          <h3 className="font-medium text-base line-clamp-2 sm:truncate">
+            {product.name}
+          </h3>
+
+          {/* Stock Badge */}
+          <div className="flex-shrink-0">
+            {product.stock ? (
+              <span className="inline-block px-2 py-1 text-green-700 bg-green-100 text-xs font-semibold rounded">
+                In Stock
+              </span>
+            ) : (
+              <span className="inline-block px-2 py-1 text-red-700 bg-red-100 text-xs font-semibold rounded">
+                Out of Stock
+              </span>
+            )}
+          </div>
+        </div>
+
+        {/* Price Section */}
+        <div className="flex items-center gap-2 mb-2">
+          {product.discount && product.discount > 0 ? (
+            <>
+              <span className="text-red-600 font-bold text-lg">৳{discountedPrice}</span>
+              <span className="line-through text-gray-400 text-sm">
+                ৳{selectedSize?.price.toFixed(2)}
+              </span>
+            </>
+          ) : (
+            <span className="font-bold text-lg">৳{selectedSize?.price.toFixed(2)}</span>
+          )}
+        </div>
+
+        {/* Size Selection */}
+        {product.sizes?.length > 0 && (
+          <Button
+            variant="outline"
+            className="mb-3 w-full h-8 text-sm"
+            onClick={() => setIsSizeModalOpen(true)}
+          >
+            {selectedSize ? `Size: ${selectedSize.label}` : "Select Size"}
+          </Button>
+        )}
+
+        {/* Action Buttons */}
+        <div className="flex flex-col sm:flex-row gap-2 mt-auto">
+          <Button
+            variant="outline"
+            className="w-full sm:w-1/2 h-8 sm:h-9 text-xs sm:text-sm"
+            onClick={() => setIsDetailsOpen(true)}
+            type="button"
+          >
+            <Eye className="h-3 w-3 sm:h-4 sm:w-4 mr-1" /> Details
+          </Button>
+          <Button
+            variant="secondary"
+            className="w-full sm:w-1/2 h-8 sm:h-9 text-xs sm:text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+            onClick={handleAddToCart}
+            disabled={isAddingToCart || !product.stock}
+            type="button"
+          >
+            <ShoppingCart className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
+            {isAddingToCart
+              ? "Adding..."
+              : product.stock
+              ? "Add to Cart"
+              : "Unavailable"}
+          </Button>
+        </div>
       </div>
-    </DialogContent>
-  </Dialog>
-</div>
 
-
+      {/* Size Selection Modal */}
+      <Dialog open={isSizeModalOpen} onOpenChange={setIsSizeModalOpen}>
+        <DialogContent className="sm:max-w-md rounded-xl">
+          <DialogHeader>
+            <DialogTitle className="text-lg font-semibold">Select Size</DialogTitle>
+          </DialogHeader>
+          <div className="grid gap-3 mt-4">
+            {product.sizes?.map((size, idx) => {
+              const isActive = selectedSize?.label === size.label;
+              return (
+                <button
+                  key={idx}
+                  onClick={() => {
+                    setSelectedSize(size);
+                    setIsSizeModalOpen(false);
+                  }}
+                  className={`flex items-center justify-between w-full px-4 py-3 rounded-lg border text-sm font-medium transition ${
+                    isActive
+                      ? "border-blue-600 bg-blue-50 text-blue-700"
+                      : "border-gray-300 hover:bg-gray-100"
+                  }`}
+                >
+                  <span>{size.label}</span>
+                  <div className="flex items-center gap-2">
+                    <span>৳{size.price.toFixed(2)}</span>
+                    {isActive && <Check className="h-4 w-4 text-blue-600" />}
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        </DialogContent>
+      </Dialog>
+    </div>
 
       {/* Product Details Modal */}
       <Dialog open={isDetailsOpen} onOpenChange={setIsDetailsOpen}>

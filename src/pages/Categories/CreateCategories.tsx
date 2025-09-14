@@ -1,7 +1,6 @@
 'use client';
 
-import React, { ChangeEvent, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import React, { ChangeEvent, FC, useState } from 'react';
 import { toast } from 'sonner';
 
 import { useGetAllServicesQuery } from '@/redux/features/Services/serviceApi';
@@ -30,8 +29,11 @@ const isGenericError = (err: unknown): err is TGenericErrorResponse => {
   );
 };
 
-const CreateCategoryPage = () => {
-  const router = useRouter();
+interface CreateCategoryProps {
+  onSuccess?: () => void;
+}
+
+const CreateCategoryPage: FC<CreateCategoryProps> = ({ onSuccess }) => {
   const [createCategory, { isLoading }] = useAddCategoryMutation();
   const { data: serviceData } = useGetAllServicesQuery({});
 
@@ -64,7 +66,8 @@ const CreateCategoryPage = () => {
 
       toast.success('Category created successfully!');
       setFormData({ name: '', serviceId: '' });
-      router.push('/dashboard/categories');
+
+      if (onSuccess) onSuccess(); // call parent success callback (e.g., close modal + refresh)
     } catch (error: unknown) {
       if (hasDataProperty(error)) {
         const errData = error.data;

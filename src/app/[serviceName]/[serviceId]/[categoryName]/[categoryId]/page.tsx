@@ -10,6 +10,8 @@ import { useLazyServiceHomeFullTreeQuery } from "@/redux/features/Services/servi
 import { useGetAllProductsBySubcategoryIdQuery } from "@/redux/features/Products/productApi";
 import { TMeta } from "@/types/global";
 import { Product } from "@/types/products";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 // Type definitions
 interface Subcategory {
@@ -27,10 +29,6 @@ interface CategoryResponse {
     }[];
   };
 }
-
-
-
-
 
 export default function CategoryPage() {
   const params = useParams();
@@ -75,42 +73,23 @@ export default function CategoryPage() {
     { skip: !selectedSubcategoryId }
   );
 
-  const meta: TMeta = productsData?.meta || { total: 0, page: 1, limit: 10, totalPages: 1 };
+  const meta: TMeta = productsData?.meta || { total: 0, page: 1, limit: 16, totalPages: 1 };
+  const totalPages = meta.totalPages;
+
+  const handlePageChange = (newPage: number) => {
+    if (newPage < 1 || newPage > totalPages) return;
+    setPage(newPage);
+  };
+
+  const getPageNumbers = () => {
+    const pages: number[] = [];
+    for (let i = 1; i <= totalPages; i++) {
+      pages.push(i);
+    }
+    return pages;
+  };
 
   if (isFetching) return <Spinner />;
-
-  // Pagination component
-  const Pagination = () => (
-    <div className="flex justify-center items-center gap-2 my-6 flex-wrap">
-      <button
-        onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
-        disabled={page === 1}
-        className="px-3 py-1 border rounded text-sm sm:text-base bg-white hover:bg-gray-100 disabled:opacity-50"
-      >
-        &#8592; Prev
-      </button>
-
-      {Array.from({ length: meta.totalPages }, (_, i) => (
-        <button
-          key={i + 1}
-          onClick={() => setPage(i + 1)}
-          className={`px-3 py-1 border rounded text-sm sm:text-base ${
-            page === i + 1 ? "bg-gray-300 font-semibold" : "bg-white hover:bg-gray-100"
-          }`}
-        >
-          {i + 1}
-        </button>
-      ))}
-
-      <button
-        onClick={() => setPage((prev) => Math.min(prev + 1, meta.totalPages))}
-        disabled={page === meta.totalPages}
-        className="px-3 py-1 border rounded text-sm sm:text-base bg-white hover:bg-gray-100 disabled:opacity-50"
-      >
-        Next &#8594;
-      </button>
-    </div>
-  );
 
   return (
     <div className="flex flex-col md:flex-row min-h-[80vh]">
@@ -171,7 +150,40 @@ export default function CategoryPage() {
         )}
 
         {/* Bottom Pagination */}
-        <Pagination />
+        {totalPages > 1 && (
+          <div className="mt-6 flex justify-center items-center gap-2 flex-wrap">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => handlePageChange(page - 1)}
+              disabled={page === 1}
+            >
+              <ChevronLeft className="h-4 w-4 mr-1" />
+              Prev
+            </Button>
+
+            {getPageNumbers().map((pageNumber) => (
+              <Button
+                key={pageNumber}
+                variant={pageNumber === page ? "secondary" : "outline"}
+                size="sm"
+                onClick={() => handlePageChange(pageNumber)}
+              >
+                {pageNumber}
+              </Button>
+            ))}
+
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => handlePageChange(page + 1)}
+              disabled={page === totalPages}
+            >
+              Next
+              <ChevronRight className="h-4 w-4 ml-1" />
+            </Button>
+          </div>
+        )}
 
         {/* Cart Drawer */}
         <CartDrawer open={cartOpen} onClose={closeCart} />

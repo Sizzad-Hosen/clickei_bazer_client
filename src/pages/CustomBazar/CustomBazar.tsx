@@ -356,7 +356,7 @@ const orderItems: TCustomBazerOrderItem[] = Object.entries(selections)
         {/* Site Note */}
         <section className="bg-white rounded-lg shadow-md p-4 border border-gray-200">
           <label htmlFor="siteNote" className="block mb-2 font-semibold">
-            আপনার জন্য বিশেষ অনুরোধ (ঐচ্ছিক)
+            Enter Your Order Note
           </label>
           <textarea
             id="siteNote"

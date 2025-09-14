@@ -43,6 +43,8 @@ import { MdDelete } from 'react-icons/md';
 import Swal from 'sweetalert2';
 import { TMeta } from '@/types/global';
 import { TCustomBazerOrder } from '@/types/CustomBazar';
+import { Plus } from 'lucide-react';
+import CustomBazarForm from '@/pages/CustomBazar/CreateCustomBazar';
 
 const ORDERS_PER_PAGE = 10;
 
@@ -58,7 +60,7 @@ const AllCustomBazarOrders: React.FC = () => {
 
   const orders: TCustomBazerOrder[] = data?.data || [];
   const meta: TMeta = data?.meta || { total: 0, totalPages: 0, limit: 0, page: 0 };
-
+console.log("data", orders)
   const [updateStatus] = useUpdateCustomBazarOrderStatusMutation();
   const [updatePaymentStatus] = useUpdateCustomOrderPaymentStatusMutation();
   const [deleteOrder] = useDeleteCustomOrderByIdMutation();
@@ -152,6 +154,7 @@ const AllCustomBazarOrders: React.FC = () => {
         <p><strong>Phone:</strong> ${order.user?.phone || 'N/A'}</p>
         <p><strong>Address:</strong> ${order.address?.fullAddress || 'N/A'}</p>
         <p><strong>Status:</strong> ${order.status}</p>
+        <p><strong>Order Note:</strong> ${order.siteNote}</p>
         <p><strong>Total Amount:</strong> ৳ ${order.totalAmount?.toFixed(2) || '0'}</p>
 
         <h2>Order Items</h2>
@@ -178,10 +181,20 @@ const AllCustomBazarOrders: React.FC = () => {
     printWindow.print();
     printWindow.close();
   };
-
+  const [isAddOpen, setIsAddOpen] = useState(false);
   return (
     <div className="p-4 space-y-6">
+      <div className='flex justify-between'>
+
       <h1 className="text-2xl font-semibold text-center">Custom Bazar Orders</h1>
+    <Button
+          variant="secondary"
+          onClick={() => setIsAddOpen(true)}
+          className="flex items-center gap-2"
+        >
+          <Plus className="w-4 h-4" /> Add CustomBazar Product
+        </Button>
+      </div>
 
       <div className="flex justify-center mb-4">
         <Input
@@ -237,6 +250,7 @@ const AllCustomBazarOrders: React.FC = () => {
                             <p><strong>Phone:</strong> {order.user?.phone}</p>
                             <p><strong>Address:</strong> {order.address?.fullAddress}</p>
                             <p><strong>Status:</strong> {order.status}</p>
+                            <p><strong>OrderNote:</strong> {order.siteNote}</p>
                             <p><strong>Total:</strong> ৳{order.totalAmount?.toFixed(2)}</p>
                             <hr />
                             <h4 className="font-medium mt-2">Items:</h4>
@@ -341,6 +355,19 @@ const AllCustomBazarOrders: React.FC = () => {
           </PaginationContent>
         </Pagination>
       )}
+
+      
+        {/* Add Service Modal */}
+      <Dialog open={isAddOpen} onOpenChange={setIsAddOpen}>
+        <DialogContent className="sm:max-w-md">
+          <CustomBazarForm
+            onSuccess={() => {
+              setIsAddOpen(false); // close modal
+              refetch();           // refresh service list
+            }}
+          />
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

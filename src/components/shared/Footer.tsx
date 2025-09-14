@@ -1,3 +1,5 @@
+import { Facebook, Mail } from "lucide-react";
+
 export default function Footer() {
   return (
     <footer className="bg-gray-900 text-gray-300 text-sm">
@@ -35,12 +37,12 @@ export default function Footer() {
               </a>
             </li>
             <li>Phone: 
-              <a href="tel:01745455353" className="ml-1 text-lime-500 hover:underline">
-                01745455353
+              <a href="tel:8801346508284" className="ml-1 text-lime-500 hover:underline">
+               01346508284
               </a>
             </li>
             <li>WhatsApp: 
-              <a href="https://wa.me/8801745455353" target="_blank" rel="noopener noreferrer" className="ml-1 text-lime-500 hover:underline">
+              <a href="https://wa.me/8801346508284" target="_blank" rel="noopener noreferrer" className="ml-1 text-lime-500 hover:underline">
                 Chat Now
               </a>
             </li>
@@ -58,13 +60,13 @@ export default function Footer() {
               rel="noopener noreferrer"
               className="text-gray-400 hover:text-amber-500"
             >
-              Facebook
+              <Facebook></Facebook>
             </a>
             <a
               href="mailto:clickeibazer2025july@gmail.com"
               className="text-gray-400 hover:text-amber-500"
             >
-              Email
+              <Mail></Mail>
             </a>
           </div>
         </div>
@@ -73,6 +75,7 @@ export default function Footer() {
       {/* COPYRIGHT */}
       <div className="bg-gray-800 text-center py-4 text-gray-400 text-xs">
         © 2025 CLICKEIBAZZER — All rights reserved.
+        <p>Develop by Md Sizzad Hosen</p>
       </div>
     </footer>
   );

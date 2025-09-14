@@ -68,7 +68,7 @@ export default function Sidebar({ onSelectSubcategory }: SidebarProps) {
           </Link>
         </div>
 
-        <div className="space-y-1  overflow-y-auto max-h-[calc(100vh-140px)]">
+        <div className="space-y-1   max-h-[calc(100vh-140px)]">
           {services.map(service => (
             <div key={service._id}>
               <button

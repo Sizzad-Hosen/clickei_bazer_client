@@ -116,7 +116,7 @@ const Navbar = () => {
 
         {/* MOBILE NAVBAR */}
         <div className="flex items-center justify-between md:hidden">
-          <Link href="/" className="flex-1 ps-4 flex justify-center">
+          <Link href="/" className="flex-1 ps-5 flex justify-center">
             <Image src={logo} alt="ClickeiBazer Logo" width={100} height={40} className="object-contain" />
           </Link>
           {user ? (
@@ -170,7 +170,7 @@ const Navbar = () => {
                   </>
                 )
               ) : (
-                <Link href="/login" className="block px-2 py-2 text-gray-700 hover:bg-gray-100 rounded">Login</Link>
+                <Link  href="/login" className="px-4 py-2 border-amber-600 bg-amber-500 text-gray-700 hover:bg-amber-600 rounded">Login</Link>
               )}
             </div>
           </div>
@@ -207,7 +207,7 @@ const Navbar = () => {
                 ) : 'User Home'}
               </Button>
             ) : (
-              <Link href="/login" className="px-4 py-2 border-amber-600 bg-amber-200 text-gray-700 hover:bg-gray-100 rounded">Login</Link>
+              <Link href="/login" className="px-4 py-2 border-amber-600 bg-amber-500 text-gray-700 hover:bg-amber-600 rounded">Login</Link>
             )}
             {profileDropdownOpen && user && user.role !== 'admin' && (
               <div className="absolute right-0 mt-2 w-56 rounded-md border border-gray-200 bg-white shadow-lg z-50 overflow-auto max-h-96">
