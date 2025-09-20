@@ -5,7 +5,10 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useRouter } from "next/navigation";
 import { FormInput } from "@/components/form/FromInput";
-import { useLoginMutation } from "@/redux/features/auth/authApi";
+import {
+  useForgetPasswordMutation,
+  useLoginMutation,
+} from "@/redux/features/auth/authApi";
 import { toast } from "sonner";
 import { setUser, TUser } from "@/redux/features/auth/authSlices";
 import { useDispatch } from "react-redux";
@@ -14,6 +17,7 @@ import { verifyToken } from "@/utils/verifyToken";
 const LoginPage = () => {
   const router = useRouter();
   const [addLogin] = useLoginMutation();
+  const [forgetPassword] = useForgetPasswordMutation();
   const dispatch = useDispatch();
 
   const [form, setForm] = useState({
@@ -21,14 +25,19 @@ const LoginPage = () => {
     password: "",
   });
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  // Handle input change
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
+  // Handle login submit
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
       const res = await addLogin(form);
+
       const token = res?.data?.data?.accessToken;
       const user = verifyToken(token) as TUser;
 
@@ -45,6 +54,31 @@ const LoginPage = () => {
     } catch (error) {
       console.error("Login failed:", error);
       toast.error("Login failed. Please try again.");
+    }
+  };
+
+  // Handle forgot password
+  const handleForgetPassword = async () => {
+    if (!form.email) {
+      toast.error("Please enter your email before resetting password");
+      return;
+    }
+
+    try {
+      const res = await forgetPassword({ email: form.email }).unwrap();
+
+      if (res?.success) {
+        toast.success(
+          "Password reset link sent. Please check your email and SMS."
+        );
+        // router.push("/reset-password");
+        console.log(res);
+      } else {
+        toast.error(res?.message || "Failed to send reset link");
+      }
+    } catch (error: any) {
+      console.error("Forgot password error:", error);
+      toast.error(error?.data?.message || "Error sending reset link");
     }
   };
 
@@ -77,10 +111,22 @@ const LoginPage = () => {
             <Button variant={"secondary"} type="submit" className="w-full">
               Login
             </Button>
+
+            {/* Forgot password */}
+            <p className="text-center text-sm text-gray-600">
+              <button
+                type="button"
+                onClick={handleForgetPassword}
+                className="text-blue-600 hover:underline"
+              >
+                Forgot Password?
+              </button>
+            </p>
           </form>
 
+          {/* Register link */}
           <p className="text-sm text-center mt-4 text-muted-foreground">
-            <span className="text-gray-900">Doesn&apos;t have an account?{" "}</span>
+            <span className="text-gray-900">Doesn&apos;t have an account? </span>
             <button
               onClick={() => router.push("/register")}
               className="text-primary underline hover:text-primary/80 active:text-primary/60 transform hover:scale-105 active:scale-95 transition duration-150"

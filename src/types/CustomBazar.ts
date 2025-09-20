@@ -7,6 +7,7 @@ export interface Subcategory {
   name: string;
   unit: UnitType;  
   pricePerUnit: number;
+  size?:string
 }
 
 export interface Category {
@@ -38,6 +39,7 @@ export interface TCustomBazerOrderItem {
   quantity: number;
   totalPrice: number;
   unit?:UnitType;
+  size?:string
   pricePerUnit?:number
 }
 

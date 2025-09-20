@@ -30,7 +30,7 @@ function UserOrdersPage() {
   // Custom Bazar Orders
   const { data: customOrdersResponse } = useGetAllCustomOrdersByUserIdQuery();
   const customBazarOrders: TCustomBazerOrder[] = customOrdersResponse?.data || [];
-
+console.log('Custom Bazar Orders:', customBazarOrders)
   // Delete Mutations
   const [deleteOrder] = useDeleteOrderByIdMutation();
   const [deleteCustomOrder] = useDeleteCustomOrderByIdMutation();
@@ -204,7 +204,7 @@ function UserOrdersPage() {
         {/* Custom Bazar Orders */}
         {customBazarOrders.length > 0 && (
           <div className="space-y-6 mt-10">
-            <h2 className="text-2xl font-semibold text-center md:text-left text-indigo-700">
+            <h2 className="text-3xl text-center font-semibold  md:text-left text-gray-800 mb-">
               Custom Bazar Orders
             </h2>
 
@@ -262,34 +262,46 @@ function UserOrdersPage() {
                     <span className="font-medium">Payment:</span>{' '}
                     <span className="capitalize">{customOrder.paymentMethod}</span>
                   </p>
+{customOrder.siteNote && (
+  <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+    <p className="text-sm text-gray-700">
+      <span className="font-medium text-gray-900">Note:</span>{' '}
+      {customOrder.siteNote}
+    </p>
+  </div>
+)}
 
-                  {customOrder.siteNote && (
-                    <p>
-                      <span className="font-medium">Note:</span> {customOrder.siteNote}
-                    </p>
-                  )}
+{/* Items */}
+<div className="mt-6">
+  <h3 className="text-lg font-semibold mb-3 text-gray-800">Order Items</h3>
+  <ul className="space-y-3 max-h-72 overflow-y-auto pr-1">
+    {customOrder.orderItems.map((item, index) => (
+      <li
+        key={index}
+        className="flex justify-between items-center p-4 bg-gray-50 rounded-xl shadow-sm hover:shadow-md transition"
+      >
+        {/* Left section */}
+        <div>
+          <p className="font-medium text-gray-900">{item.subcategoryName}</p>
+          <p className="text-sm text-gray-600">
+            Qty: {item?.quantity} × Size:{' '}
+            {parseFloat(item?.size ?? '') || 0} {item?.unit}
+          </p>
+        </div>
 
-                  {/* Items */}
-                  <div className="mt-4">
-                    <h3 className="font-semibold mb-2">Items:</h3>
-                    <ul className="divide-y divide-gray-200 max-h-60 overflow-y-auto">
-                      {customOrder.orderItems.map((item, index) => (
-                        <li key={index} className="py-2">
-                          <div className="flex justify-between items-center">
-                            <div>
-                              <p className="font-medium text-gray-900">{item.subcategoryName}</p>
-                              <p className="text-sm text-gray-600">
-                                {item.quantity}  × Tk {(item.pricePerUnit ?? 0).toFixed(2)}
-                              </p>
-                            </div>
-                            <div className="text-right font-semibold text-gray-900">
-                              Tk {(item.totalPrice ?? 0).toFixed(2)}
-                            </div>
-                          </div>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
+        {/* Right section */}
+        <div className="text-right">
+          <p className="text-sm text-gray-500">Subtotal</p>
+          <span className="inline-block mt-1 px-3 py-1 text-sm font-semibold text-green-700 bg-green-100 rounded-full">
+            Tk {(item.totalPrice ?? 0).toFixed(2)}
+          </span>
+        </div>
+      </li>
+    ))}
+  </ul>
+</div>
+
+
                 </div>
               );
             })}

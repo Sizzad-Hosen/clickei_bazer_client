@@ -18,7 +18,8 @@ import { UnitType } from '@/types/CustomBazar';
 interface Subcategory {
   subcategory: string;
   unit: string;
-  pricePerUnit: string; // Controlled input as string
+  pricePerUnit: string; // keep as string for controlled input
+  size: string;
 }
 
 interface ApiErrorResponse {
@@ -28,10 +29,10 @@ interface ApiErrorResponse {
   error?: string;
 }
 
-export default function CustomBazarForm({onSuccess}) {
+export default function CustomBazarForm({ onSuccess }: { onSuccess?: () => void }) {
   const [category, setCategory] = useState('');
   const [subcategories, setSubcategories] = useState<Subcategory[]>([
-    { subcategory: '', unit: '', pricePerUnit: '' },
+    { subcategory: '', unit: '', pricePerUnit: '', size: '' },
   ]);
   const [apiError, setApiError] = useState<string | null>(null);
 
@@ -50,7 +51,7 @@ export default function CustomBazarForm({onSuccess}) {
   const addMore = () => {
     setSubcategories([
       ...subcategories,
-      { subcategory: '', unit: '', pricePerUnit: '' },
+      { subcategory: '', unit: '', pricePerUnit: '', size: '' },
     ]);
   };
 
@@ -64,7 +65,8 @@ export default function CustomBazarForm({onSuccess}) {
       if (
         !item.subcategory.trim() ||
         !item.unit.trim() ||
-        !item.pricePerUnit.trim()
+        !item.pricePerUnit.trim() ||
+        !item.size.trim()
       ) {
         toast.error('All subcategory fields are required');
         return false;
@@ -84,30 +86,32 @@ export default function CustomBazarForm({onSuccess}) {
     if (!validate()) return;
 
     try {
-   const res = await addCustomBazar({
-  category,
-  subcategories: subcategories.map((item) => ({
-    name: item.subcategory,
-    unit: item.unit as UnitType,  // assert here
-    pricePerUnit: Number(item.pricePerUnit),
-  })),
-}).unwrap();
+      const res = await addCustomBazar({
+        category,
+        subcategories: subcategories.map((item) => ({
+          name: item.subcategory,
+          unit: item.unit as UnitType,
+          pricePerUnit: Number(item.pricePerUnit),
+          size: item.size,
+        })),
+      }).unwrap();
 
       console.log('result', res);
 
-      toast.success('Custom Bazar Products added successfully');
       setCategory('');
-      setSubcategories([{ subcategory: '', unit: '', pricePerUnit: '' }]);
+      setSubcategories([{ subcategory: '', unit: '', pricePerUnit: '', size: '' }]);
       setApiError(null);
+      toast.success('Custom Bazar product added successfully!');
+
+      if (onSuccess) onSuccess();
     } catch (error: unknown) {
       let message = 'Failed to add';
 
-      // Type guard for error shape
       const err = error as ApiErrorResponse;
 
-      if (err.data && typeof err.data.message === 'string') {
+      if (err.data?.message) {
         message = err.data.message;
-      } else if (typeof err.error === 'string') {
+      } else if (err.error) {
         message = err.error;
       }
 
@@ -140,9 +144,10 @@ export default function CustomBazarForm({onSuccess}) {
         {subcategories.map((item, index) => (
           <div
             key={index}
-            className="grid grid-cols-3 gap-4 items-end"
+            className="grid grid-cols-4 gap-4 items-end"
             aria-label={`Subcategory row ${index + 1}`}
           >
+            {/* Subcategory */}
             <div>
               <label
                 htmlFor={`subcategory-${index}`}
@@ -162,10 +167,11 @@ export default function CustomBazarForm({onSuccess}) {
               />
             </div>
 
+            {/* Unit */}
             <div>
               <label
                 htmlFor={`unit-${index}`}
-                className="block mb-1 font-medium"
+                className="block ps-4 mb-1 font-medium"
               >
                 Unit
               </label>
@@ -185,12 +191,31 @@ export default function CustomBazarForm({onSuccess}) {
               </Select>
             </div>
 
+            {/* Size */}
+            <div>
+              <label
+                htmlFor={`size-${index}`}
+                className="block mb-1 font-medium"
+              >
+                Size
+              </label>
+              <Input
+                id={`size-${index}`}
+                type="text"
+                value={item.size}
+                onChange={(e) => handleChange(index, 'size', e.target.value)}
+                placeholder="e.g. 1kg, 500g, Large, Medium"
+                required
+              />
+            </div>
+
+            {/* Price */}
             <div>
               <label
                 htmlFor={`pricePerUnit-${index}`}
                 className="block mb-1 font-medium"
               >
-                Price per Unit
+                Price 
               </label>
               <Input
                 id={`pricePerUnit-${index}`}
@@ -217,7 +242,7 @@ export default function CustomBazarForm({onSuccess}) {
           + Add More Subcategory
         </Button>
 
-        <Button variant={"secondary"} type="submit" className="mt-6 w-full">
+        <Button variant="secondary" type="submit" className="mt-6 w-full">
           Add CustomBazar Product
         </Button>
 

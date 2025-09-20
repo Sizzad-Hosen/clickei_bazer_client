@@ -25,6 +25,8 @@ const CustomBazarPage: React.FC = () => {
 
   const { data, isLoading, isError } = useGetAllCustomBazarProductsQuery();
 
+  console.log("data", data)
+
   const categories: Category[] = useMemo(() => data?.data ?? [], [data]);
 
   const [selections, setSelections] = useState<Record<string, Selection[]>>({});
@@ -174,6 +176,7 @@ const orderItems: TCustomBazerOrderItem[] = Object.entries(selections)
         unit,
         pricePerUnit: sel.selectedSub!.pricePerUnit,
         quantity: sel.quantity,
+        size: sel.selectedSub!.size,
         totalPrice: sel.selectedSub!.pricePerUnit * sel.quantity,
       };
     })
@@ -241,9 +244,13 @@ const orderItems: TCustomBazerOrderItem[] = Object.entries(selections)
                   >
                     <span>{sel.selectedSub?.name}</span>
 
-                    {/* Read-only unit */}
-                    <span className="border px-2 py-1 rounded bg-gray-100 text-center">
+              
+                    {/* <span className="border px-2 py-1 rounded bg-gray-100 text-center">
                       {sel.unit}
+                    </span> */}
+
+                    <span className="border px-2 py-1 rounded bg-gray-100 text-center">
+                      Size: {sel.selectedSub?.size}  {sel.unit}
                     </span>
 
                     {/* Quantity controls */}

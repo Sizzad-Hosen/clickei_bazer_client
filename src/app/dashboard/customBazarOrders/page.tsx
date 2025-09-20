@@ -126,7 +126,8 @@ console.log("data", orders)
         (item) => `
       <tr>
         <td>${item.subcategoryName}</td>
-        <td>${item.unit}</td>
+        <td>${item?.quantity * (parseFloat(item?.size ?? '') || 0)} ${item?.unit}</td>
+    
         <td>${item.quantity}</td>
         <td>৳${item.pricePerUnit}</td>
         <td>৳${item.totalPrice}</td>
@@ -162,7 +163,7 @@ console.log("data", orders)
           <thead>
             <tr>
               <th>Subcategory</th>
-              <th>Unit</th>
+              <th>Size</th>
               <th>Quantity</th>
               <th>Price/Unit</th>
               <th>SubTotal Price</th>
@@ -259,7 +260,7 @@ console.log("data", orders)
                                 <p>
                                   <strong>{item.subcategoryName}</strong> ({item.unit}) x {item.quantity}
                                 </p>
-                                <p>Size : {item.unit}</p>
+                                 Size: {item?.quantity * (parseFloat(item?.size ?? '') || 0)} {item?.unit}
                                 <p>
                                   Price/unit: ৳{item.pricePerUnit} | Total: ৳{item.totalPrice}
                                 </p>

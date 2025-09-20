@@ -143,6 +143,16 @@ getAllCustomBazarOrders: builder.query<
       invalidatesTags: ["CustomOrder"],
     }),
 
+     
+    getTrackCustomBazarOrderByInvoiceId: builder.mutation({
+      query: (invoiceId: string) => ({
+        url: `/customBazerOrders/track/${invoiceId}`,
+        method: "GET",
+      }),
+      invalidatesTags: ["CustomOrder"],
+    }),
+
+
     // delete custom product
     deleteCustomProduct: builder.mutation<void, string>({
       query: (id) => ({
@@ -191,6 +201,7 @@ export const {
   useDeleteCustomProductMutation,
   useUpdateCustomBazarProductMutation,
   useUpdateCustomOrderPaymentStatusMutation,
+  useGetTrackCustomBazarOrderByInvoiceIdMutation
 } = customBazarApi;
 
 export default customBazarApi;
