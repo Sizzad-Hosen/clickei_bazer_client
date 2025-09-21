@@ -13,6 +13,7 @@ import { toast } from "sonner";
 import { setUser, TUser } from "@/redux/features/auth/authSlices";
 import { useDispatch } from "react-redux";
 import { verifyToken } from "@/utils/verifyToken";
+import Link from "next/link";
 
 const LoginPage = () => {
   const router = useRouter();
@@ -57,30 +58,7 @@ const LoginPage = () => {
     }
   };
 
-  // Handle forgot password
-  const handleForgetPassword = async () => {
-    if (!form.email) {
-      toast.error("Please enter your email before resetting password");
-      return;
-    }
 
-    try {
-      const res = await forgetPassword({ email: form.email }).unwrap();
-
-      if (res?.success) {
-        toast.success(
-          "Password reset link sent. Please check your email and SMS."
-        );
-        // router.push("/reset-password");
-        console.log(res);
-      } else {
-        toast.error(res?.message || "Failed to send reset link");
-      }
-    } catch (error: any) {
-      console.error("Forgot password error:", error);
-      toast.error(error?.data?.message || "Error sending reset link");
-    }
-  };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-muted px-4 sm:px-6 lg:px-8">
@@ -114,13 +92,14 @@ const LoginPage = () => {
 
             {/* Forgot password */}
             <p className="text-center text-sm text-gray-600">
-              <button
+              <Link
+              href={"/forget-password"}
                 type="button"
-                onClick={handleForgetPassword}
+              
                 className="text-blue-600 hover:underline"
               >
                 Forgot Password?
-              </button>
+              </Link>
             </p>
           </form>
 

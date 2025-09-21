@@ -1,9 +1,11 @@
 "use client";
 
-import { useSearchParams, useParams, useRouter } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 import { useState } from "react";
 import { useResetPasswordMutation } from "@/redux/features/auth/authApi";
 import { Eye, EyeOff } from "lucide-react";
+import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
 
 export default function ResetPasswordPage() {
   const searchParams = useSearchParams();
@@ -35,7 +37,7 @@ console.log("Token:", token)
       console.log(token)
       const res = await resetPassword({ ...form, token }).unwrap();
       console.log("Response:", res);
-      setMessage("✅ Password reset successful. Redirecting...");
+      toast.success("✅ Password reset successful. Redirecting...");
       setTimeout(() => router.push("/login"), 2000);
     } catch (err: any) {
       setMessage(err?.data?.message || "❌ Reset failed");
@@ -95,13 +97,14 @@ console.log("Token:", token)
           </span>
         </div>
 
-        <button
+        <Button
           type="submit"
+          variant={"secondary"}
           disabled={isLoading}
-          className="w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700 disabled:opacity-50"
+          className="w-full"
         >
           {isLoading ? "Updating..." : "Reset Password"}
-        </button>
+        </Button>
       </form>
 
       {message && (
