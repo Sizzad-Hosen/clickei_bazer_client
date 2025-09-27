@@ -2,7 +2,8 @@
 
 import React, { ChangeEvent, useState } from 'react';
 import { toast } from 'sonner';
-import { Pencil, Trash2 } from 'lucide-react';
+import Swal from 'sweetalert2';
+import { Pencil, Plus, Trash2 } from 'lucide-react';
 
 import { useGetAllCategoriesQuery } from '@/redux/features/Categories/categoryApi';
 import { useGetAllServicesQuery } from '@/redux/features/Services/serviceApi';
@@ -12,7 +13,15 @@ import {
   useUpdateSubCategoryMutation,
 } from '@/redux/features/SubCategories/subCategoryApi';
 
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import {
+  Table,
+  TableBody,
+  TableCaption,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -28,10 +37,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { FormInput } from '@/components/form/FromInput';
+import { Input } from '@/components/ui/input';
 import Spinner from '@/components/Spinner';
+import CreateSubcategoryPage from './CreateSubCategory';
 
-// Define interfaces for data models
+// Interfaces
 interface Subcategory {
   _id: string;
   name: string;
@@ -57,7 +67,7 @@ const SubcategoriesPage: React.FC = () => {
   const [deleteSubcategory] = useDeleteSubCategoryMutation();
   const [updateSubcategory] = useUpdateSubCategoryMutation();
 
-  // Normalize data arrays
+  // Normalize arrays
   const subcategories: Subcategory[] = Array.isArray(subcategoryData)
     ? subcategoryData
     : subcategoryData?.data || [];
@@ -70,9 +80,19 @@ const SubcategoriesPage: React.FC = () => {
     ? serviceData
     : serviceData?.data || [];
 
+  // Pagination
+  const [page, setPage] = useState(1);
+  const itemsPerPage = 10;
+  const totalPages = Math.ceil(subcategories.length / itemsPerPage);
+  const paginatedSubcategories = subcategories.slice(
+    (page - 1) * itemsPerPage,
+    page * itemsPerPage
+  );
+  // Add Service modal
+  const [isAddOpen, setIsAddOpen] = useState(false);
+  // Modal
   const [isOpen, setIsOpen] = useState(false);
   const [selectedSubcategory, setSelectedSubcategory] = useState<Subcategory | null>(null);
-
   const [formData, setFormData] = useState({
     name: '',
     serviceId: '',
@@ -89,9 +109,7 @@ const SubcategoriesPage: React.FC = () => {
     setIsOpen(true);
   };
 
-  const handleChange = (
-    e: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
-  ) => {
+  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
@@ -103,17 +121,33 @@ const SubcategoriesPage: React.FC = () => {
     setFormData({ ...formData, serviceId: value });
   };
 
+  // Delete
   const handleDelete = async (id: string) => {
-    try {
-      await deleteSubcategory(id).unwrap();
-      toast.success('Subcategory deleted successfully!');
-      refetch();
-    } catch (error) {
-      console.error(error);
-      toast.error('Failed to delete subcategory');
+    const result = await Swal.fire({
+      title: 'Are you sure?',
+      text: 'This subcategory will be permanently deleted!',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#6b7280',
+      confirmButtonText: 'Yes, delete it!',
+      cancelButtonText: 'Cancel',
+      reverseButtons: true,
+    });
+
+    if (result.isConfirmed) {
+      try {
+        await deleteSubcategory(id).unwrap();
+        toast.success('Subcategory deleted successfully!');
+        refetch();
+      } catch (error) {
+        console.error(error);
+        toast.error('Failed to delete subcategory');
+      }
     }
   };
 
+  // Save
   const handleSave = async () => {
     if (!formData.name || !formData.serviceId || !formData.categoryId) {
       toast.error('Please fill in all fields');
@@ -143,51 +177,115 @@ const SubcategoriesPage: React.FC = () => {
     <div className="max-w-5xl mx-auto py-10 px-4">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">All Subcategories</h1>
+            <Button
+                  variant="secondary"
+                  onClick={() => setIsAddOpen(true)}
+                  className="flex items-center gap-2"
+                >
+                  <Plus className="w-4 h-4" /> Add SubCategory
+                </Button>
       </div>
 
       {isLoading && <Spinner />}
-      {isError && <p>Failed to load subcategories</p>}
-      {!isLoading && subcategories.length === 0 && <p>No subcategories found.</p>}
+      {isError && <p className="text-red-500">Failed to load subcategories</p>}
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        {subcategories.map((subcategory) => (
-          <Card key={subcategory._id} className="rounded-2xl border shadow-sm p-4 bg-muted/50">
-            <CardHeader className="text-lg font-semibold">{subcategory.name}</CardHeader>
-            <CardContent className="flex gap-2">
-              <Button size="sm" variant="outline" onClick={() => openEditModal(subcategory)}>
-                <Pencil className="w-4 h-4" />
-              </Button>
-              <Button size="sm" variant="outline" onClick={() => handleDelete(subcategory._id)}>
-                <Trash2 className="w-4 h-4 text-red-500" />
-              </Button>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+      {!isLoading && !isError && (
+        <>
+          <Table className="rounded-xl border border-gray-200 shadow-md overflow-hidden">
+            <TableCaption>A list of all available subcategories</TableCaption>
+            <TableHeader>
+              <TableRow className="bg-gray-100">
+                <TableHead className="w-16">#</TableHead>
+                <TableHead>Subcategory Name</TableHead>
+                <TableHead>Service</TableHead>
+                <TableHead>Category</TableHead>
+                <TableHead className="text-right">Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {paginatedSubcategories.length > 0 ? (
+                paginatedSubcategories.map((subcat, index) => (
+                  <TableRow key={subcat._id} className="hover:bg-gray-50 transition">
+                    <TableCell className="font-medium">
+                      {(page - 1) * itemsPerPage + index + 1}
+                    </TableCell>
+                    <TableCell>{subcat.name}</TableCell>
+                    <TableCell>
+                      {services.find((s) => s._id === subcat.serviceId)?.name || 'N/A'}
+                    </TableCell>
+                    <TableCell>
+                      {categories.find((c) => c._id === subcat.categoryId)?.name || 'N/A'}
+                    </TableCell>
+                    <TableCell className="flex justify-end gap-2">
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        onClick={() => openEditModal(subcat)}
+                      >
+                        <Pencil className="w-4 h-4 text-gray-700" />
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        onClick={() => handleDelete(subcat._id)}
+                      >
+                        <Trash2 className="w-4 h-4 text-red-500" />
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell colSpan={5} className="text-center text-gray-500 py-6">
+                    No subcategories found
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+
+          {/* Pagination (always visible) */}
+          <div className="flex justify-end items-center gap-3 mt-6">
+            <Button
+              variant="outline"
+              onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
+              disabled={page === 1}
+            >
+              Previous
+            </Button>
+            <span className="text-sm text-gray-600">
+              Page {page} of {totalPages || 1}
+            </span>
+            <Button
+              variant="outline"
+              onClick={() => setPage((prev) => Math.min(prev + 1, totalPages))}
+              disabled={page === totalPages}
+            >
+              Next
+            </Button>
+          </div>
+        </>
+      )}
 
       {/* Edit Modal */}
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-[500px] rounded-xl">
           <DialogHeader>
             <DialogTitle>Edit Subcategory</DialogTitle>
           </DialogHeader>
-
-          <div className="space-y-4 py-4">
-            <FormInput
-              label="Subcategory Name"
+          <div className="grid gap-4 py-4">
+            <Input
               name="name"
-              type="text"
-              placeholder="Enter subcategory name"
               value={formData.name}
               onChange={handleChange}
-              required
+              placeholder="Enter subcategory name"
+              className="focus:ring-2 focus:ring-primary"
             />
 
-            {/* Service Select */}
-            <div className="space-y-1">
+            <div>
               <label className="text-sm font-medium text-gray-700">Select Service</label>
               <Select value={formData.serviceId} onValueChange={handleServiceChange}>
-                <SelectTrigger className="w-full">
+                <SelectTrigger className="w-full mt-1">
                   <SelectValue placeholder="Select a service" />
                 </SelectTrigger>
                 <SelectContent>
@@ -200,11 +298,10 @@ const SubcategoriesPage: React.FC = () => {
               </Select>
             </div>
 
-            {/* Category Select */}
-            <div className="space-y-1">
+            <div>
               <label className="text-sm font-medium text-gray-700">Select Category</label>
               <Select value={formData.categoryId} onValueChange={handleCategoryChange}>
-                <SelectTrigger className="w-full">
+                <SelectTrigger className="w-full mt-1">
                   <SelectValue placeholder="Select a category" />
                 </SelectTrigger>
                 <SelectContent>
@@ -217,10 +314,23 @@ const SubcategoriesPage: React.FC = () => {
               </Select>
             </div>
           </div>
-
           <DialogFooter>
-            <Button onClick={handleSave}>Save</Button>
+            <Button variant="secondary" onClick={handleSave}>
+              Save
+            </Button>
           </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      
+        {/* Add subcategoryModal */}
+      <Dialog open={isAddOpen} onOpenChange={setIsAddOpen}>
+        <DialogContent className="sm:max-w-md">
+          <CreateSubcategoryPage
+            onSuccess={() => {
+              setIsAddOpen(false); // close modal
+              refetch();           // refresh service list
+            }}
+          />
         </DialogContent>
       </Dialog>
     </div>

@@ -1,11 +1,10 @@
 'use client';
 
-import React, { ChangeEvent, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import React, { ChangeEvent, FC, useState } from 'react';
 import { toast } from 'sonner';
 
 import { useGetAllServicesQuery } from '@/redux/features/Services/serviceApi';
-
+import { useAddCategoryMutation } from '@/redux/features/Categories/categoryApi';
 import { FormInput } from '@/components/form/FromInput';
 import { Button } from '@/components/ui/button';
 import {
@@ -16,7 +15,6 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
-import { useAddCategoryMutation } from '@/redux/features/Categories/categoryApi';
 import { Service } from '@/types/products';
 import { TGenericErrorResponse } from '@/types/error';
 import { hasDataProperty } from '@/utils/error';
@@ -31,9 +29,12 @@ const isGenericError = (err: unknown): err is TGenericErrorResponse => {
   );
 };
 
-const CreateCategoryPage = () => {
-  const router = useRouter();
-  const [createCategory] = useAddCategoryMutation();
+interface CreateCategoryProps {
+  onSuccess?: () => void;
+}
+
+const CreateCategoryPage: FC<CreateCategoryProps> = ({ onSuccess }) => {
+  const [createCategory, { isLoading }] = useAddCategoryMutation();
   const { data: serviceData } = useGetAllServicesQuery({});
 
   const services: Service[] =
@@ -65,7 +66,8 @@ const CreateCategoryPage = () => {
 
       toast.success('Category created successfully!');
       setFormData({ name: '', serviceId: '' });
-      router.push('/dashboard/categories');
+
+      if (onSuccess) onSuccess(); // call parent success callback (e.g., close modal + refresh)
     } catch (error: unknown) {
       if (hasDataProperty(error)) {
         const errData = error.data;
@@ -123,8 +125,8 @@ const CreateCategoryPage = () => {
               </Select>
             </div>
 
-            <Button type="submit" className="w-full">
-              Create Category
+            <Button type="submit" className="w-full" disabled={isLoading}>
+              {isLoading ? 'Processing...' : 'Create Category'}
             </Button>
           </form>
         </CardContent>

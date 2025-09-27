@@ -25,12 +25,12 @@ export default function WishlistHome({ onOpenCart }: WishlistHomeProps) {
 
   return (
     <section className="mt-10 space-y-4">
-      <h3 className="text-xl font-semibold">Your Favorite</h3>
+      <h3 className="font-bold p-3 text-2xl">Your Favorite</h3>
 
       {isLoading ? (
         <Spinner />
       ) : wishlistProducts.length > 0 ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
           {wishlistProducts.map((product: Product) => (
             <ProductCard
               key={product._id}

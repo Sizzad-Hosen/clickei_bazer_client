@@ -177,7 +177,7 @@ const RegisterPage: React.FC = () => {
             />
 
             <Button
-              variant="default"
+              variant="secondary"
               type="submit"
               className="w-full"
               disabled={isLoading}

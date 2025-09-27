@@ -42,7 +42,7 @@ const addToCartApi = baseApi.injectEndpoints({
     updateCartsQuantity: builder.mutation({
       query: ({ data }) => ({
         url: `/carts/update/${data.id}`,
-        method: 'POST',
+        method: 'PATCH',
         body: data,
       }),
       invalidatesTags: ['Carts'], // ✅ Refresh cart after update

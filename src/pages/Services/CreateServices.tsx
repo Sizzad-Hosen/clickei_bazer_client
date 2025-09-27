@@ -1,8 +1,7 @@
 'use client';
 
 import React, { ChangeEvent, useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { FormInput } from '@/components/form/FromInput';
+import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { useAddServiceMutation } from '@/redux/features/Services/serviceApi';
@@ -18,13 +17,17 @@ interface ApiError {
   };
 }
 
- const CreateServicePage = () => {
+interface Props {
+  onSuccess?: () => void; // Called after service is successfully created
+}
+
+const CreateServiceModal: React.FC<Props> = ({ onSuccess }) => {
   const [form, setForm] = useState<FormState>({ name: '' });
   const [formError, setFormError] = useState<string>('');
 
   const [addService, { isLoading, isError, error }] = useAddServiceMutation();
 
-  const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
     setFormError('');
   };
@@ -38,12 +41,10 @@ interface ApiError {
     }
 
     try {
-      const res = await addService(form).unwrap();
-      console.log('Service creation response:', res);
-
+      await addService(form).unwrap();
       toast.success('✅ Service created successfully!');
-     
       setForm({ name: '' });
+      if (onSuccess) onSuccess(); // Close modal and refresh list
     } catch (err) {
       const apiError = err as ApiError;
       if (apiError.status === 401 || apiError.status === 403) {
@@ -57,38 +58,31 @@ interface ApiError {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center">
-      <Card className="w-full max-w-md shadow-xl rounded-2xl">
-        <CardHeader>
-          <CardTitle className="text-2xl text-center">Create Service</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <FormInput
-              label="Service Name"
-              name="name"
-              type="text"
-              placeholder="Enter service name"
-              value={form.name}
-              onChange={handleChange}
-              required
-            />
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <label className="block text-sm font-medium text-gray-700">
+        Service Name
+      </label>
+      <Input
+        name="name"
+        value={form.name}
+        onChange={handleChange}
+        placeholder="Enter service name"
+        className="w-full"
+        required
+      />
+      {formError && <p className="text-red-500 text-sm">{formError}</p>}
 
-            {formError && <p className="text-red-500 text-sm">{formError}</p>}
+      <Button variant={"secondary"} type="submit" className="w-full flex items-center justify-center gap-2" disabled={isLoading}>
+        {isLoading ? 'Processing...' : 'Create Service'}
+      </Button>
 
-            <Button type="submit" className="w-full" disabled={isLoading}>
-              {isLoading ? 'Submitting...' : 'Submit'}
-            </Button>
-
-            {isError && !formError && (
-              <p className="text-red-500 text-sm mt-2">
-                {(error as ApiError)?.data?.message || 'Failed to create service'}
-              </p>
-            )}
-          </form>
-        </CardContent>
-      </Card>
-    </div>
+      {isError && !formError && (
+        <p className="text-red-500 text-sm mt-2">
+          {(error as ApiError)?.data?.message || 'Failed to create service'}
+        </p>
+      )}
+    </form>
   );
 };
-export default CreateServicePage  
+
+export default CreateServiceModal;

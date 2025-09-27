@@ -51,7 +51,7 @@ console.log("meta", meta)
             <CardContent>
               <p className="text-gray-600 text-sm mb-2 line-clamp-2">{product.description}</p>
               <p className="font-semibold text-amber-600">৳ {product.price}</p>
-              <p className="text-xs text-gray-500">Qty: {product.quantity}</p>
+          
 
               <Link href={`/dashboard/products/${product._id}`}>
                 <Button variant={"secondary"} className="mt-4 w-full">View Details</Button>

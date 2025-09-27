@@ -95,69 +95,81 @@ console.log("orders", orders)
     }
   };
 
-  const handlePrintOrder = (order: Order) => {
-    const printWindow = window.open("", "PRINT", "width=800,height=800");
-    if (!printWindow) return;
+ const handlePrintOrder = (order: Order) => {
+  const printWindow = window.open("", "PRINT", "width=800,height=800");
+  if (!printWindow) return;
 
-    const orderDate = order.createdAt
-      ? new Date(order.createdAt).toLocaleString()
-      : "";
+  const orderDate = order.createdAt
+    ? new Date(order.createdAt).toLocaleString()
+    : "";
 
-    const itemsHTML =
-      order?.items
-        ?.map(
-          (item, index) => `
+  // Build table rows with size, discount, subtotal
+  const itemsHTML = order?.items
+    ?.map((item, index) => {
+      const unitPrice = item.price * item.quantity
+      const discountAmount = (unitPrice * (item.discount ?? 0)) / 100;
+      const subtotal = (unitPrice - discountAmount) 
+
+      return `
         <tr>
           <td>${index + 1}</td>
-          <td>${item.title}</td>
+          <td>${item.title}<br/><small>Size: ${item.selectedSize?.label} (৳${item.selectedSize?.price?.toFixed(2) ?? 0})</small></td>
           <td>${item.quantity}</td>
-          <td>${item.price}</td>
-          <td>${(item.quantity * item.price).toFixed(2)}</td>
+          <td>৳${unitPrice.toFixed(2)}</td>
+          <td>৳${discountAmount.toFixed(2)}</td>
+          <td>৳${subtotal.toFixed(2)}</td>
         </tr>
-      `
-        )
-        .join("") || "";
+      `;
+    })
+    .join("") || "";
 
-    const htmlContent = `
-      <html>
-        <head>
-          <title>Order Invoice - ${order.invoiceId}</title>
-          <style>
-            body { font-family: Arial, sans-serif; padding: 20px; line-height: 1.6; }
-            h1 { text-align: center; margin-bottom: 20px; }
-            table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-            th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
-            th { background-color: #f2f2f2; }
-          </style>
-        </head>
-        <body>
-          <h1>Order Invoice: ${order.invoiceId}</h1>
-          <p><strong>Order Date:</strong> ${orderDate}</p>
-          <p><strong>Name:</strong> ${order.user?.name ?? ""}</p>
-          <p><strong>Email:</strong> ${order.user?.email ?? ""}</p>
-          <p><strong>Phone:</strong> ${order.user?.phone ?? ""}</p>
-          <p><strong>Address:</strong> ${order.address?.fullAddress ?? ""}</p>
-     
-          <hr/>
-          <table>
-            <thead>
-              <tr><th>#</th><th>Product</th><th>Qty</th><th>Unit Price (৳)</th><th>Subtotal (৳)</th></tr>
-            </thead>
-            <tbody>
-              ${itemsHTML}
-            </tbody>
-          </table>
-          <h3 style="text-align: right;">Total Amount: ৳${order.totalPrice.toFixed(
-            2
-          )}</h3>
-        </body>
-      </html>
-    `;
+  const htmlContent = `
+    <html>
+      <head>
+        <title>Order Invoice - ${order.invoiceId}</title>
+        <style>
+          body { font-family: Arial, sans-serif; padding: 20px; line-height: 1.6; }
+          h1 { text-align: center; margin-bottom: 20px; }
+          table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+          th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+          th { background-color: #f2f2f2; }
+          small { font-size: 0.85em; color: #555; }
+        </style>
+      </head>
+      <body>
+        <h1>Order Invoice: ${order.invoiceId}</h1>
+        <p><strong>Order Date:</strong> ${orderDate}</p>
+        <p><strong>Name:</strong> ${order.user?.name ?? ""}</p>
+        <p><strong>Email:</strong> ${order.user?.email ?? ""}</p>
+        <p><strong>Phone:</strong> ${order.user?.phone ?? ""}</p>
+        <p><strong>Address:</strong> ${order.address?.fullAddress ?? ""}</p>
 
-    printWindow.document.write(htmlContent);
-    printWindow.document.close();
-    printWindow.print();
-  };
+        <hr/>
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Product & Size</th>
+              <th>Qty</th>
+              <th>Unit Price (৳)</th>
+              <th>Discount (৳)</th>
+              <th>Subtotal (৳)</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${itemsHTML}
+          </tbody>
+        </table>
+        <h3 style="text-align: right;">Grand Total: ৳${order.grandTotal.toFixed(2)}</h3>
+      </body>
+    </html>
+  `;
+
+  printWindow.document.write(htmlContent);
+  printWindow.document.close();
+  printWindow.print();
+};
+
 
   const handleDeleteOrder = async (id: string) => {
     const result = await Swal.fire({
@@ -277,7 +289,7 @@ console.log("orders", orders)
                     )}
                   </TableCell>
 
-                  <TableCell>৳{order.totalPrice.toFixed(2)}</TableCell>
+                  <TableCell>৳{order?.grandTotal?.toFixed(2)}</TableCell>
 
                   <TableCell className="flex gap-2">
                     <Dialog>
@@ -307,8 +319,23 @@ console.log("orders", orders)
                             <div key={idx}>
                               <p>
                                 {item.title} x {item.quantity} = ৳
-                                {(item.price * item.quantity).toFixed(2)}
+                                {item?.price* item.quantity}
+
                               </p>
+                                                  <p>
+                      Size: {item?.selectedSize?.label} (৳{item?.selectedSize?.price?.toFixed(2)})
+                    </p>
+                    <p>Discount: 
+                      <span className="text-red-600"> {item?.discount}%</span>
+
+                    </p>
+
+                    <h1>GrandTotal : ৳ {(order?.grandTotal)?.toFixed(2)}
+
+                                </h1>
+            
+
+
                             </div>
                           ))}
                         </div>

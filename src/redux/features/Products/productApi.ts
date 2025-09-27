@@ -12,14 +12,32 @@ interface ProductsResponse {
   data: Product[];
   meta: TMeta;
 }
-
+interface ProductsApiResponse {
+  success: boolean;
+  message: string;
+  data: {
+    products: Product[];
+    meta: TMeta;
+  };
+}
 
 export type TSearchQueryParams = Record<string, string | number | undefined>;
 
-export type TUpdateProductPayload = {
+export interface IProductSize {
+  label: string;
+  price: number;
+}
+
+export interface TUpdateProductPayload {
   id: string;
-  [key: string]: string | number | undefined;
-};
+  name?: string;
+  title?: string;
+  description?: string;
+  price?: number;
+  stock?: string; // your quantity
+  sizes?: IProductSize[]; // ✅ Add this
+}
+
 
 const productApi = baseApi.injectEndpoints({
   overrideExisting: true,
@@ -86,7 +104,7 @@ transformResponse: (response: ApiResponse<Product>) => ({
       ProductsResponse,
       {  page?: number; limit?: number }
     >({
-      query: ({  page = 1, limit = 6 }) =>
+      query: ({  page = 1, limit = 10 }) =>
         `/products/sub-products?&page=${page}&limit=${limit}`,
       // Use typed response here instead of `any`
   
@@ -118,36 +136,31 @@ getSingleProduct: builder.query<Product, string>({
       invalidatesTags: ['Products'],
     }),
 
-    updateProduct: builder.mutation<void, TUpdateProductPayload>({
-      query: ({ id, ...data }) => ({
-        url: `/products/${id}`,
-        method: 'PATCH',
-        body: data,
-      }),
-      invalidatesTags: ['Products'],
-    }),
+  updateProduct: builder.mutation<void, { id: string; formData: FormData }>({
+  query: ({ id, formData }) => ({
+    url: `/products/${id}`,
+    method: 'PATCH',
+    body: formData, // send FormData directly
+    // Do NOT set headers, browser will handle it
+  }),
+  invalidatesTags: ['Products'],
+}),
 
+// this is subcategory api but use this page by mistake
 getAllProductsBySubcategoryId: builder.query<
-  ProductsResponse,
-  { subcategoryId: string; page?: number; limit?: number }
+  ProductsResponse, // return type
+  { subcategoryId: string; page?: number; limit?: number } // query params
 >({
   query: ({ subcategoryId, page = 1, limit = 10 }) =>
-    `/products/sub-products?subcategoryId=${subcategoryId}&page=${page}&limit=${limit}`,
+    `/subCategories/allProductsBySubId/${subcategoryId}?page=${page}&limit=${limit}`,
 
-  transformResponse: (response: ApiResponse<Product[]>): ProductsResponse => {
-    // Access the correct `data` level; no extra nesting
-   const products: Product[] = Array.isArray(response?.data?.data)
-      ? response.data.data.flat()
-      : [];
-
+  transformResponse: (response: ProductsApiResponse): ProductsResponse => {
     return {
-      data: products,
-      meta: response?.data?.meta ?? { totalPages: 1, total: 0, page: 1, limit: 10 },
+      data: response.data.products,
+      meta: response.data.meta,
     };
   },
 }),
-
-
 
 
   }),

@@ -74,7 +74,7 @@ const LoginPage = () => {
               onChange={handleChange}
               required
             />
-            <Button type="submit" className="w-full">
+            <Button variant={"secondary"} type="submit" className="w-full">
               Login
             </Button>
           </form>
