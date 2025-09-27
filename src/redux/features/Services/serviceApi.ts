@@ -34,14 +34,19 @@ updateService: builder.mutation({
   }),
   invalidatesTags: ['Services'],
 }),
-
 serviceFullTree: builder.query({
   query: (id: string) => `/services/${id}/full-tree`,
   providesTags: ['Services'],
+ 
+}),
+serviceHomeFullTree: builder.query({
+  query: (id: string) => `/services/${id}/full-tree`,
+  providesTags: ['Services'],
+ 
 }),
 
 
   }),
 });
 
-export const { useAddServiceMutation ,useGetSingelServicesQuery,useGetAllServicesQuery , useDeleteServiceMutation , useUpdateServiceMutation, useLazyServiceFullTreeQuery} = servicesApi;
+export const { useAddServiceMutation ,useGetSingelServicesQuery,useGetAllServicesQuery , useDeleteServiceMutation , useUpdateServiceMutation,useLazyServiceHomeFullTreeQuery, useLazyServiceFullTreeQuery} = servicesApi;

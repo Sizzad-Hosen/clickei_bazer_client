@@ -6,22 +6,22 @@ import { useRouter, useParams } from 'next/navigation';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
-import { EditProductModal } from '@/components/Products/EditProductModal';
+
 import { MdDelete, MdEdit } from 'react-icons/md';
 import Swal from 'sweetalert2';
 import Spinner from '@/components/Spinner';
+import EditProductModal from '@/components/Products/EditProductModal';
 
 const ProductDetailsPage = () => {
-  
-const params = useParams();
-const idParam = params?.id;
-const id = Array.isArray(idParam) ? idParam[0] : idParam ?? '';
+  const params = useParams();
+  const idParam = params?.id;
+  const id = Array.isArray(idParam) ? idParam[0] : idParam ?? '';
 
   const router = useRouter();
 
   const { data: product, isLoading, isError } = useGetSingleProductQuery(id);
 
-  const productExists = product
+  const productExists = product;
 
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [deleteProduct, { isLoading: isDeleting }] = useDeleteProductMutation();
@@ -98,9 +98,28 @@ const id = Array.isArray(idParam) ? idParam[0] : idParam ?? '';
           <span className="font-semibold">Price:</span>{' '}
           <span className="text-green-600 font-semibold">৳ {productExists.price}</span>
         </p>
-        <p>
-          <span className="font-semibold">Quantity:</span> {productExists.quantity}
-        </p>
+      <p>
+  <span className="font-semibold">Stock:</span>{' '}
+  <span className={productExists.stock ? 'text-green-600 font-semibold' : 'text-red-600 font-semibold'}>
+    {productExists.stock ? 'Yes' : 'No'}
+  </span>
+</p>
+
+        <div>
+          <span className="font-semibold">Sizes:</span>
+          {productExists.sizes.length > 0 ? (
+            <ul className="ml-4 list-disc">
+              {productExists.sizes.map((s, idx) => (
+                <li key={idx}>
+                  {s.label} - ৳ {s.price}  
+                </li>
+              ))}
+            </ul>
+          ) : (
+            ' N/A'
+          )}
+        </div>
+
         <p>
           <span className="font-semibold">Published:</span>{' '}
           <span
@@ -125,7 +144,7 @@ const id = Array.isArray(idParam) ? idParam[0] : idParam ?? '';
         </Button>
         <Button
           variant="destructive"
-          onClick={() => handleDelete(id)}  // <-- fixed here
+          onClick={() => handleDelete(id)}
           disabled={isDeleting}
           aria-label="Delete product"
           className="px-6 py-2 flex items-center gap-2"

@@ -23,10 +23,21 @@ interface ProductsApiResponse {
 
 export type TSearchQueryParams = Record<string, string | number | undefined>;
 
-export type TUpdateProductPayload = {
+export interface IProductSize {
+  label: string;
+  price: number;
+}
+
+export interface TUpdateProductPayload {
   id: string;
-  [key: string]: string | number | undefined;
-};
+  name?: string;
+  title?: string;
+  description?: string;
+  price?: number;
+  stock?: string; // your quantity
+  sizes?: IProductSize[]; // ✅ Add this
+}
+
 
 const productApi = baseApi.injectEndpoints({
   overrideExisting: true,
@@ -125,14 +136,15 @@ getSingleProduct: builder.query<Product, string>({
       invalidatesTags: ['Products'],
     }),
 
-    updateProduct: builder.mutation<void, TUpdateProductPayload>({
-      query: ({ id, ...data }) => ({
-        url: `/products/${id}`,
-        method: 'PATCH',
-        body: data,
-      }),
-      invalidatesTags: ['Products'],
-    }),
+  updateProduct: builder.mutation<void, { id: string; formData: FormData }>({
+  query: ({ id, formData }) => ({
+    url: `/products/${id}`,
+    method: 'PATCH',
+    body: formData, // send FormData directly
+    // Do NOT set headers, browser will handle it
+  }),
+  invalidatesTags: ['Products'],
+}),
 
 // this is subcategory api but use this page by mistake
 getAllProductsBySubcategoryId: builder.query<

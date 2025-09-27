@@ -1,6 +1,6 @@
 'use client';
 
-import { ChangeEvent, useState } from 'react';
+import { ChangeEvent, FC, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { useGetAllServicesQuery } from '@/redux/features/Services/serviceApi';
@@ -17,8 +17,10 @@ import { Label } from '@/components/ui/label';
 import { FormInput } from '@/components/form/FromInput';
 import { useAddSubCategoryMutation } from '@/redux/features/SubCategories/subCategoryApi';
 import { Category, Service } from '@/types/products';
-
-const CreateSubcategoryPage = () => {
+interface CreateSubCategoryProps {
+  onSuccess?: () => void;
+}
+const CreateSubcategoryPage :FC<CreateSubCategoryProps> = ({ onSuccess }) => {
   const router = useRouter();
 
   const [form, setForm] = useState({
@@ -132,7 +134,7 @@ const CreateSubcategoryPage = () => {
         </div>
 
         {/* Submit Button */}
-        <Button type="submit" className="w-full flex items-center justify-center gap-2" disabled={isSubmitting}>
+        <Button variant={"secondary"} type="submit" className="w-full flex items-center justify-center gap-2" disabled={isSubmitting}>
           {isSubmitting && (
             <svg
               className="animate-spin h-5 w-5 text-white"

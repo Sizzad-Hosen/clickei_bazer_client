@@ -28,24 +28,19 @@ const ProductListBySubcategory = () => {
   const params = useParams();
   const subcategoryId = typeof params?.subcategoryId === 'string' ? params.subcategoryId : '';
 
-console.log("sub id", subcategoryId)
-
   const [page, setPage] = useState(1);
   const [cartOpen, setCartOpen] = useState(false);
   const [breadcrumbs, setBreadcrumbs] = useState<BreadcrumbItem[]>([]);
 
-  const limit = 10;
+  const limit = 16;
 
   const { data: productRes, isLoading, isError } = useGetAllProductsBySubcategoryIdQuery(
     { subcategoryId, page, limit },
     { skip: !subcategoryId }
   );
 
-  // useMemo to avoid array recreation every render
   const products: Product[] = useMemo(() => productRes?.data || [], [productRes?.data]);
 
-  console.log("product", productRes)
-  
   const meta = productRes?.meta;
   const totalPages = meta?.totalPages || 1;
 
@@ -101,7 +96,7 @@ console.log("sub id", subcategoryId)
   }, [
     serviceId,
     subcategoryId,
-    products,  // this is stable now because of useMemo
+    products,
     fetchFullTree,
     breadcrumbs.length,
     singleServiceData,
@@ -115,6 +110,22 @@ console.log("sub id", subcategoryId)
       setPage(newPage);
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
+  };
+
+  // Generate array of page numbers for pagination
+  const getPageNumbers = () => {
+    const pages: number[] = [];
+    const maxVisible = 5; // max visible pages at once
+    let startPage = Math.max(1, page - Math.floor(maxVisible / 2));
+    let endPage = startPage + maxVisible - 1;
+    if (endPage > totalPages) {
+      endPage = totalPages;
+      startPage = Math.max(1, endPage - maxVisible + 1);
+    }
+    for (let i = startPage; i <= endPage; i++) {
+      pages.push(i);
+    }
+    return pages;
   };
 
   if (!subcategoryId) {
@@ -135,7 +146,7 @@ console.log("sub id", subcategoryId)
               className="flex items-center text-sm text-gray-600 mb-4 flex-wrap gap-1"
             >
               {breadcrumbs.map((item, index) => (
-                <div key={item.id} className="flex items-center">
+                <div  key={item.id + index}  className="flex items-center">
                   {index > 0 && <ChevronRight className="h-4 w-4 mx-1" />}
                   {index === breadcrumbs.length - 1 ? (
                     <span className="font-medium text-primary">{item.name}</span>
@@ -155,7 +166,7 @@ console.log("sub id", subcategoryId)
           <h2 className="text-2xl font-bold mb-6">Products</h2>
 
           {isLoading ? (
-            <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-4 sm:grid-cols-2 lg:grid-cols-5 xl:grid-cols-6 gap-4">
               {Array.from({ length: 10 }).map((_, idx) => (
                 <Skeleton key={idx} className="h-80 w-full rounded-xl" />
               ))}
@@ -172,14 +183,15 @@ console.log("sub id", subcategoryId)
               <p className="text-gray-500 italic">No products found in this subcategory</p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 md:grid-cols-3 xl:grid-cols-5 gap-3">
+            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-5 md:grid-cols-4 gap-3">
               {products.map((product) => (
                 <ProductCard key={product._id} product={product} onOpenCart={openCart} />
               ))}
             </div>
           )}
 
-          <div className="mt-6 flex justify-center items-center gap-2">
+          {/* Full Pagination */}
+          <div className="mt-6 flex justify-center items-center gap-2 flex-wrap">
             <Button
               variant="outline"
               size="sm"
@@ -187,12 +199,19 @@ console.log("sub id", subcategoryId)
               disabled={page === 1}
             >
               <ChevronLeft className="h-4 w-4 mr-1" />
-              <span className="sr-only md:not-sr-only">Previous</span>
+              Prev
             </Button>
 
-            <span className="text-sm text-gray-600 font-medium px-3">
-              Page {page} of {totalPages}
-            </span>
+            {getPageNumbers().map((pageNumber) => (
+              <Button
+                key={pageNumber}
+                variant={pageNumber === page ? 'secondary' : 'outline'}
+                size="sm"
+                onClick={() => handlePageChange(pageNumber)}
+              >
+                {pageNumber}
+              </Button>
+            ))}
 
             <Button
               variant="outline"
@@ -200,7 +219,7 @@ console.log("sub id", subcategoryId)
               onClick={() => handlePageChange(page + 1)}
               disabled={page === totalPages}
             >
-              <span className="sr-only md:not-sr-only">Next</span>
+              Next
               <ChevronRight className="h-4 w-4 ml-1" />
             </Button>
           </div>

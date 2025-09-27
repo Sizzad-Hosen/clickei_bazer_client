@@ -28,7 +28,7 @@ interface ApiErrorResponse {
   error?: string;
 }
 
-export default function CustomBazarForm() {
+export default function CustomBazarForm({onSuccess}) {
   const [category, setCategory] = useState('');
   const [subcategories, setSubcategories] = useState<Subcategory[]>([
     { subcategory: '', unit: '', pricePerUnit: '' },
@@ -217,8 +217,8 @@ export default function CustomBazarForm() {
           + Add More Subcategory
         </Button>
 
-        <Button type="submit" className="mt-6 w-full">
-          Submit
+        <Button variant={"secondary"} type="submit" className="mt-6 w-full">
+          Add CustomBazar Product
         </Button>
 
         {apiError && <p className="text-red-500 mt-4">{apiError}</p>}

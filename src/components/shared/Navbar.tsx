@@ -4,75 +4,64 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { useGetAllProductsBySearchQuery } from '@/redux/features/Products/productApi';
-import { Search } from 'lucide-react';
+import { Search, MoreVertical, X } from 'lucide-react';
 import Image from 'next/image';
 import logo from '../../../public/clickeiBazer-png.png';
 import { useDispatch } from 'react-redux';
 import { logout, selectCurrentUser } from '@/redux/features/auth/authSlices';
 import { toast } from 'sonner';
 import { useAppSelector } from '@/redux/hook';
+import { useGetAllProductsBySearchQuery } from '@/redux/features/Products/productApi';
 import type { Product } from '@/types/products';
-
-const examplePlaceholders = [
-  'potato', 'milk', 'rice', 'apple', 'banana', 'onion', 'bread', 'egg', 'chicken', 'fish',
-];
-
-const exampleColors = [
-  '#E53E3E', '#38A169', '#3182CE', '#D69E2E', '#805AD5', '#DD6B20',
-];
 
 const Navbar = () => {
   const router = useRouter();
   const dispatch = useDispatch();
-  const admin = useAppSelector(selectCurrentUser);
-
-  const [isClient, setIsClient] = useState(false);
-  useEffect(() => setIsClient(true), []);
+  const user = useAppSelector(selectCurrentUser);
 
   const [query, setQuery] = useState('');
-  const [field, setField] = useState<'title' | 'name' | 'price' | 'quantity'>('name');
   const [debouncedQuery, setDebouncedQuery] = useState('');
   const [showSearchDropdown, setShowSearchDropdown] = useState(false);
-  const [showProfileDropdown, setShowProfileDropdown] = useState(false);
-  const [placeholderIndex, setPlaceholderIndex] = useState(0);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
+  const [isClient, setIsClient] = useState(false);
 
-  const dropdownRef = useRef<HTMLDivElement>(null); // for both dropdowns container
+  const dropdownRefDesktop = useRef<HTMLDivElement>(null);
+  const dropdownRefMobile = useRef<HTMLDivElement>(null);
 
-  // Rotate placeholder text color and index
+  useEffect(() => setIsClient(true), []);
+
+  // Debounce search
   useEffect(() => {
-    const interval = setInterval(() => {
-      setPlaceholderIndex(prev => (prev + 1) % examplePlaceholders.length);
-    }, 3000);
-    return () => clearInterval(interval);
-  }, []);
-
-  // Debounce input query
-  useEffect(() => {
-    const timer = setTimeout(() => setDebouncedQuery(query), 500);
+    const timer = setTimeout(() => setDebouncedQuery(query.trim()), 400);
     return () => clearTimeout(timer);
   }, [query]);
 
-  // Close dropdowns when clicking outside
+  // Close dropdowns if clicked outside
   useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRefDesktop.current && !dropdownRefDesktop.current.contains(event.target as Node)) {
         setShowSearchDropdown(false);
-        setShowProfileDropdown(false);
       }
-    }
+      if (dropdownRefMobile.current && !dropdownRefMobile.current.contains(event.target as Node)) {
+        setShowSearchDropdown(false);
+      }
+      if (profileDropdownOpen && !(event.target as HTMLElement).closest('#profile-dropdown')) {
+        setProfileDropdownOpen(false);
+      }
+    };
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
+  }, [profileDropdownOpen]);
 
-  const { data } = useGetAllProductsBySearchQuery(
-    debouncedQuery ? { [field]: debouncedQuery } : {},
+  const { data, isFetching } = useGetAllProductsBySearchQuery(
+    debouncedQuery ? { title: debouncedQuery } : {},
     { skip: !debouncedQuery }
   );
 
   const handleSearch = () => {
     if (!query.trim()) return;
-    router.push(`/search?${field}=${encodeURIComponent(query.trim())}`);
+    router.push(`/search?title=${encodeURIComponent(query.trim())}`);
     setShowSearchDropdown(false);
   };
 
@@ -86,215 +75,151 @@ const Navbar = () => {
     router.push('/login');
   };
 
-  const placeholderColor = exampleColors[placeholderIndex % exampleColors.length];
+  const renderSuggestions = () => 
+    showSearchDropdown &&
+    debouncedQuery &&
+    !isFetching &&
+    (data?.data?.length ?? 0) > 0 && (
+      <div className="absolute left-0 right-0 mt-1 max-h-64 overflow-auto rounded-md border border-gray-200 bg-white shadow-lg z-50">
+        {data!.data!.map((item: Product) => (
+          <Link
+            key={item._id}
+            href={`/products/${item._id}`}
+            className="block px-3 py-2 hover:bg-gray-100"
+            onClick={() => setShowSearchDropdown(false)}
+          >
+            <div className="flex items-center gap-3">
+              {item.images?.[0] && (
+                <Image
+                  src={item.images[0]}
+                  alt={item.title || item.name}
+                  width={40}
+                  height={40}
+                  className="rounded object-cover"
+                />
+              )}
+              <div>
+                <p className="text-sm font-medium text-gray-800">{item.title || item.name}</p>
+                {item.price && <p className="text-xs text-gray-500">৳{item.price}</p>}
+              </div>
+            </div>
+          </Link>
+        ))}
+      </div>
+    );
+
+  if (!isClient) return null;
 
   return (
     <nav className="bg-gray-800 border-b border-gray-700 shadow-sm sticky top-0 z-50 w-full">
-      {/* Top Contact Bar */}
-      <div className="bg-gray-900 text-sm text-amber-600 px-4 py-2 flex justify-around items-center flex-wrap gap-2">
-        <h1 className="font-medium">
-          Contact:{' '}
-          <a href="mailto:clickeibazer2025july@gmail.com" className="text-lime-600 hover:underline">
-            clickeibazar2025july@gmail.com
-          </a>{' '}
-          | Phone:{' '}
-          <a href="tel:01745455353" className="text-lime-600 hover:underline">
-            01745455353
-          </a>
-        </h1>
-        <a
-          href="https://www.facebook.com/share/1Fh8DHu1UG/"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="text-lime-600 hover:underline flex items-center gap-1"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24" className="w-4 h-4">
-            <path d="M22 12a10 10 0 1 0-11.63 9.87v-7H8v-3h2.37V9.5c0-2.3 1.37-3.57 3.47-3.57.7 0 1.44.12 1.44.12v1.58H14.6c-1.14 0-1.5.71-1.5 1.44V12h2.56l-.41 3h-2.15v7A10 10 0 0 0 22 12z" />
-          </svg>
-          Facebook
-        </a>
-      </div>
+      <div className="max-w-7xl mx-auto px-4 py-2">
 
-      {/* Main Navbar */}
-      <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between px-4 py-1 gap-4">
-        {/* Logo */}
-        <Link href="/" className="flex items-center gap-2">
-          <Image src={logo} alt="ClickeiBazer Logo" width={120} height={60} className="object-contain" />
-        </Link>
-
-        {/* Search */}
-        <div className="flex w-full max-w-2xl md:flex-1 relative" ref={dropdownRef}>
-          <select
-            value={field}
-            onChange={e => setField(e.target.value as 'title' | 'name' | 'price' | 'quantity')}
-            className="h-12 min-w-[90px] border-2 border-amber-600 rounded-l-md bg-white px-2 text-sm text-gray-700 focus:outline-none"
-            aria-label="Search field selector"
-          >
-            <option value="title">Title</option>
-            <option value="name">Name</option>
-            <option value="price">Price</option>
-            <option value="quantity">Quantity</option>
-          </select>
-
-          <input
-            type={field === 'price' || field === 'quantity' ? 'number' : 'text'}
-            value={query}
-            onChange={e => {
-              setQuery(e.target.value);
-              setShowSearchDropdown(true);
-            }}
-            onKeyDown={handleKeyDown}
-            placeholder="Search ..."
-            className={`w-full h-12 pl-4 pr-12 border-2 border-amber-600 bg-white rounded-r-md text-sm caret-black ${
-              query ? 'text-gray-900' : 'text-transparent'
-            }`}
-            min={field === 'price' || field === 'quantity' ? 0 : undefined}
-            step={field === 'price' || field === 'quantity' ? 'any' : undefined}
-            spellCheck={false}
-            autoComplete="off"
-            aria-label="Search input"
-          />
-
-          {!query && (
-            <div
-              className="pointer-events-none absolute left-[104px] top-1/2 -translate-y-1/2 text-sm select-none"
-              style={{ color: placeholderColor, fontWeight: '500' }}
-            >
-              Search <span className="font-bold">{examplePlaceholders[placeholderIndex]}</span>...
-            </div>
-          )}
-
-          <button
-            onClick={handleSearch}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-amber-600"
-            aria-label="Search"
-            type="button"
-          >
-            <Search size={20} />
-          </button>
-
-          {showSearchDropdown && debouncedQuery && (data?.data?.length ?? 0) > 0 && (
-            <div className="absolute left-0 right-0 mt-1 max-h-56 overflow-auto rounded-md border border-gray-200 bg-white shadow-lg z-50">
-              {data!.data!.map((item: Product) => {
-                let displayText = '';
-                switch (field) {
-                  case 'title':
-                    displayText = item.title || item.name || 'Untitled';
-                    break;
-                  case 'name':
-                    displayText = item.name || item.title || 'Unnamed';
-                    break;
-                  case 'price':
-                    displayText = `৳${item.price ?? 'N/A'} - ${item.title || item.name || ''}`;
-                    break;
-                  case 'quantity':
-                    displayText = `${item.quantity ?? 'N/A'} pcs - ${item.title || item.name || ''}`;
-                    break;
-                  default:
-                    displayText = item.title || item.name || '';
-                }
-                return (
-                  <Link
-                    key={item._id}
-                    href={`/products/${item._id}`}
-                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                    onClick={() => setShowSearchDropdown(false)}
-                  >
-                    {displayText}
-                  </Link>
-                );
-              })}
-            </div>
+        {/* MOBILE NAVBAR */}
+        <div className="flex items-center justify-between md:hidden">
+          <Link href="/" className="flex-1 ps-5 flex justify-center">
+            <Image src={logo} alt="ClickeiBazer Logo" width={100} height={40} className="object-contain" />
+          </Link>
+          {user ? (
+            <button onClick={() => setSidebarOpen(true)}>
+              <MoreVertical size={24} className="text-white" />
+            </button>
+          ) : (
+            <Link href="/login">
+              <Button variant="secondary" className="px-3 py-1 text-sm">Login</Button>
+            </Link>
           )}
         </div>
 
-        {/* Right side */}
-        <div className="relative flex items-center gap-4 text-white mt-2 md:mt-0" ref={dropdownRef}>
-          {isClient && admin?.role === 'admin' && (
-            <Link href="/dashboard" className="hover:text-amber-500 text-sm md:text-base">
-              Dashboard
-            </Link>
-          )}
+        {/* MOBILE SEARCH */}
+        <div className="mt-2 w-full md:hidden flex flex-col" ref={dropdownRefMobile}>
+          <div className="relative w-full">
+            <input
+              type="text"
+              value={query}
+              onChange={e => { setQuery(e.target.value); setShowSearchDropdown(true); }}
+              onKeyDown={handleKeyDown}
+              placeholder="Search ..."
+              className="w-full h-12 pl-4 pr-12 border-2 border-amber-600 bg-white rounded-md text-sm"
+            />
+            <button onClick={handleSearch} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-amber-600">
+              <Search size={20} />
+            </button>
+            {renderSuggestions()}
+          </div>
+        </div>
 
-          {isClient && admin?.role !== 'admin' && (
-            <div className="relative">
-              <Button
-                variant="secondary"
-                onClick={() => setShowProfileDropdown((prev) => !prev)}
-                aria-expanded={showProfileDropdown}
-                aria-haspopup="true"
-              >
-                Profile
-              </Button>
-
-              {showProfileDropdown && (
-                <div
-                  className="absolute right-0 mt-2 w-56 rounded-md border border-gray-200 bg-white shadow-lg z-50 overflow-auto max-h-96"
-                  role="menu"
-                  aria-orientation="vertical"
-                  aria-labelledby="profile-menu-button"
-                >
-              
-                  <Link
-                    href="/profile"
-                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                    role="menuitem"
-                    onClick={() => setShowProfileDropdown(false)}
-                  >
-                    Your Profile
-                  </Link>
-                  <Link
-                    href="/order"
-                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                    role="menuitem"
-                    onClick={() => setShowProfileDropdown(false)}
-                  >
-                    Your Orders
-                  </Link>
-                  <Link
-                    href="/wishList"
-                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                    role="menuitem"
-                    onClick={() => setShowProfileDropdown(false)}
-                  >
-                    Your WishList
-                  </Link>
-                  <Link
-                    href="/track-order"
-                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                    role="menuitem"
-                    onClick={() => setShowProfileDropdown(false)}
-                  >
-                    Track Order
-                  </Link>
-                  <Link
-                    href="/change-password"
-                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                    role="menuitem"
-                    onClick={() => setShowProfileDropdown(false)}
-                  >
-                    Change Password
-                  </Link>
-                  <button
-                    className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-100"
-                    onClick={() => {
-                      setShowProfileDropdown(false);
-                      handleLogout();
-                    }}
-                    role="menuitem"
-                  >
-                    Logout
-                  </button>
-                </div>
+        {/* MOBILE SIDEBAR */}
+        {sidebarOpen && (
+          <div className="fixed inset-0 z-50 flex justify-end">
+            <div className="fixed inset-0 bg-black/50" onClick={() => setSidebarOpen(false)} />
+            <div id="mobile-sidebar" className="relative w-64 bg-white h-full shadow-lg p-2 flex flex-col">
+              <button className="self-end mb-4" onClick={() => setSidebarOpen(false)}>
+                <X size={24} />
+              </button>
+              {user ? (
+                user.role === 'admin' ? (
+                  <Link href="/dashboard" className="block px-2 py-2 text-gray-700 hover:bg-gray-100 rounded">Dashboard</Link>
+                ) : (
+                  <>
+                    <Link href="/profile" className="block px-2 py-2 text-gray-700 hover:bg-gray-100 rounded">Your Profile</Link>
+                    <Link href="/order" className="block px-2 py-2 text-gray-700 hover:bg-gray-100 rounded">Your Orders</Link>
+                    <Link href="/wishList" className="block px-2 py-2 text-gray-700 hover:bg-gray-100 rounded">Your WishList</Link>
+                    <Link href="/track-order" className="block px-2 py-2 text-gray-700 hover:bg-gray-100 rounded">Track Order</Link>
+                    <Link href="/change-password" className="block px-2 py-2 text-gray-700 hover:bg-gray-100 rounded">Change Password</Link>
+                    <button onClick={handleLogout} className="w-full text-left px-2 py-2 text-red-600 hover:bg-red-100 rounded">Logout</button>
+                  </>
+                )
+              ) : (
+                <Link  href="/login" className="px-4 py-2 border-amber-600 bg-amber-500 text-gray-700 hover:bg-amber-600 rounded">Login</Link>
               )}
             </div>
-          )}
+          </div>
+        )}
 
-          {!admin && isClient && (
-            <Link href="/login" className="hover:text-amber-500 text-sm md:text-base">
-              Login
-            </Link>
-          )}
+        {/* DESKTOP NAVBAR */}
+        <div className="hidden md:flex items-center justify-between mt-2">
+          <Link href="/" className="flex items-center gap-2">
+            <Image src={logo} alt="ClickeiBazer Logo" width={120} height={60} className="object-contain" />
+          </Link>
+
+          {/* DESKTOP SEARCH */}
+          <div className="flex w-full max-w-2xl relative" ref={dropdownRefDesktop}>
+            <input
+              type="text"
+              value={query}
+              onChange={e => { setQuery(e.target.value); setShowSearchDropdown(true); }}
+              onKeyDown={handleKeyDown}
+              placeholder="Search ..."
+              className="w-full h-12 pl-4 pr-12 border-2 border-amber-600 bg-white rounded-md text-sm"
+            />
+            <button onClick={handleSearch} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-amber-600">
+              <Search size={20} />
+            </button>
+            {renderSuggestions()}
+          </div>
+
+          {/* PROFILE / DASHBOARD */}
+          <div className="relative" id="profile-dropdown">
+            {user ? (
+              <Button variant="secondary" onClick={() => setProfileDropdownOpen(prev => !prev)}>
+                {user.role === 'admin' ? (
+                  <Link href="/dashboard">Dashboard</Link>
+                ) : 'User Home'}
+              </Button>
+            ) : (
+              <Link href="/login" className="px-4 py-2 border-amber-600 bg-amber-500 text-gray-700 hover:bg-amber-600 rounded">Login</Link>
+            )}
+            {profileDropdownOpen && user && user.role !== 'admin' && (
+              <div className="absolute right-0 mt-2 w-56 rounded-md border border-gray-200 bg-white shadow-lg z-50 overflow-auto max-h-96">
+                <Link href="/profile" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" onClick={() => setProfileDropdownOpen(false)}>Your Profile</Link>
+                <Link href="/order" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" onClick={() => setProfileDropdownOpen(false)}>Your Orders</Link>
+                <Link href="/wishList" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" onClick={() => setProfileDropdownOpen(false)}>Your WishList</Link>
+                <Link href="/track-order" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" onClick={() => setProfileDropdownOpen(false)}>Track Order</Link>
+                <Link href="/change-password" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" onClick={() => setProfileDropdownOpen(false)}>Change Password</Link>
+                <button className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-100" onClick={handleLogout}>Logout</button>
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </nav>

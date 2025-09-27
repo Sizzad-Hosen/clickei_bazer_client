@@ -40,19 +40,25 @@ export interface ApiResponse<T> {
   message?: string;
   data: T;
 }
+export interface IProductSize {
+  label: string;
+  price: number;
+}
 
 export interface Product {
   _id: string;
   name: string;
   title: string;
+   stock: boolean;  // must be boolean
+  sizes: IProductSize[];
   description: string;
   quantity: number;
   price: number;
   images?: string[];
   isPublished:boolean;
   discount:number
-  subcategoryId?: string;
+  subcategoryId: string;
 categoryId: string | { _id: string; [key: string]: unknown };
-
-  serviceId?: string;  
+ subCategoryId: string;
+  serviceId: string;  
 }

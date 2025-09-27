@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { ChangeEvent, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { FormInput } from '@/components/form/FromInput';
@@ -20,6 +20,11 @@ import { useGetAllCategoriesQuery } from '@/redux/features/Categories/categoryAp
 import { useGetAllSubCategoriesQuery } from '@/redux/features/SubCategories/subCategoryApi';
 import { useAddProductMutation } from '@/redux/features/Products/productApi';
 
+interface IProductSize {
+  label: string;
+  price: string;
+}
+
 const CreateProductPage = () => {
   const router = useRouter();
 
@@ -35,39 +40,59 @@ const CreateProductPage = () => {
     description: '',
     price: '',
     discount: '',
-    quantity: '',
+    stock: true, // stock as boolean now
     serviceId: '',
     categoryId: '',
     subCategoryId: '',
     isPublished: false,
+    sizes: [] as IProductSize[],
   });
 
-  const [files, setFiles] = useState([]);
+  const [files, setFiles] = useState<File[]>([]);
 
   // Map Bangla digits to English
-  const banglaToEnglish = (str) => {
+  const banglaToEnglish = (str: string) => {
     if (!str) return '';
-    const map = { '০':'0','১':'1','২':'2','৩':'3','৪':'4','৫':'5','৬':'6','৭':'7','৮':'8','৯':'9' };
+    const map: Record<string, string> = {
+      '০':'0','১':'1','২':'2','৩':'3','৪':'4','৫':'5','৬':'6','৭':'7','৮':'8','৯':'9'
+    };
     return str.replace(/[০-৯]/g, (d) => map[d]);
   };
 
-  const handleChange = (e) => {
+  const handleChange = (
+    e: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
+  ) => {
     let value = e.target.value;
 
     // Allow Bangla or English digits + dot for numeric fields
-    if (['price', 'discount', 'quantity'].includes(e.target.name)) {
+    if (['price', 'discount'].includes(e.target.name)) {
       value = value.replace(/[^0-9০-৯.]/g, '');
     }
 
     setForm({ ...form, [e.target.name]: value });
   };
 
-  const handleSelect = (field, value) => {
+  const handleSelect = (field: string, value: string) => {
     setForm({ ...form, [field]: value });
   };
 
-  const handleFileChange = (e) => {
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) setFiles(Array.from(e.target.files));
+  };
+
+  const handleAddSize = () => {
+    setForm({ ...form, sizes: [...form.sizes, { label: '', price: '' }] });
+  };
+
+  const handleRemoveSize = (index: number) => {
+    const updatedSizes = form.sizes.filter((_, i) => i !== index);
+    setForm({ ...form, sizes: updatedSizes });
+  };
+
+  const handleSizeChange = (index: number, field: 'label' | 'price', value: string) => {
+    const updatedSizes = [...form.sizes];
+    updatedSizes[index][field] = value;
+    setForm({ ...form, sizes: updatedSizes });
   };
 
   const validateDiscount = () => {
@@ -81,7 +106,7 @@ const CreateProductPage = () => {
     return true;
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!validateDiscount()) return;
 
@@ -89,33 +114,36 @@ const CreateProductPage = () => {
       ...form,
       price: Number(banglaToEnglish(form.price)) || 0,
       discount: Number(banglaToEnglish(form.discount)) || 0,
-      quantity: Number(banglaToEnglish(form.quantity)) || 0,
+      // stock stays boolean
+      sizes: form.sizes.map(s => ({ label: s.label, price: Number(banglaToEnglish(s.price)) || 0 })),
     };
 
     const formData = new FormData();
     formData.append('data', JSON.stringify(payload));
     files.forEach((file) => formData.append('file', file));
 
-function isErrorWithMessage(err: unknown): err is { data?: { message?: string } } {
-  return (
-    typeof err === 'object' &&
-    err !== null &&
-    'data' in err &&
-    typeof (err).data === 'object'
-  );
-}
+    function isErrorWithMessage(err: unknown): err is { data?: { message?: string } } {
+      return (
+        typeof err === 'object' &&
+        err !== null &&
+        'data' in err &&
+        typeof (err as { data?: unknown }).data === 'object' &&
+        (err as { data?: unknown }).data !== null
+      );
+    }
+
     try {
       await addProduct(formData).unwrap();
       toast.success('Product created successfully!');
       router.push('/dashboard/products');
     } catch (err: unknown) {
-  if (isErrorWithMessage(err)) {
-    toast.error(err.data?.message || 'Something went wrong while creating the product');
-  } else {
-    toast.error('Something went wrong while creating the product');
-  }
-  }
-}
+      if (isErrorWithMessage(err)) {
+        toast.error(err.data?.message || 'Something went wrong while creating the product');
+      } else {
+        toast.error('Something went wrong while creating the product');
+      }
+    }
+  };
 
   return (
     <div className="max-w-3xl mx-auto py-10 px-6 bg-white rounded-lg shadow-md">
@@ -175,16 +203,47 @@ function isErrorWithMessage(err: unknown): err is { data?: { message?: string } 
           />
         </div>
 
-        <FormInput
-          label="Quantity"
-          name="quantity"
-          type="text"
-          value={form.quantity}
-          onChange={handleChange}
-          placeholder="Enter quantity (Bangla or English)"
-          required
-        />
+        {/* Stock as Switch */}
+        <div className="flex items-center gap-3">
+          <Label className="font-semibold">In Stock</Label>
+          <Switch
+            checked={form.stock}
+            onCheckedChange={(val) => setForm({ ...form, stock: val })}
+          />
+        </div>
 
+        {/* Sizes Section */}
+        <div>
+          <Label className="mb-1 block font-semibold">Product Sizes</Label>
+          {form.sizes.map((size, index) => (
+            <div key={index} className="flex gap-2 mb-2">
+              <input
+                type="text"
+                placeholder="Size Label (e.g., 500 gm)"
+                value={size.label}
+                onChange={(e) => handleSizeChange(index, 'label', e.target.value)}
+                className="px-3 py-2 border rounded-md w-1/2"
+                required
+              />
+              <input
+                type="text"
+                placeholder="Price"
+                value={size.price}
+                onChange={(e) => handleSizeChange(index, 'price', e.target.value)}
+                className="px-3 py-2 border rounded-md w-1/2"
+                required
+              />
+              <Button type="button" variant="destructive" onClick={() => handleRemoveSize(index)}>
+                Remove
+              </Button>
+            </div>
+          ))}
+          <Button className='text-black bg-amber-400 hover:text-black' type="button" onClick={handleAddSize}>
+            Add Size
+          </Button>
+        </div>
+
+        {/* File Upload */}
         <div>
           <Label className="mb-1 block font-semibold">Upload Images</Label>
           <input
@@ -197,6 +256,7 @@ function isErrorWithMessage(err: unknown): err is { data?: { message?: string } 
           />
         </div>
 
+        {/* Select Service */}
         <div>
           <Label className="mb-1 block font-semibold">Select Service</Label>
           <Select onValueChange={(val) => handleSelect('serviceId', val)} value={form.serviceId}>
@@ -213,6 +273,7 @@ function isErrorWithMessage(err: unknown): err is { data?: { message?: string } 
           </Select>
         </div>
 
+        {/* Select Category */}
         <div>
           <Label className="mb-1 block font-semibold">Select Category</Label>
           <Select onValueChange={(val) => handleSelect('categoryId', val)} value={form.categoryId}>
@@ -229,6 +290,7 @@ function isErrorWithMessage(err: unknown): err is { data?: { message?: string } 
           </Select>
         </div>
 
+        {/* Select Subcategory */}
         <div>
           <Label className="mb-1 block font-semibold">Select Subcategory</Label>
           <Select onValueChange={(val) => handleSelect('subCategoryId', val)} value={form.subCategoryId}>
@@ -245,6 +307,7 @@ function isErrorWithMessage(err: unknown): err is { data?: { message?: string } 
           </Select>
         </div>
 
+        {/* Publish */}
         <div className="flex items-center gap-3">
           <Label className="font-semibold">Publish</Label>
           <Switch
