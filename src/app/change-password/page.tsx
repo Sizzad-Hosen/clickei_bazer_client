@@ -82,7 +82,7 @@ const ChangePasswordPage = () => {
               required
             />
 
-            <Button type="submit" className="w-full" disabled={isLoading}>
+            <Button variant={"secondary"} type="submit" className="w-full" disabled={isLoading}>
               {isLoading ? 'Changing...' : 'Change Password'}
             </Button>
           </form>

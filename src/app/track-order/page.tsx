@@ -5,6 +5,7 @@ import { useState } from 'react';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import Sidebar from '@/components/shared/Sidebar';
 import { useGetAllCustomBazarOrdersQuery } from '@/redux/features/CustomBazar/customBazarApi';
+import { Button } from '@/components/ui/button';
 
 export default function TrackOrderPage() {
   
@@ -14,7 +15,7 @@ const [invoiceIdSearch, setInvoiceIdSearch] = useState('');
   const [trigger, { data: response, isLoading, error }] = useGetTrackOrderByInvoiceIdMutation();
 
 
- const { data } = useGetAllCustomBazarOrdersQuery({
+ useGetAllCustomBazarOrdersQuery({
     invoiceId: invoiceIdSearch.trim() || undefined,
 
   });
@@ -25,7 +26,7 @@ const [invoiceIdSearch, setInvoiceIdSearch] = useState('');
   const handleSearch = () => {
     if (invoiceNumber.trim() === '') return;
     trigger(invoiceNumber.trim());
-    setInvoiceIdSearch(ininvoiceId)
+    setInvoiceIdSearch(invoiceNumber.trim());
   };
 
   return (
@@ -54,14 +55,15 @@ const [invoiceIdSearch, setInvoiceIdSearch] = useState('');
                 placeholder="Enter your invoice number"
                 className="w-full border border-gray-300 rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
               />
-              <button
+              <Button
+              variant={"secondary"}
                 onClick={handleSearch}
-                className="mt-4 w-full bg-blue-600 text-white py-3 rounded hover:bg-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                className="mt-4 w-full "
                 disabled={isLoading}
                 aria-disabled={isLoading}
               >
                 {isLoading ? 'Searching...' : 'Search'}
-              </button>
+              </Button>
             </div>
 
             {/* Error Message */}
