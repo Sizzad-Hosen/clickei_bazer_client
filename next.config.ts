@@ -11,6 +11,9 @@ const nextConfig = {
       'cdn.pixabay.com'
     ],
   },
+
+  siteUrl: 'clickeibazar.com',
+  generateRobotsTxt: true,
 };
 
 module.exports = nextConfig;

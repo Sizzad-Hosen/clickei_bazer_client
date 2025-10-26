@@ -20,7 +20,7 @@ import { Category, Service } from '@/types/products';
 interface CreateSubCategoryProps {
   onSuccess?: () => void;
 }
-const CreateSubcategoryPage :FC<CreateSubCategoryProps> = ({ onSuccess }) => {
+const CreateSubcategoryPage :FC<CreateSubCategoryProps> = () => {
   const router = useRouter();
 
   const [form, setForm] = useState({

@@ -18,25 +18,37 @@ const [forgetPassword] = useForgetPasswordMutation();
       return;
     }
 
-    try {
-      setLoading(true);
-      const res = await forgetPassword({ email: form.email }).unwrap();
+  try {
+    setLoading(true);
+    const res = await forgetPassword({ email: form.email }).unwrap();
 
-      if (res?.success) {
-        toast.success(
-          "Password reset link sent. Please check your email and SMS."
-        );
-        console.log(res);
-      } else {
-        toast.error(res?.message || "Failed to send reset link");
-      }
-    } catch (error: any) {
-      console.error("Forgot password error:", error);
-      toast.error(error?.data?.message || "Error sending reset link");
-    } finally {
-      setLoading(false);
+    if (res?.success) {
+      toast.success(
+        "Password reset link sent. Please check your email and SMS."
+      );
+      console.log(res);
+    } else {
+      toast.error(res?.message || "Failed to send reset link");
     }
-  };
+  } catch (err: unknown) {
+  console.error("Forgot password error:", err);
+
+  let message = "Error sending reset link";
+
+  if (typeof err === "string") {
+    message = err;
+  } else if (err && typeof err === "object") {
+    const anyErr = err as { data?: { message?: string }; message?: string };
+    message = anyErr?.data?.message || anyErr?.message || message;
+  }
+
+  toast.error(message);
+}
+
+ finally {
+    setLoading(false);
+  }
+};
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">

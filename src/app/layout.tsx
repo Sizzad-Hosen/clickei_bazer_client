@@ -4,8 +4,31 @@ import ClientProviders from "./ClientProviders";
 
 export const metadata = {
   title: "ClickeiBazer",
-  description: " Clickei Bazer is your trusted online marketplace for groceries, fresh foods, electronics, and more. We ensure quality products and fast delivery at your doorstep.",
+  description: "Your trusted online marketplace...",
+  openGraph: {
+    title: "ClickeiBazer",
+    description: "Buy groceries, electronics, and more online.",
+    url: "https://clickeibazer.com",
+    siteName: "ClickeiBazer",
+    images: [
+      {
+        url: "/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "ClickeiBazer Marketplace",
+      },
+    ],
+    locale: "en_US",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "ClickeiBazer",
+    description: "Online marketplace for groceries, electronics, and more.",
+    images: ["/og-image.png"],
+  },
 };
+
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (

@@ -39,9 +39,15 @@ console.log("Token:", token)
       console.log("Response:", res);
       toast.success("✅ Password reset successful. Redirecting...");
       setTimeout(() => router.push("/login"), 2000);
-    } catch (err: any) {
-      setMessage(err?.data?.message || "❌ Reset failed");
-    }
+    } catch (err: unknown) {
+  if (err && typeof err === "object" && "data" in err) {
+    const error = err as { data?: { message?: string } };
+    setMessage(error.data?.message || "❌ Reset failed");
+  } else {
+    setMessage("❌ Reset failed");
+  }
+}
+
   };
 
   return (

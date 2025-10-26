@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useRouter } from "next/navigation";
 import { FormInput } from "@/components/form/FromInput";
 import {
-  useForgetPasswordMutation,
+
   useLoginMutation,
 } from "@/redux/features/auth/authApi";
 import { toast } from "sonner";
@@ -18,7 +18,7 @@ import Link from "next/link";
 const LoginPage = () => {
   const router = useRouter();
   const [addLogin] = useLoginMutation();
-  const [forgetPassword] = useForgetPasswordMutation();
+
   const dispatch = useDispatch();
 
   const [form, setForm] = useState({
