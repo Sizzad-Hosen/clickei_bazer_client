@@ -12,8 +12,8 @@ const nextConfig = {
     ],
   },
 
-  siteUrl: 'clickeibazar.com',
-  generateRobotsTxt: true,
+  // siteUrl: 'clickeibazar.com',
+  // generateRobotsTxt: true,
 };
 
 module.exports = nextConfig;

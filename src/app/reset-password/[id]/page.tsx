@@ -1,7 +1,7 @@
 "use client";
 
 import { useSearchParams, useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useResetPasswordMutation } from "@/redux/features/auth/authApi";
 import { Eye, EyeOff } from "lucide-react";
 import { toast } from "sonner";
@@ -9,22 +9,30 @@ import { Button } from "@/components/ui/button";
 
 export default function ResetPasswordPage() {
   const searchParams = useSearchParams();
-
   const token = searchParams?.get("token"); // from ?token=...
-
-console.log("Token:", token)
-
   const router = useRouter();
+
   const [form, setForm] = useState({
     email: "",
-    oldPassword: "",
     newPassword: "",
   });
-  const [showOldPassword, setShowOldPassword] = useState(false);
+
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [message, setMessage] = useState("");
 
   const [resetPassword, { isLoading }] = useResetPasswordMutation();
+  
+  // ✅ Ref to store timeout ID for cleanup
+  const redirectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // ✅ Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (redirectTimeoutRef.current) {
+        clearTimeout(redirectTimeoutRef.current);
+      }
+    };
+  }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -32,22 +40,28 @@ console.log("Token:", token)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!token) {
+      setMessage("❌ Reset token is missing");
+      return;
+    }
 
     try {
-      console.log(token)
       const res = await resetPassword({ ...form, token }).unwrap();
       console.log("Response:", res);
       toast.success("✅ Password reset successful. Redirecting...");
-      setTimeout(() => router.push("/login"), 2000);
+      
+      // ✅ Store timeout reference for cleanup
+      redirectTimeoutRef.current = setTimeout(() => {
+        router.push("/login");
+      }, 2000);
     } catch (err: unknown) {
-  if (err && typeof err === "object" && "data" in err) {
-    const error = err as { data?: { message?: string } };
-    setMessage(error.data?.message || "❌ Reset failed");
-  } else {
-    setMessage("❌ Reset failed");
-  }
-}
-
+      if (err && typeof err === "object" && "data" in err) {
+        const error = err as { data?: { message?: string } };
+        setMessage(error.data?.message || "❌ Reset failed");
+      } else {
+        setMessage("❌ Reset failed");
+      }
+    }
   };
 
   return (
@@ -64,25 +78,6 @@ console.log("Token:", token)
           className="w-full border p-2 rounded-md"
           required
         />
-
-        {/* Old Password */}
-        <div className="relative">
-          <input
-            type={showOldPassword ? "text" : "password"}
-            name="oldPassword"
-            placeholder="Enter old password"
-            value={form.oldPassword}
-            onChange={handleChange}
-            className="w-full border p-2 rounded-md pr-10"
-            required
-          />
-          <span
-            className="absolute right-2 top-2 cursor-pointer"
-            onClick={() => setShowOldPassword(!showOldPassword)}
-          >
-            {showOldPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-          </span>
-        </div>
 
         {/* New Password */}
         <div className="relative">
@@ -105,7 +100,7 @@ console.log("Token:", token)
 
         <Button
           type="submit"
-          variant={"secondary"}
+          variant="secondary"
           disabled={isLoading}
           className="w-full"
         >

@@ -8,15 +8,15 @@ import {
 } from "@/redux/features/CustomBazar/customBazarApi";
 import { Button } from "@/components/ui/button";
 import Spinner from "@/components/Spinner";
-import Swal from "sweetalert2";
 import { MdDelete } from "react-icons/md";
-
 import { TCustomProduct, UnitType } from "@/types/CustomBazar";
+import { toast } from "sonner";
 
 interface SubcategoryForm {
   name: string;
   unit: string;
-  pricePerUnit: number | "";
+  size: string;
+  pricePerUnit: string;
 }
 
 interface FormData {
@@ -25,56 +25,40 @@ interface FormData {
 }
 
 export default function CustomBazarProductsPage() {
-  // Always declare hooks first
   const { data, isLoading } = useGetAllCustomBazarProductsQuery();
-
-  console.log("data", data?.meta)
-
   const [deleteCategory] = useDeleteCustomProductMutation();
   const [updateCategory] = useUpdateCustomBazarProductMutation();
 
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState<TCustomProduct | null>(null);
-
   const [formData, setFormData] = useState<FormData>({ category: "", subcategories: [] });
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 8;
 
   const categories: TCustomProduct[] = Array.isArray(data?.data) ? data.data : [];
-
-console.log("cat", data?.meta)
-
   const totalPages = Math.ceil(categories.length / itemsPerPage);
   const paginatedCategories = categories.slice(
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage
   );
 
+  // DELETE CATEGORY
   const handleDelete = async (categoryId: string) => {
-    const result = await Swal.fire({
-      title: "Are you sure?",
-      text: "Do you really want to delete this category?",
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonColor: "#d33",
-      cancelButtonColor: "#3085d6",
-      confirmButtonText: "Yes, delete it!",
-    });
+    if (!confirm("Do you really want to delete this category?")) return;
 
-    if (result.isConfirmed) {
-      try {
-        await deleteCategory(categoryId).unwrap();
-        Swal.fire("Deleted!", "Category has been deleted.", "success");
-        if (paginatedCategories.length === 1 && currentPage > 1) {
-          setCurrentPage((p) => p - 1);
-        }
-      } catch (err) {
-        console.error("Delete failed", err);
-        Swal.fire("Error!", "Failed to delete the category.", "error");
+    try {
+      await deleteCategory(categoryId).unwrap();
+      alert("Category deleted successfully!");
+      if (paginatedCategories.length === 1 && currentPage > 1) {
+        setCurrentPage((p) => p - 1);
       }
+    } catch (err) {
+      console.error("Delete failed", err);
+      alert("Failed to delete the category.");
     }
   };
 
+  // EDIT CATEGORY
   const handleEditClick = (category: TCustomProduct) => {
     setEditingCategory(category);
     setFormData({
@@ -82,17 +66,19 @@ console.log("cat", data?.meta)
       subcategories: (category.subcategories ?? []).map((sub) => ({
         name: sub.name ?? "",
         unit: sub.unit ?? "",
-        pricePerUnit: sub.pricePerUnit ?? "",
+        size: sub.size ?? "",
+        pricePerUnit: sub.pricePerUnit?.toString() ?? "",
       })),
     });
     setEditModalOpen(true);
   };
 
+  // UPDATE CATEGORY
   const handleUpdate = async () => {
     if (!editingCategory) return;
 
     if (!formData.category.trim()) {
-      Swal.fire("Validation Error", "Category name is required.", "warning");
+      alert("Category name is required.");
       return;
     }
 
@@ -101,15 +87,12 @@ console.log("cat", data?.meta)
         (sub) =>
           !sub.name.trim() ||
           !sub.unit.trim() ||
-          sub.pricePerUnit === "" ||
+          !sub.size.trim() ||
+          !sub.pricePerUnit ||
           Number(sub.pricePerUnit) <= 0
       )
     ) {
-      Swal.fire(
-        "Validation Error",
-        "All subcategory fields are required and price must be positive.",
-        "warning"
-      );
+      alert("All subcategory fields are required and price must be positive.");
       return;
     }
 
@@ -118,6 +101,7 @@ console.log("cat", data?.meta)
       subcategories: formData.subcategories.map((sub) => ({
         name: sub.name.trim(),
         unit: sub.unit as UnitType,
+        size: sub.size.trim(),
         pricePerUnit: Number(sub.pricePerUnit),
       })),
     };
@@ -126,17 +110,15 @@ console.log("cat", data?.meta)
       await updateCategory({ id: editingCategory._id, data: transformedData }).unwrap();
       setEditModalOpen(false);
       setEditingCategory(null);
+      toast.success("Category updated successfully!");
     } catch (err) {
       console.error("Update failed", err);
-      Swal.fire("Error", "Failed to update the category.", "error");
+      toast("Failed to update the category.");
     }
   };
 
-  const handleSubcategoryChange = (
-    index: number,
-    field: keyof SubcategoryForm,
-    value: string | number
-  ) => {
+  // SUBCATEGORY HANDLERS
+  const handleSubcategoryChange = (index: number, field: keyof SubcategoryForm, value: string) => {
     const updated = [...formData.subcategories];
     updated[index] = { ...updated[index], [field]: value };
     setFormData({ ...formData, subcategories: updated });
@@ -145,7 +127,7 @@ console.log("cat", data?.meta)
   const handleAddSubcategory = () => {
     setFormData({
       ...formData,
-      subcategories: [...formData.subcategories, { name: "", unit: "", pricePerUnit: "" }],
+      subcategories: [...formData.subcategories, { name: "", unit: "", size: "", pricePerUnit: "" }],
     });
   };
 
@@ -191,7 +173,8 @@ console.log("cat", data?.meta)
                 <tr className="bg-gray-100">
                   <th className="p-2 border text-left">Name</th>
                   <th className="p-2 border text-left">Unit</th>
-                  <th className="p-2 border text-left">Price Per Unit</th>
+                  <th className="p-2 border text-left">Size</th>
+                  <th className="p-2 border text-left">Price</th>
                 </tr>
               </thead>
               <tbody>
@@ -199,6 +182,7 @@ console.log("cat", data?.meta)
                   <tr key={index}>
                     <td className="p-2 border">{sub.name}</td>
                     <td className="p-2 border">{sub.unit}</td>
+                    <td className="p-2 border">{sub.size}</td>
                     <td className="p-2 border">{sub.pricePerUnit}</td>
                   </tr>
                 ))}
@@ -229,9 +213,10 @@ console.log("cat", data?.meta)
         </div>
       )}
 
+      {/* EDIT MODAL */}
       {editModalOpen && (
         <div className="fixed inset-0 z-[9999] flex items-center justify-center backdrop-blur-sm bg-black/50">
-          <div className="bg-white p-6 rounded-lg w-full max-w-3xl shadow-lg max-h-[90vh] overflow-y-auto">
+          <div className="bg-white p-6 rounded-lg w-full max-w-4xl shadow-lg max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-bold">Edit Category</h3>
               <button
@@ -267,11 +252,8 @@ console.log("cat", data?.meta)
 
             <div className="space-y-3">
               {formData.subcategories.map((sub, idx) => (
-                <div
-                  key={idx}
-                  className="border p-3 rounded grid grid-cols-12 gap-3 items-center"
-                >
-                  <div className="col-span-5">
+                <div key={idx} className="border p-3 rounded grid grid-cols-12 gap-3 items-center">
+                  <div className="col-span-12 md:col-span-3">
                     <label className="block text-xs font-medium mb-1">Name</label>
                     <input
                       type="text"
@@ -281,7 +263,7 @@ console.log("cat", data?.meta)
                     />
                   </div>
 
-                  <div className="col-span-3">
+                  <div className="col-span-12 md:col-span-2">
                     <label className="block text-xs font-medium mb-1">Unit</label>
                     <input
                       type="text"
@@ -291,27 +273,33 @@ console.log("cat", data?.meta)
                     />
                   </div>
 
-                  <div className="col-span-3">
-                    <label className="block text-xs font-medium mb-1">Price Per Unit</label>
+                  <div className="col-span-12 md:col-span-3">
+                    <label className="block text-xs font-medium mb-1">Size</label>
+                    <input
+                      type="text"
+                      value={sub.size}
+                      onChange={(e) => handleSubcategoryChange(idx, "size", e.target.value)}
+                      className="border w-full p-2 rounded"
+                    />
+                  </div>
+
+                  <div className="col-span-12 md:col-span-2">
+                    <label className="block text-xs font-medium mb-1">Price</label>
                     <input
                       type="number"
                       min={0}
                       value={sub.pricePerUnit}
                       onChange={(e) =>
-                        handleSubcategoryChange(
-                          idx,
-                          "pricePerUnit",
-                          e.target.value === "" ? "" : Number(e.target.value)
-                        )
+                        handleSubcategoryChange(idx, "pricePerUnit", e.target.value)
                       }
                       className="border w-full p-2 rounded"
                     />
                   </div>
 
-                  <div className="col-span-1 flex justify-end">
+                  <div className="col-span-12 md:col-span-2 flex justify-end">
                     <button
                       onClick={() => handleRemoveSubcategory(idx)}
-                      className="px-1 p-2 mt-2 py-1 text-sm bg-red-600 text-white rounded hover:bg-red-700"
+                      className="px-2 py-1 mt-2 text-sm bg-red-600 text-white rounded hover:bg-red-700"
                       title="Remove"
                       type="button"
                     >
@@ -326,7 +314,7 @@ console.log("cat", data?.meta)
               <Button variant="outline" onClick={() => setEditModalOpen(false)} type="button">
                 Cancel
               </Button>
-              <Button onClick={handleUpdate} type="button">
+              <Button variant={"secondary"} onClick={handleUpdate} type="button">
                 Save
               </Button>
             </div>

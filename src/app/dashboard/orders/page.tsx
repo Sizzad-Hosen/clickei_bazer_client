@@ -143,6 +143,7 @@ console.log("orders", orders)
         <p><strong>Email:</strong> ${order.user?.email ?? ""}</p>
         <p><strong>Phone:</strong> ${order.user?.phone ?? ""}</p>
         <p><strong>Address:</strong> ${order.address?.fullAddress ?? ""}</p>
+     <p><strong>Time:</strong> {order.createdAt ? new Date(order.createdAt).toLocaleString() : 'N/A'}</p>
 
         <hr/>
         <table>
@@ -313,6 +314,8 @@ console.log("orders", orders)
                           <p>
                             <strong>Address:</strong> {order.address?.fullAddress}
                           </p>
+                               <p><strong>Time:</strong> {order.createdAt ? new Date(order.createdAt).toLocaleString() : 'N/A'}</p>
+
                           <hr />
                           <h4 className="font-semibold">Items:</h4>
                           {order?.items?.map((item, idx) => (

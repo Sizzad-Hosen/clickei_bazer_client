@@ -2,9 +2,9 @@
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
-import { Search, MoreVertical, X } from 'lucide-react';
+import { Search, MoreVertical, X, ShoppingCart } from 'lucide-react';
 import Image from 'next/image';
 import logo from '../../../public/clickeiBazer-png.png';
 import { useDispatch } from 'react-redux';
@@ -13,11 +13,13 @@ import { toast } from 'sonner';
 import { useAppSelector } from '@/redux/hook';
 import { useGetAllProductsBySearchQuery } from '@/redux/features/Products/productApi';
 import type { Product } from '@/types/products';
+import { useCart } from '../context/CartContext';
 
 const Navbar = () => {
   const router = useRouter();
   const dispatch = useDispatch();
   const user = useAppSelector(selectCurrentUser);
+  const { totalPrice } = useCart();
 
   const [query, setQuery] = useState('');
   const [debouncedQuery, setDebouncedQuery] = useState('');
@@ -31,51 +33,62 @@ const Navbar = () => {
 
   useEffect(() => setIsClient(true), []);
 
-  // Debounce search
+  // Debounce search with cleanup
   useEffect(() => {
     const timer = setTimeout(() => setDebouncedQuery(query.trim()), 400);
     return () => clearTimeout(timer);
   }, [query]);
 
-  // Close dropdowns if clicked outside
+  // Close dropdowns if clicked outside - optimized version
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRefDesktop.current && !dropdownRefDesktop.current.contains(event.target as Node)) {
+      const target = event.target as HTMLElement;
+      
+      if (dropdownRefDesktop.current && !dropdownRefDesktop.current.contains(target)) {
         setShowSearchDropdown(false);
       }
-      if (dropdownRefMobile.current && !dropdownRefMobile.current.contains(event.target as Node)) {
+      if (dropdownRefMobile.current && !dropdownRefMobile.current.contains(target)) {
         setShowSearchDropdown(false);
       }
-      if (profileDropdownOpen && !(event.target as HTMLElement).closest('#profile-dropdown')) {
+      if (!target.closest('#profile-dropdown')) {
         setProfileDropdownOpen(false);
       }
     };
+    
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [profileDropdownOpen]);
+  }, []); // Empty dependency array - no re-renders
 
+  // RTK Query with optimized settings - NO POLLING!
   const { data, isFetching } = useGetAllProductsBySearchQuery(
     debouncedQuery ? { title: debouncedQuery } : {},
-    { skip: !debouncedQuery }
+    { 
+      skip: !debouncedQuery,
+      pollingInterval: 0, // ✅ Disable auto-polling
+      refetchOnMountOrArgChange: false, // ✅ Don't refetch on mount
+      refetchOnFocus: false, // ✅ Don't refetch on tab focus
+      refetchOnReconnect: false, // ✅ Don't refetch on reconnect
+    }
   );
 
-  const handleSearch = () => {
+  // Memoized handlers to prevent re-renders
+  const handleSearch = useCallback(() => {
     if (!query.trim()) return;
     router.push(`/search?title=${encodeURIComponent(query.trim())}`);
     setShowSearchDropdown(false);
-  };
+  }, [query, router]);
 
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+  const handleKeyDown = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') handleSearch();
-  };
+  }, [handleSearch]);
 
-  const handleLogout = () => {
+  const handleLogout = useCallback(() => {
     dispatch(logout());
     toast.success('Successfully logged out');
     router.push('/login');
-  };
+  }, [dispatch, router]);
 
-  const renderSuggestions = () => 
+  const renderSuggestions = () =>
     showSearchDropdown &&
     debouncedQuery &&
     !isFetching &&
@@ -119,15 +132,25 @@ const Navbar = () => {
           <Link href="/" className="flex-1 ps-5 flex justify-center">
             <Image src={logo} alt="ClickeiBazer Logo" width={100} height={40} className="object-contain" />
           </Link>
-          {user ? (
-            <button onClick={() => setSidebarOpen(true)}>
-              <MoreVertical size={24} className="text-white" />
-            </button>
-          ) : (
-            <Link href="/login">
-              <Button variant="secondary" className="px-3 py-1 text-sm">Login</Button>
-            </Link>
-          )}
+          <div className="flex items-center gap-4">
+            <div className="relative">
+              <ShoppingCart size={24} className="text-white" />
+              {totalPrice > 0 && (
+                <span className="absolute -top-2 -right-2 text-xs font-bold bg-amber-500 text-white rounded-full px-1.5">
+                  ৳{totalPrice}
+                </span>
+              )}
+            </div>
+            {user ? (
+              <button onClick={() => setSidebarOpen(true)}>
+                <MoreVertical size={24} className="text-white" />
+              </button>
+            ) : (
+              <Link href="/login">
+                <Button variant="secondary" className="px-3 py-1 text-sm">Login</Button>
+              </Link>
+            )}
+          </div>
         </div>
 
         {/* MOBILE SEARCH */}
@@ -170,7 +193,7 @@ const Navbar = () => {
                   </>
                 )
               ) : (
-                <Link  href="/login" className="px-4 py-2 border-amber-600 bg-amber-500 text-gray-700 hover:bg-amber-600 rounded">Login</Link>
+                <Link href="/login" className="px-4 py-2 border-amber-600 bg-amber-500 text-gray-700 hover:bg-amber-600 rounded">Login</Link>
               )}
             </div>
           </div>
@@ -198,27 +221,38 @@ const Navbar = () => {
             {renderSuggestions()}
           </div>
 
-          {/* PROFILE / DASHBOARD */}
-          <div className="relative" id="profile-dropdown">
-            {user ? (
-              <Button variant="secondary" onClick={() => setProfileDropdownOpen(prev => !prev)}>
-                {user.role === 'admin' ? (
-                  <Link href="/dashboard">Dashboard</Link>
-                ) : 'User Home'}
-              </Button>
-            ) : (
-              <Link href="/login" className="px-4 py-2 border-amber-600 bg-amber-500 text-gray-700 hover:bg-amber-600 rounded">Login</Link>
-            )}
-            {profileDropdownOpen && user && user.role !== 'admin' && (
-              <div className="absolute right-0 mt-2 w-56 rounded-md border border-gray-200 bg-white shadow-lg z-50 overflow-auto max-h-96">
-                <Link href="/profile" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" onClick={() => setProfileDropdownOpen(false)}>Your Profile</Link>
-                <Link href="/order" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" onClick={() => setProfileDropdownOpen(false)}>Your Orders</Link>
-                <Link href="/wishList" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" onClick={() => setProfileDropdownOpen(false)}>Your WishList</Link>
-                <Link href="/track-order" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" onClick={() => setProfileDropdownOpen(false)}>Track Order</Link>
-                <Link href="/change-password" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" onClick={() => setProfileDropdownOpen(false)}>Change Password</Link>
-                <button className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-100" onClick={handleLogout}>Logout</button>
-              </div>
-            )}
+          {/* PROFILE / TOTAL PRICE */}
+          <div className="flex items-center gap-4">
+            <div className="relative">
+              <ShoppingCart size={36} className="text-white" />
+              {totalPrice > 0 && (
+                <span className="absolute -top-2 -right-2 text-xl font-bold pr-2 bg-gray-900 text-white rounded-full px-1.5">
+                  ৳{totalPrice}
+                </span>
+              )}
+            </div>
+
+            <div className="relative" id="profile-dropdown">
+              {user ? (
+                <Button variant="secondary" onClick={() => setProfileDropdownOpen(prev => !prev)}>
+                  {user.role === 'admin' ? (
+                    <Link href="/dashboard">Dashboard</Link>
+                  ) : 'User Home'}
+                </Button>
+              ) : (
+                <Link href="/login" className="px-4 py-2 border-amber-600 bg-amber-500 text-gray-700 hover:bg-amber-600 rounded">Login</Link>
+              )}
+              {profileDropdownOpen && user && user.role !== 'admin' && (
+                <div className="absolute right-0 mt-2 w-56 rounded-md border border-gray-200 bg-white shadow-lg z-50 overflow-auto max-h-96">
+                  <Link href="/profile" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" onClick={() => setProfileDropdownOpen(false)}>Your Profile</Link>
+                  <Link href="/order" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" onClick={() => setProfileDropdownOpen(false)}>Your Orders</Link>
+                  <Link href="/wishList" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" onClick={() => setProfileDropdownOpen(false)}>Your WishList</Link>
+                  <Link href="/track-order" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" onClick={() => setProfileDropdownOpen(false)}>Track Order</Link>
+                  <Link href="/change-password" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" onClick={() => setProfileDropdownOpen(false)}>Change Password</Link>
+                  <button className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-100" onClick={handleLogout}>Logout</button>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>

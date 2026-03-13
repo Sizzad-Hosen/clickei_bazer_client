@@ -64,7 +64,7 @@ export default function Sidebar({ onSelectSubcategory }: SidebarProps) {
           <h1 className="text-xl md:text-2xl font-bold text-gray-800 mb-4 text-center">Our Services</h1>
           <hr className="border-t border-dashed border-gray-400 my-2" />
           <Link href="/customBazar" onClick={() => setMobileOpen(false)}>
-            <Button variant="secondary" className="text-xl w-full border border-amber-50 md:text-2xl text-gray-800 ps-2">Custom Bazar</Button>
+            <Button variant="secondary" className="text-xl w-full border border-amber-50 md:text-2xl text-gray-800 ps-2">মেসের বাজার</Button>
           </Link>
         </div>
 

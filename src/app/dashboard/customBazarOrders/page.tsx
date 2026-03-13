@@ -155,6 +155,8 @@ console.log("data", orders)
         <p><strong>Phone:</strong> ${order.user?.phone || 'N/A'}</p>
         <p><strong>Address:</strong> ${order.address?.fullAddress || 'N/A'}</p>
         <p><strong>Status:</strong> ${order.status}</p>
+            <p><strong>Time:</strong> {order.createdAt ? new Date(order.createdAt).toLocaleString() : 'N/A'}</p>
+
         <p><strong>Order Note:</strong> ${order.siteNote}</p>
         <p><strong>Total Amount:</strong> ৳ ${order.totalAmount?.toFixed(2) || '0'}</p>
 
@@ -252,6 +254,8 @@ console.log("data", orders)
                             <p><strong>Address:</strong> {order.address?.fullAddress}</p>
                             <p><strong>Status:</strong> {order.status}</p>
                             <p><strong>OrderNote:</strong> {order.siteNote}</p>
+                            <p><strong>Time:</strong> {order.createdAt ? new Date(order.createdAt).toLocaleString() : 'N/A'}</p>
+
                             <p><strong>Total:</strong> ৳{order.totalAmount?.toFixed(2)}</p>
                             <hr />
                             <h4 className="font-medium mt-2">Items:</h4>

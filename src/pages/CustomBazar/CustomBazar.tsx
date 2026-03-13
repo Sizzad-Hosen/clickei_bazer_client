@@ -1,66 +1,49 @@
 'use client';
 
-import React, { useState, useEffect, ChangeEvent, FormEvent, useMemo } from 'react';
+import React, { useEffect, ChangeEvent, FormEvent, useMemo } from 'react';
 import {
   useAddCustomBazarOrderMutation,
   useGetAllCustomBazarProductsQuery,
 } from '@/redux/features/CustomBazar/customBazarApi';
 import Spinner from '@/components/Spinner';
 import { toast } from 'sonner';
-import {
-  Category,
-  Selection,
-  TCustomBazerOrder,
-  TCustomBazerOrderItem,
-  UnitType,
-} from '@/types/CustomBazar';
+import { Category, Selection, TCustomBazerOrder, TCustomBazerOrderItem, UnitType } from '@/types/CustomBazar';
 import { TAddress } from '@/types/user';
 import { useRouter } from 'next/navigation';
 import { useAppSelector } from '@/redux/hook';
 import { selectCurrentToken } from '@/redux/features/auth/authSlices';
+import { useCart } from '@/components/context/CartContext';
+
 
 const CustomBazarPage: React.FC = () => {
-  const [addCustomBazarOrder, { isLoading: isSubmitting }] =
-    useAddCustomBazarOrderMutation();
+  const router = useRouter();
+  const token = useAppSelector(selectCurrentToken);
 
+  const { selections, setSelections, totalPrice } = useCart();
+
+  const [addCustomBazarOrder, { isLoading: isSubmitting }] = useAddCustomBazarOrderMutation();
   const { data, isLoading, isError } = useGetAllCustomBazarProductsQuery();
-
-  console.log("data", data)
 
   const categories: Category[] = useMemo(() => data?.data ?? [], [data]);
 
-  const [selections, setSelections] = useState<Record<string, Selection[]>>({});
-
-
-  const router = useRouter();
-
-  const [address, setAddress] = useState<TAddress>({
+  const [address, setAddress] = React.useState<TAddress>({
     fullName: '',
     phoneNumber: '',
     fullAddress: '',
   });
 
-  const [siteNote, setSiteNote] = useState('');
-  const [paymentMethod, setPaymentMethod] = useState<'cash_on_delivery' | 'sslcommerz'>(
-    'cash_on_delivery'
-  );
-  const [sslCommerzWarning, setSslCommerzWarning] = useState(false);
-  const [deliveryOption, setDeliveryOption] = useState<'insideRangpur' | 'outsideRangpur'>(
-    'insideRangpur'
-  );
-
-  const token = useAppSelector(selectCurrentToken)
+  const [siteNote, setSiteNote] = React.useState('');
+  const [paymentMethod, setPaymentMethod] = React.useState<'cash_on_delivery' | 'sslcommerz'>('cash_on_delivery');
+  const [sslCommerzWarning, setSslCommerzWarning] = React.useState(false);
+  const [deliveryOption, setDeliveryOption] = React.useState<'insideRangpur' | 'outsideRangpur'>('insideRangpur');
 
   // Initialize selections when categories load
   useEffect(() => {
     if (!categories.length) return;
-
     const initialSelections: Record<string, Selection[]> = {};
-    categories.forEach(cat => {
-      initialSelections[cat._id] = [];
-    });
+    categories.forEach(cat => (initialSelections[cat._id] = []));
     setSelections(initialSelections);
-  }, [categories]);
+  }, [categories, setSelections]);
 
   if (isLoading) return <Spinner />;
   if (isError) return <p className="text-red-500">Failed to load products.</p>;
@@ -72,22 +55,19 @@ const CustomBazarPage: React.FC = () => {
     if (!sub) return;
 
     setSelections(prev => {
-      const alreadyAdded = prev[categoryId].some(p => p.selectedSub?.name === sub.name);
+      const alreadyAdded = prev[categoryId]?.some(p => p.selectedSub?.name === sub.name);
       if (alreadyAdded) return prev;
 
       return {
         ...prev,
-        [categoryId]: [
-          ...prev[categoryId],
-          { selectedSub: sub, quantity: 1, unit: sub.unit ?? ''  },
-        ],
+        [categoryId]: [...(prev[categoryId] || []), { selectedSub: sub, quantity: 1, unit: sub.unit ?? '' }],
       };
     });
   };
 
   const handleQuantityChange = (categoryId: string, index: number, delta: number) => {
     setSelections(prev => {
-      const updated = [...prev[categoryId]];
+      const updated = [...(prev[categoryId] || [])];
       const current = updated[index];
       if (!current || !current.selectedSub) return prev;
 
@@ -99,17 +79,10 @@ const CustomBazarPage: React.FC = () => {
 
   const handleRemoveProduct = (categoryId: string, index: number) => {
     setSelections(prev => {
-      const updated = [...prev[categoryId]];
+      const updated = [...(prev[categoryId] || [])];
       updated.splice(index, 1);
       return { ...prev, [categoryId]: updated };
     });
-  };
-
-  const getTotalPrice = (): number => {
-    return Object.values(selections).flat().reduce((acc, item) => {
-      if (!item.selectedSub) return acc;
-      return acc + item.selectedSub.pricePerUnit * (item.quantity || 0);
-    }, 0);
   };
 
   const handleAddressChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -133,9 +106,7 @@ const CustomBazarPage: React.FC = () => {
 
   const resetForm = () => {
     const initialSelections: Record<string, Selection[]> = {};
-    categories.forEach(cat => {
-      initialSelections[cat._id] = [];
-    });
+    categories.forEach(cat => (initialSelections[cat._id] = []));
     setSelections(initialSelections);
     setAddress({ fullName: '', phoneNumber: '', fullAddress: '' });
     setSiteNote('');
@@ -146,42 +117,42 @@ const CustomBazarPage: React.FC = () => {
 
   const handleSubmitOrder = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-  // Redirect to login if user is not authenticated
-  if (!token) {
-    toast.error('অর্ডার করতে লগইন করুন।');
-    router.push('/login'); // redirect to login page
-    return;
-  }
+
+    if (!token) {
+      toast.error('অর্ডার করতে লগইন করুন।');
+      router.push('/login');
+      return;
+    }
+
     if (!address.fullName.trim() || !address.phoneNumber.trim() || !address.fullAddress.trim()) {
       toast.error('দয়া করে সকল ঠিকানা তথ্য পূরণ করুন।');
       return;
     }
-const validUnits: UnitType[] = ["kg", "gm", "litre", "piece"];
 
-const orderItems: TCustomBazerOrderItem[] = Object.entries(selections)
-  .flatMap(([catId, selArr]) =>
-    selArr.map((sel, index) => {
-      const product = categories.find(cat => cat._id === catId);
-      if (!product) throw new Error(`Product not found for id ${catId}`);
+    const validUnits: UnitType[] = ['kg', 'gm', 'litre', 'piece'];
 
-      // ensure unit matches UnitType
-      const unit: UnitType | undefined = validUnits.includes(sel.unit as UnitType)
-        ? (sel.unit as UnitType)
-        : undefined;
+    const orderItems: TCustomBazerOrderItem[] = Object.entries(selections)
+      .flatMap(([catId, selArr]) =>
+        selArr.map((sel, index) => {
+          const product = categories.find(cat => cat._id === catId);
+          if (!product) throw new Error(`Product not found for id ${catId}`);
 
-      return {
-        _id: `${catId}-${index}`,
-        product: product._id,
-        subcategoryName: sel.selectedSub!.name,
-        unit,
-        pricePerUnit: sel.selectedSub!.pricePerUnit,
-        quantity: sel.quantity,
-        size: sel.selectedSub!.size,
-        totalPrice: sel.selectedSub!.pricePerUnit * sel.quantity,
-      };
-    })
-  );
+          const unit: UnitType | undefined = validUnits.includes(sel.unit as UnitType)
+            ? (sel.unit as UnitType)
+            : undefined;
 
+          return {
+            _id: `${catId}-${index}`,
+            product: product._id,
+            subcategoryName: sel.selectedSub!.name,
+            unit,
+            pricePerUnit: sel.selectedSub!.pricePerUnit,
+            quantity: sel.quantity,
+            size: sel.selectedSub!.size,
+            totalPrice: sel.selectedSub!.pricePerUnit * sel.quantity,
+          };
+        })
+      );
 
     if (orderItems.length === 0) {
       toast.error('দয়া করে অন্তত একটি পণ্য নির্বাচন করুন।');
@@ -190,7 +161,7 @@ const orderItems: TCustomBazerOrderItem[] = Object.entries(selections)
 
     const completePayload: TCustomBazerOrder = {
       orderItems,
-      totalAmount: getTotalPrice(),
+      totalAmount: totalPrice,
       status: 'pending',
       paymentMethod,
       deliveryOption,
@@ -199,11 +170,9 @@ const orderItems: TCustomBazerOrderItem[] = Object.entries(selections)
     };
 
     try {
-      const res = await addCustomBazarOrder(completePayload).unwrap();
-      console.log("res", res)
-
+      await addCustomBazarOrder(completePayload).unwrap();
       toast.success('✅ অর্ডার সফলভাবে সাবমিট হয়েছে!');
-      router.push('/order')
+      router.push('/order');
       resetForm();
     } catch (error) {
       console.error('❌ অর্ডার সাবমিট করতে সমস্যা হয়েছে:', error);
@@ -219,7 +188,7 @@ const orderItems: TCustomBazerOrderItem[] = Object.entries(selections)
         {/* Product Selection */}
         <div className="space-y-4 max-h-[70vh] overflow-y-auto pr-2">
           {categories.map(category => (
-            <div key={category._id} className="space-y-2 border p-4 rounded-lg bg-white shadow-sm">
+            <div key={category._id} className="space-y-2 border p-4 rounded-lg border-green-500 bg-white shadow-sm">
               <h3 className="font-semibold text-gray-700">{category.category}</h3>
 
               <select
@@ -243,17 +212,10 @@ const orderItems: TCustomBazerOrderItem[] = Object.entries(selections)
                     className="flex items-center justify-between border p-2 rounded-lg bg-gray-50"
                   >
                     <span>{sel.selectedSub?.name}</span>
-
-              
-                    {/* <span className="border px-2 py-1 rounded bg-gray-100 text-center">
-                      {sel.unit}
-                    </span> */}
-
                     <span className="border px-2 py-1 rounded bg-gray-100 text-center">
-                      Size: {sel.selectedSub?.size}  {sel.unit}
+                      Size: {sel.selectedSub?.size} {sel.unit}
                     </span>
 
-                    {/* Quantity controls */}
                     <div className="flex items-center gap-1">
                       <button
                         type="button"
@@ -272,9 +234,9 @@ const orderItems: TCustomBazerOrderItem[] = Object.entries(selections)
                         +
                       </button>
                     </div>
-          <span className="font-semibold">
-            {(sel.selectedSub?.pricePerUnit ?? 0) * sel.quantity}৳
-          </span>
+                    <span className="font-semibold">
+                      {(sel.selectedSub?.pricePerUnit ?? 0) * sel.quantity}৳
+                    </span>
 
                     <button
                       type="button"
@@ -291,22 +253,20 @@ const orderItems: TCustomBazerOrderItem[] = Object.entries(selections)
         </div>
 
         {/* Delivery Option */}
-        <section className="bg-white rounded-lg shadow-md p-4 border border-gray-200 space-y-4">
+        <section className="bg-white rounded-xl shadow-md p-4 border border-blue-500 space-y-4">
           <h3 className="text-lg font-semibold mb-2">ডেলিভারি অপশন</h3>
           <div className="flex flex-col gap-3">
             {['insideRangpur', 'outsideRangpur'].map(option => (
               <label
                 key={option}
-                className={`cursor-pointer border rounded-lg p-4 flex items-center justify-between ${
+                className={`cursor-pointer border rounded-lg border-blue-500 p-4 flex items-center justify-between ${
                   deliveryOption === option
                     ? 'border-amber-600 bg-amber-50'
                     : 'border-gray-300 bg-white hover:bg-gray-50'
                 }`}
               >
                 <span>
-                  {option === 'insideRangpur'
-                    ? 'Inside Rangpur (Free)'
-                    : 'Outside Rangpur (Free)'}
+                  {option === 'insideRangpur' ? 'Inside Rangpur (Free)' : 'Outside Rangpur (Free)'}
                 </span>
                 <input
                   type="radio"
@@ -317,10 +277,8 @@ const orderItems: TCustomBazerOrderItem[] = Object.entries(selections)
                   className="sr-only"
                 />
                 <span
-                  className={`w-5 h-5 rounded-full border-2 flex-shrink-0 ${
-                    deliveryOption === option
-                      ? 'border-amber-600 bg-amber-600'
-                      : 'border-gray-300'
+                  className={`w-5 h-5 rounded-full border-2 border-blue-500 flex-shrink-0 ${
+                    deliveryOption === option ? 'border-amber-600 bg-amber-600' : 'border-gray-300'
                   }`}
                 />
               </label>
@@ -328,8 +286,8 @@ const orderItems: TCustomBazerOrderItem[] = Object.entries(selections)
           </div>
         </section>
 
-        {/* Address Section */}
-        <section className="bg-white rounded-lg shadow-md p-4 border border-gray-200 space-y-4">
+        {/* Address */}
+        <section className="bg-white rounded-xl shadow-md p-4 border border-blue-500 space-y-4">
           <h3 className="text-lg font-semibold mb-2">ডেলিভারি ঠিকানা</h3>
           <input
             type="text"
@@ -361,7 +319,7 @@ const orderItems: TCustomBazerOrderItem[] = Object.entries(selections)
         </section>
 
         {/* Site Note */}
-        <section className="bg-white rounded-lg shadow-md p-4 border border-gray-200">
+        <section className="bg-white rounded-xl shadow-md p-4 border border-blue-500">
           <label htmlFor="siteNote" className="block mb-2 font-semibold">
             Enter Your Order Note
           </label>
@@ -376,15 +334,13 @@ const orderItems: TCustomBazerOrderItem[] = Object.entries(selections)
           />
         </section>
 
-        {/* Payment Method */}
-        <section className="bg-white rounded-lg shadow-md p-4 border border-gray-200 space-y-3">
+        {/* Payment */}
+        <section className="bg-white rounded-lg shadow-md p-4 border border-blue-500 space-y-3">
           <h3 className="text-lg font-semibold mb-4">পেমেন্ট পদ্ধতি</h3>
           <div className="flex gap-4 max-w-sm">
             <label
               className={`cursor-pointer border rounded-lg p-4 flex-1 text-center ${
-                paymentMethod === 'cash_on_delivery'
-                  ? 'border-amber-600 bg-amber-50'
-                  : 'border-gray-300 bg-white hover:bg-gray-50'
+                paymentMethod === 'cash_on_delivery' ? 'border-amber-600 bg-amber-50' : 'border-gray-300 bg-white hover:bg-gray-50'
               }`}
             >
               <input
@@ -416,17 +372,14 @@ const orderItems: TCustomBazerOrderItem[] = Object.entries(selections)
           </div>
 
           {sslCommerzWarning && (
-            <p className="mt-2 text-sm text-red-600 font-semibold">
-              ⚠️ কাজ চলছে, শীঘ্রই আসছে...
-            </p>
+            <p className="mt-2 text-sm text-red-600 font-semibold">⚠️ কাজ চলছে, শীঘ্রই আসছে...</p>
           )}
         </section>
 
         {/* Order Summary */}
         <div className="mt-6 border-t pt-4 flex flex-col items-end">
           <div className="text-xl font-bold text-gray-800">
-            মোট অর্ডার মূল্য:{' '}
-            <span className="text-green-600">{getTotalPrice()}৳</span>
+            মোট অর্ডার মূল্য: <span className="text-green-600">{totalPrice}৳</span>
           </div>
           <button
             type="submit"

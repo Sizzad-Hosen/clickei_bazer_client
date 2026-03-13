@@ -3,6 +3,7 @@ import "./globals.css";
 import ClientProviders from "./ClientProviders";
 
 export const metadata = {
+   metadataBase: new URL('https://clickeibazar.com'),
   title: "ClickeiBazer",
   description: "Your trusted online marketplace...",
   openGraph: {

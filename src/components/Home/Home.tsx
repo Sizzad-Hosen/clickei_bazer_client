@@ -76,7 +76,7 @@ export default function Home() {
 
         <button
           onClick={() => setIsFabOpen(!isFabOpen)}
-          className="w-14 h-14 flex items-center justify-center rounded-full bg-amber-500 text-white shadow-lg hover:bg-amber-700 transition"
+          className="w-14 h-14 flex  mr-4  mb-5 items-center justify-center rounded-full bg-green-500 text-white shadow-lg hover:bg-green-700 transition"
         >
           <MessageCircle className="h-7 w-7" />
         </button>
