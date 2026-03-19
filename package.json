@@ -8,8 +8,8 @@
      "test": "ts-node performance-test.ts",
     "start": "node server.js",
     "start:next": "next start",
-    "lint": "next lint",
-    "postinstall": "next build"
+    "lint": "next lint"
+
   },
   "dependencies": {
     "@radix-ui/react-avatar": "^1.1.10",

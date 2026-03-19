@@ -35,6 +35,8 @@ import CreateServiceModal from './CreateServices';
 
 const ServicePage = () => {
   const { data, isLoading, isError, refetch } = useGetAllServicesQuery({});
+
+  console.log('Fetched services:', data);
   const [deleteService] = useDeleteServiceMutation();
   const [updateService] = useUpdateServiceMutation();
 
