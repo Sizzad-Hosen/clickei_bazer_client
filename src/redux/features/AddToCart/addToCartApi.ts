@@ -1,10 +1,28 @@
 import { baseApi } from "@/redux/api/baseApi";
 
+export interface CartItem {
+  productId: string;
+  title: string;
+  price: number;
+  discount?: number;
+  quantity: number;
+  image?: string;
+  selectedSize?: { label: string; price: number };
+}
+
+interface CartResponse {
+  data: { items: CartItem[]; totalAmount?: number; totalQuantity?: number };
+}
+
+interface CartQuantityRequest {
+  data: { id: string; quantity: number };
+}
+
 const addToCartApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
 
     // Add to cart
-    addCart: builder.mutation({
+    addCart: builder.mutation<unknown, { productId: string; quantity: number }>({
       query: (userInfo) => ({
         url: '/carts/add',
         method: 'POST',
@@ -14,17 +32,16 @@ const addToCartApi = baseApi.injectEndpoints({
     }),
 
     // Clear all cart items
-    clearCart: builder.mutation({
-      query: (userInfo) => ({
+    clearCart: builder.mutation<unknown, void>({
+      query: () => ({
         url: '/carts/clear',
         method: 'POST',
-        body: userInfo,
       }),
       invalidatesTags: ['Carts'], // ✅ Refresh cart
     }),
 
     // Get all carts
-    getAllCarts: builder.query({
+    getAllCarts: builder.query<CartResponse, void>({
       query: () => '/carts',
       providesTags: ['Carts'], // ✅ Data source tag
     }),
@@ -39,7 +56,7 @@ const addToCartApi = baseApi.injectEndpoints({
     }),
 
     // Update cart quantity
-    updateCartsQuantity: builder.mutation({
+    updateCartsQuantity: builder.mutation<unknown, CartQuantityRequest>({
       query: ({ data }) => ({
         url: `/carts/update/${data.id}`,
         method: 'PATCH',

@@ -13,24 +13,11 @@ import {
   useGetAllCartsQuery,
   useRemoveCartMutation,
   useUpdateCartsQuantityMutation,
+  type CartItem,
 } from '@/redux/features/AddToCart/addToCartApi';
 import { toast } from 'sonner';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-
-// CartItem type
-interface CartItem {
-  productId: string;
-  title: string;
-  price: number;
-  discount?: number;
-  quantity: number;
-  image?: string;
-  selectedSize?: {
-    label: string;
-    price: number;
-  };
-}
 
 export default function CartDrawer({
   open,
@@ -39,7 +26,7 @@ export default function CartDrawer({
   open: boolean;
   onClose: () => void;
 }) {
-  const { data, isLoading, refetch } = useGetAllCartsQuery({});
+  const { data, isLoading } = useGetAllCartsQuery();
   const [updateQty] = useUpdateCartsQuantityMutation();
   const [removeItem] = useRemoveCartMutation();
 
@@ -81,7 +68,6 @@ export default function CartDrawer({
   const handleRemoveItemFromCart = async (productId: string) => {
     try {
       await removeItem(productId).unwrap();
-      await refetch();
       toast.success('Item removed from cart');
     } catch {
       toast.error('Failed to remove item from cart');
@@ -102,9 +88,6 @@ export default function CartDrawer({
 
       setLocalCart(updatedCart);
       calculateTotals(updatedCart);
-
-      // Optional: re-fetch backend for sync
-      await refetch();
 
       toast.success('Quantity updated');
     } catch {

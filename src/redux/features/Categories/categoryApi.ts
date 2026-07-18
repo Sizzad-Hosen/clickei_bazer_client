@@ -8,6 +8,7 @@ const categoryApi = baseApi.injectEndpoints({
         method: 'POST',
         body: userInfo,
       }),
+      invalidatesTags: ['Categories'],
     }),
     
     getAllCategories: builder.query({

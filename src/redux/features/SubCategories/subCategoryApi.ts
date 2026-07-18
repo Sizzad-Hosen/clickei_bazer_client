@@ -8,6 +8,7 @@ const subCategoryApi = baseApi.injectEndpoints({
         method: 'POST',
         body: userInfo,
       }),
+      invalidatesTags: ['SubCategories'],
     }),
     
     getAllSubCategories: builder.query({

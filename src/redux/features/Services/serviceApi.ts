@@ -8,6 +8,7 @@ const servicesApi = baseApi.injectEndpoints({
         method: 'POST',
         body: userInfo,
       }),
+      invalidatesTags: ['Services'],
     }),
     getAllServices: builder.query({
       query: () => '/services',

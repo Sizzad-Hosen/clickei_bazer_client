@@ -3,7 +3,7 @@
 import { useState, ChangeEvent, FormEvent } from 'react';
 import { FormInput } from '@/components/form/FromInput';
 import { Button } from '@/components/ui/button';
-import { useGetAllCartsQuery } from '@/redux/features/AddToCart/addToCartApi';
+import { useGetAllCartsQuery, type CartItem } from '@/redux/features/AddToCart/addToCartApi';
 import { useAddOrderMutation } from '@/redux/features/Order/ordersApi';
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
@@ -27,12 +27,6 @@ type Item = {
   size?: { label: string; price: number };
 };
 
-type CartApiItem = Item & {
-  productId: string | { image?: string };
-  title: string;
-  selectedSize?: Item['size'];
-};
-
 export default function CheckoutPage() {
   const [shippingAddress, setShippingAddress] = useState<ShippingAddress>({
     fullName: '',
@@ -46,18 +40,18 @@ export default function CheckoutPage() {
   const [sslCommerzWarning, setSslCommerzWarning] = useState(false);
   const [deliveryOption, setDeliveryOption] = useState<'insideRangpur' | 'outsideRangpur'>('insideRangpur');
 
-  const { data } = useGetAllCartsQuery({});
+  const { data } = useGetAllCartsQuery();
   const router = useRouter();
   const [addOrder] = useAddOrderMutation();
 
-  const cartItems: Item[] = data?.data?.items?.map((item: CartApiItem) => ({
-    _id: typeof item.productId === 'string' ? item.productId : '',
+  const cartItems: Item[] = data?.data?.items?.map((item: CartItem) => ({
+    _id: item.productId,
     name: item.title,
     price: item.price,
     quantity: item.quantity,
-    image: item.image || (typeof item.productId === 'object' ? item.productId.image : '') || '',
+    image: item.image || '',
     discount: item.discount,
-    selectedSize: item.selectedSize,
+    size: item.selectedSize,
   })) ?? [];
 
   // Calculate subtotal

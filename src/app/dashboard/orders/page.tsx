@@ -54,7 +54,6 @@ const OrdersPage: React.FC = () => {
   const {
     data,
     isLoading,
-    refetch,
   } = useGetAllOrdersQuery({
     page,
     limit: ORDERS_PER_PAGE,
@@ -75,7 +74,6 @@ const meta = data?.meta || { total: 0, totalPages: 0 };
     try {
       await updateStatus({ invoiceId, status: newStatus }).unwrap();
       toast.success("Order status updated");
-      await refetch();
     } catch {
       toast.error("Failed to update status");
     }
@@ -88,7 +86,6 @@ const meta = data?.meta || { total: 0, totalPages: 0 };
     try {
       await updatePaymentStatus({ invoiceId, status: newStatus }).unwrap();
       toast.success("Payment status updated");
-      await refetch();
     } catch {
       toast.error("Failed to update payment status");
     }
@@ -185,7 +182,6 @@ const meta = data?.meta || { total: 0, totalPages: 0 };
       try {
         await deleteOrder(id).unwrap();
         toast.success("Order deleted successfully");
-        await refetch();
         Swal.fire("Deleted!", "Order deleted successfully.", "success");
       } catch {
         Swal.fire("Error!", "Failed to delete order.", "error");
