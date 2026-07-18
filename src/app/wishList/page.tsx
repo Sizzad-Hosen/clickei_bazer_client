@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { useGetWishlistQuery, useRemoveFromWishlistMutation } from '@/redux/features/WishList/wishListApi';
 import { Trash2 } from 'lucide-react';
 import ProtectedRoute from '@/components/ProtectedRoute';
+import { FeedbackState } from '@/components/shared/FeedbackState';
 
 interface Product {
   _id: string;
@@ -18,15 +19,19 @@ interface WishlistItem {
 }
 
 function WishlistContent() {
-  const { data, isLoading, isError } = useGetWishlistQuery(undefined);
-  const [removeFromWishlist] = useRemoveFromWishlistMutation();
+  const { data, isLoading, isError, refetch } = useGetWishlistQuery(undefined);
+  const [removeFromWishlist, { isLoading: isRemoving }] = useRemoveFromWishlistMutation();
 
   if (isLoading) {
     return <p className="text-center py-8">Loading wishlist...</p>;
   }
 
-  if (isError || !data?.data?.length) {
-    return <p className="text-center py-8">No items in your wishlist.</p>;
+  if (isError) {
+    return <FeedbackState tone="error" title="Could not load your wishlist" description="Check your connection and try again." onRetry={refetch} />;
+  }
+
+  if (!data?.data?.length) {
+    return <FeedbackState title="Your wishlist is empty" description="Products you save will appear here." />;
   }
 
   return (
@@ -52,7 +57,8 @@ function WishlistContent() {
             <Button
               variant="destructive"
               className="mt-5"
-              onClick={() => removeFromWishlist(item.product._id)}
+              disabled={isRemoving}
+              onClick={() => void removeFromWishlist(item.product._id)}
             >
               <Trash2 className="w-4 h-4 mr-2" /> Remove
             </Button>

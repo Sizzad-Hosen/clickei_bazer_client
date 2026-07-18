@@ -32,8 +32,13 @@ export default function Sidebar({ onSelectSubcategory }: SidebarProps) {
     if (!mobileOpen) return;
     const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setMobileOpen(false);
+    };
+    document.addEventListener('keydown', closeOnEscape);
     return () => {
       document.body.style.overflow = previousOverflow;
+      document.removeEventListener('keydown', closeOnEscape);
     };
   }, [mobileOpen]);
 

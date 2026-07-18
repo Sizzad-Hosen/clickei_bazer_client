@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import CartDrawer from '@/components/Carts/CartDrawer';
 import { Product } from '@/types/products';
+import { FeedbackState } from '@/components/shared/FeedbackState';
 
 interface Meta {
   totalPages: number;
@@ -40,9 +41,9 @@ const SearchPageContent = () => {
     ? { [field]: searchTerm, page: String(page) }
     : { page: String(page) };
 
-  const { data, isLoading, isError } = useGetAllProductsBySearchQuery(queryParams, {
+  const { data, isLoading, isError, refetch } = useGetAllProductsBySearchQuery(queryParams, {
     skip: !searchTerm,
-  }) as { data?: ApiResponse<Product>; isLoading: boolean; isError: boolean };
+  }) as { data?: ApiResponse<Product>; isLoading: boolean; isError: boolean; refetch: () => void };
 
   const products = data?.data?.data ?? [];
   const meta = data?.data?.meta;
@@ -74,7 +75,7 @@ const SearchPageContent = () => {
             <Spinner />
           </div>
         ) : isError ? (
-          <p className="text-red-500 text-center">Something went wrong while loading products.</p>
+          <FeedbackState tone="error" title="Could not load products" description="Check your connection and try again." onRetry={refetch} />
         ) : products.length === 0 ? (
           <p className="text-gray-600 text-center text-lg font-medium">
             No products found for &quot;{searchTerm}&quot;

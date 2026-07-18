@@ -33,6 +33,20 @@ const Navbar = () => {
 
   useEffect(() => setIsClient(true), []);
 
+  useEffect(() => {
+    if (!sidebarOpen) return;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setSidebarOpen(false);
+    };
+    document.addEventListener('keydown', closeOnEscape);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      document.removeEventListener('keydown', closeOnEscape);
+    };
+  }, [sidebarOpen]);
+
   // Debounce search
   useEffect(() => {
     const timer = setTimeout(() => setDebouncedQuery(query.trim()), 400);

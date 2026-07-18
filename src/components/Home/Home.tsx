@@ -41,6 +41,7 @@ export default function Home() {
         {isFabOpen && (
           <div className="flex flex-col items-end gap-3">
             <a
+              aria-label="Contact us on Facebook"
               href="https://www.facebook.com/share/1Fh8DHu1UG/"
               target="_blank"
               rel="noopener noreferrer"
@@ -50,6 +51,7 @@ export default function Home() {
             </a>
 
             <a
+              aria-label="Contact us on WhatsApp"
               href="https://wa.me/8801346508284"
               target="_blank"
               rel="noopener noreferrer"
@@ -59,6 +61,7 @@ export default function Home() {
             </a>
 
             <a
+              aria-label="Call customer support"
               href="tel:+8801346508284"
               className="flex items-center justify-center w-12 h-12 rounded-full bg-red-500 text-white shadow hover:bg-red-600 transition"
             >
@@ -66,6 +69,7 @@ export default function Home() {
             </a>
 
             <a
+              aria-label="Email customer support"
               href="mailto:clickeibazer2025july@gmail.com"
               className="flex items-center justify-center w-12 h-12 rounded-full bg-yellow-500 text-white shadow hover:bg-red-600 transition"
             >
@@ -75,6 +79,9 @@ export default function Home() {
         )}
 
         <button
+          type="button"
+          aria-label={isFabOpen ? 'Close contact options' : 'Open contact options'}
+          aria-expanded={isFabOpen}
           onClick={() => setIsFabOpen(!isFabOpen)}
           className="w-14 h-14 flex items-center justify-center rounded-full bg-amber-500 text-white shadow-lg hover:bg-amber-700 transition"
         >

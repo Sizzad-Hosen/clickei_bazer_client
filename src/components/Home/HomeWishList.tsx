@@ -4,6 +4,8 @@ import { useGetWishlistQuery } from '@/redux/features/WishList/wishListApi';
 import ProductCard from '@/components/Products/ProductCard';
 import Spinner from '../Spinner';
 import type { Product } from '@/types/products';  // make sure this path is correct
+import { useAppSelector } from '@/redux/hook';
+import { selectCurrentToken } from '@/redux/features/auth/authSlices';
 
 interface WishlistItem {
   _id: string;
@@ -15,7 +17,10 @@ interface WishlistHomeProps {
 }
 
 export default function WishlistHome({ onOpenCart }: WishlistHomeProps) {
-  const { data: wishlistData, isLoading } = useGetWishlistQuery({});
+  const token = useAppSelector(selectCurrentToken);
+  const { data: wishlistData, isLoading } = useGetWishlistQuery(undefined, { skip: !token });
+
+  if (!token) return null;
 
   // Extract products safely, filtering out null or undefined products
   const wishlistProducts: Product[] =
