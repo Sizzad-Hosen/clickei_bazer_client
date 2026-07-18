@@ -28,7 +28,11 @@ interface ApiErrorResponse {
   error?: string;
 }
 
-export default function CustomBazarForm({onSuccess}) {
+interface CustomBazarFormProps {
+  onSuccess?: () => void;
+}
+
+export default function CustomBazarForm({ onSuccess }: CustomBazarFormProps) {
   const [category, setCategory] = useState('');
   const [subcategories, setSubcategories] = useState<Subcategory[]>([
     { subcategory: '', unit: '', pricePerUnit: '' },
@@ -99,6 +103,7 @@ export default function CustomBazarForm({onSuccess}) {
       setCategory('');
       setSubcategories([{ subcategory: '', unit: '', pricePerUnit: '' }]);
       setApiError(null);
+      onSuccess?.();
     } catch (error: unknown) {
       let message = 'Failed to add';
 

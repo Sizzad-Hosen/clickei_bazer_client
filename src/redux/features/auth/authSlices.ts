@@ -1,6 +1,7 @@
 import { RootState } from "@/redux/store";
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { REHYDRATE } from "redux-persist";
+import type { UserRole } from "@/types/user";
 
 // Define a typed interface for REHYDRATE action with safer types instead of `any`
 interface RehydrateAction<T> {
@@ -13,7 +14,7 @@ interface RehydrateAction<T> {
 
 export type TUser = {
   userId: string;
-  role: string;
+  role: UserRole;
   iat: number;
   exp: number;
 };

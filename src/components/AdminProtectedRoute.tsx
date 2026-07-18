@@ -4,9 +4,10 @@ import { useGetMeQuery } from "@/redux/features/auth/authApi";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import Spinner from "./Spinner";
+import type { UserRole } from "@/types/user";
 
 interface User {
-  role: string;
+  role: UserRole;
   // add other fields if needed
 }
 
@@ -15,7 +16,7 @@ export default function ProtectedRoute({
   allowedRoles,
 }: {
   children: React.ReactNode;
-  allowedRoles?: string[]; // e.g., ['admin']
+  allowedRoles?: UserRole[]; // e.g., ['admin']
 }) {
   const router = useRouter();
   const { data: user, isLoading, isError } = useGetMeQuery({});

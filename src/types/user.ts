@@ -1,10 +1,12 @@
+export type UserRole = 'admin' | 'user';
+
 export interface IUser extends Document {
   _id:string
   name: string;
   email: string;
   password: string;
   phone?: string;
-  role?: 'admin' | 'customer';
+  role: UserRole;
   isActive: boolean;
   createdAt: Date;
   updatedAt: Date;

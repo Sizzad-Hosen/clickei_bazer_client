@@ -72,6 +72,7 @@ const CreateSubcategoryPage :FC<CreateSubCategoryProps> = ({ onSuccess }) => {
       const res = await addSubcategory(payload).unwrap();
 
       toast.success(res?.message || 'Subcategory created successfully');
+      onSuccess?.();
       router.push('/dashboard/subCategories');
     } catch (err: unknown) {
   if (err && typeof err === 'object' && 'data' in err) {

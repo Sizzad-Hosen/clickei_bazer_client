@@ -4,20 +4,12 @@ import { useGetTrackOrderByInvoiceIdMutation } from '@/redux/features/Order/orde
 import { useState } from 'react';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import Sidebar from '@/components/shared/Sidebar';
-import { useGetAllCustomBazarOrdersQuery } from '@/redux/features/CustomBazar/customBazarApi';
 
 export default function TrackOrderPage() {
   
   const [invoiceNumber, setInvoiceNumber] = useState('');
-const [invoiceIdSearch, setInvoiceIdSearch] = useState('');
   // Use mutation hook
   const [trigger, { data: response, isLoading, error }] = useGetTrackOrderByInvoiceIdMutation();
-
-
- const { data } = useGetAllCustomBazarOrdersQuery({
-    invoiceId: invoiceIdSearch.trim() || undefined,
-
-  });
 
 
   const order = response?.data;
@@ -25,7 +17,6 @@ const [invoiceIdSearch, setInvoiceIdSearch] = useState('');
   const handleSearch = () => {
     if (invoiceNumber.trim() === '') return;
     trigger(invoiceNumber.trim());
-    setInvoiceIdSearch(invoiceNumber.trim())
   };
 
   return (
