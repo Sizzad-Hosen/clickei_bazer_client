@@ -1,6 +1,6 @@
 'use client';
 
-import React, { ReactNode, useState } from "react";
+import React, { ReactNode, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useDispatch } from "react-redux";
@@ -46,6 +46,20 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
   const router = useRouter();
   const [logoutFromServer] = useLogoutMutation();
 
+  useEffect(() => {
+    if (!sidebarOpen) return;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setSidebarOpen(false);
+    };
+    document.addEventListener('keydown', closeOnEscape);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      document.removeEventListener('keydown', closeOnEscape);
+    };
+  }, [sidebarOpen]);
+
   const handleLogout = async () => {
     try { await logoutFromServer().unwrap(); } catch { /* Clear local session even if offline. */ }
     dispatch(logout());
@@ -63,12 +77,24 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
         </button>
       </div>
 
+      {sidebarOpen && (
+        <button
+          type="button"
+          aria-label="Close dashboard menu"
+          className="fixed inset-0 z-[60] bg-black/50 md:hidden"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+
       {/* Sidebar */}
       <aside
         className={`${
-          sidebarOpen ? "block" : "hidden"
-        } md:block w-full md:w-72 bg-white border-r border-gray-200 shadow-sm p-6 md:min-h-screen overflow-y-auto`}
+          sidebarOpen ? "flex" : "hidden"
+        } fixed inset-y-0 left-0 z-[70] w-72 max-w-[calc(100vw-2rem)] flex-col overflow-y-auto border-r border-gray-200 bg-white p-6 shadow-sm md:static md:flex md:min-h-screen md:max-w-none`}
       >
+        <button type="button" aria-label="Close dashboard menu" className="mb-4 self-end rounded p-2 md:hidden" onClick={() => setSidebarOpen(false)}>
+          <X className="h-6 w-6" />
+        </button>
         <h2 className="text-2xl font-extrabold tracking-tight mb-8 text-gray-900 hidden md:block">
           Dashboard
         </h2>
@@ -95,7 +121,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
       </aside>
 
       {/* Main Content */}
-      <main className="min-w-0 max-w-full flex-1 overflow-y-auto bg-white p-3 shadow-lg sm:p-6 md:rounded-lg md:p-10">
+      <main className="min-w-0 max-w-full flex-1 overflow-y-auto bg-white py-4 shadow-lg md:rounded-lg md:py-8">
         {children}
       </main>
     </div>

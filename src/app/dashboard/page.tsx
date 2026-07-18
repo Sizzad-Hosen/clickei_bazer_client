@@ -1,6 +1,6 @@
 "use client"
 
-import ProtectedRoute from "@/components/ProtectedRoute";
+import { PageContainer } from "@/components/shared/PageContainer";
 import { useGetAllOrdersCountQuery } from "@/redux/features/Order/ordersApi";
 import { useGetAllServicesQuery } from "@/redux/features/Services/serviceApi";
 import { useGetAllUsersQuery } from "@/redux/features/Users/userApi";
@@ -16,8 +16,7 @@ const { data: AllOrders } = useGetAllOrdersCountQuery();
 const userCount = AllUsers?.data?.data.length ?? 0; 
 
   return (
-    <ProtectedRoute allowedRoles={['admin']}>
-      <div>
+      <PageContainer>
         <h1 className="text-3xl font-bold mb-6">Dashboard Overview</h1>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -36,7 +35,6 @@ const userCount = AllUsers?.data?.data.length ?? 0;
             <h2 className="text-2xl font-semibold">{userCount}</h2>
           </div>
         </div>
-      </div>
-    </ProtectedRoute>
+      </PageContainer>
   );
 }

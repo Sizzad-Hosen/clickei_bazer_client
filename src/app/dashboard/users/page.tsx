@@ -4,6 +4,7 @@ import { useEffect,  useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { useGetAllUsersQuery } from '@/redux/features/Users/userApi';
 import Spinner from '@/components/Spinner';
+import { PageContainer } from '@/components/shared/PageContainer';
 
 import {
   Pagination,
@@ -57,7 +58,7 @@ const totalPages = meta.totalPages ?? 1;  // default to 1 page if missing
     return <div className="text-center text-red-500 mt-10">Failed to load users.</div>;
 
   return (
-    <div className="mx-auto w-full max-w-6xl p-3 sm:p-6">
+    <PageContainer className="max-w-6xl">
       <h1 className="mb-6 text-center text-2xl font-bold sm:text-3xl">All Users</h1>
 
       <Input
@@ -70,6 +71,7 @@ const totalPages = meta.totalPages ?? 1;  // default to 1 page if missing
 
       <div className="w-full max-w-full overflow-x-auto rounded-lg border shadow">
         <table className="min-w-[640px] divide-y divide-gray-200">
+          <caption className="sr-only">Registered users</caption>
           <thead className="bg-gray-50">
             <tr>
               <th
@@ -141,6 +143,6 @@ const totalPages = meta.totalPages ?? 1;  // default to 1 page if missing
           />
         </Pagination>
       )}
-    </div>
+    </PageContainer>
   );
 }
