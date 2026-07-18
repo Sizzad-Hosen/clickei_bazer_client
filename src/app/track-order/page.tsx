@@ -25,7 +25,7 @@ const [invoiceIdSearch, setInvoiceIdSearch] = useState('');
   const handleSearch = () => {
     if (invoiceNumber.trim() === '') return;
     trigger(invoiceNumber.trim());
-    setInvoiceIdSearch(ininvoiceId)
+    setInvoiceIdSearch(invoiceNumber.trim())
   };
 
   return (
