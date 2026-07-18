@@ -98,8 +98,8 @@ const Navbar = () => {
                   className="rounded object-cover"
                 />
               )}
-              <div>
-                <p className="text-sm font-medium text-gray-800">{item.title || item.name}</p>
+              <div className="min-w-0">
+                <p className="break-words text-sm font-medium text-gray-800">{item.title || item.name}</p>
                 {item.price && <p className="text-xs text-gray-500">৳{item.price}</p>}
               </div>
             </div>
@@ -112,7 +112,7 @@ const Navbar = () => {
 
   return (
     <nav className="bg-gray-800 border-b border-gray-700 shadow-sm sticky top-0 z-50 w-full">
-      <div className="max-w-7xl mx-auto px-4 py-2">
+      <div className="mx-auto max-w-7xl px-3 py-2 sm:px-4">
 
         {/* MOBILE NAVBAR */}
         <div className="flex items-center justify-between md:hidden">
@@ -120,7 +120,7 @@ const Navbar = () => {
             <Image src={logo} alt="ClickeiBazer Logo" width={100} height={40} className="object-contain" />
           </Link>
           {user ? (
-            <button onClick={() => setSidebarOpen(true)}>
+            <button type="button" aria-label="Open account menu" onClick={() => setSidebarOpen(true)}>
               <MoreVertical size={24} className="text-white" />
             </button>
           ) : (
@@ -152,8 +152,8 @@ const Navbar = () => {
         {sidebarOpen && (
           <div className="fixed inset-0 z-50 flex justify-end">
             <div className="fixed inset-0 bg-black/50" onClick={() => setSidebarOpen(false)} />
-            <div id="mobile-sidebar" className="relative w-64 bg-white h-full shadow-lg p-2 flex flex-col">
-              <button className="self-end mb-4" onClick={() => setSidebarOpen(false)}>
+            <div id="mobile-sidebar" className="relative flex h-full w-64 max-w-[calc(100vw-2rem)] flex-col overflow-y-auto bg-white p-2 shadow-lg">
+              <button type="button" aria-label="Close account menu" className="mb-4 self-end p-2" onClick={() => setSidebarOpen(false)}>
                 <X size={24} />
               </button>
               {user ? (

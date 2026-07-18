@@ -184,13 +184,13 @@ console.log("data", orders)
   const [isAddOpen, setIsAddOpen] = useState(false);
   return (
     <div className="p-4 space-y-6">
-      <div className='flex justify-between'>
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
 
       <h1 className="text-2xl font-semibold text-center">Custom Bazar Orders</h1>
     <Button
           variant="secondary"
           onClick={() => setIsAddOpen(true)}
-          className="flex items-center gap-2"
+          className="flex w-full items-center gap-2 sm:w-auto"
         >
           <Plus className="w-4 h-4" /> Add CustomBazar Product
         </Button>

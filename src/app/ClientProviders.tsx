@@ -14,7 +14,7 @@ export default function ClientProviders({ children }: { children: ReactNode }) {
       <div className="flex flex-col min-h-screen">
         <Navbar />
         {/* Make main content grow to fill space */}
-        <main className="flex-1">{children}</main>
+        <main className="min-w-0 max-w-full flex-1">{children}</main>
         <Footer />
       </div>
     </ReduxProvider>

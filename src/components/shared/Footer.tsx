@@ -20,7 +20,7 @@ export default function Footer() {
         {/* QUICK LINKS */}
         <div>
           <h2 className="text-white font-semibold mb-3">Quick Links</h2>
-          <ul className="space-y-2">
+          <ul className="min-w-0 space-y-2 break-words">
             <li><a href="#" className="hover:text-amber-500">About Us</a></li>
             <li><a href="#" className="hover:text-amber-500">Refund Policy</a></li>
             <li><a href="#" className="hover:text-amber-500">Terms & Conditions</a></li>
@@ -30,9 +30,9 @@ export default function Footer() {
         {/* CONTACT INFO */}
         <div>
           <h2 className="text-white font-semibold mb-3">Contact Info</h2>
-          <ul className="space-y-2">
+          <ul className="min-w-0 space-y-2 break-words">
             <li>Email: 
-              <a href="mailto:clickeibazer2025july@gmail.com" className="ml-1 text-lime-500 hover:underline">
+              <a href="mailto:clickeibazer2025july@gmail.com" className="ml-1 break-all text-lime-500 hover:underline">
                 clickeibazar2025july@gmail.com
               </a>
             </li>

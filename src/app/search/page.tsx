@@ -63,12 +63,12 @@ const SearchPageContent = () => {
   }
 
   return (
-    <main className="min-h-screen flex flex-col lg:flex-row md:flex-row xl:flex-row bg-white gap-6">
+    <main className="flex min-h-screen min-w-0 max-w-full flex-col bg-white md:flex-row md:gap-6">
       <aside className="w-full md:w-64 lg:w-64 border-r shadow-sm">
         <Sidebar />
       </aside>
 
-      <section className="flex-1 px-3 sm:px-6 py-4">
+      <section className="min-w-0 max-w-full flex-1 px-3 py-4 sm:px-6">
         {isLoading ? (
           <div className="flex justify-center items-center h-full">
             <Spinner />

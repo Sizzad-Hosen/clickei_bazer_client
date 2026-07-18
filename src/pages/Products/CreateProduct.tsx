@@ -146,8 +146,8 @@ const CreateProductPage = () => {
   };
 
   return (
-    <div className="max-w-3xl mx-auto py-10 px-6 bg-white rounded-lg shadow-md">
-      <h1 className="text-3xl font-bold mb-8 text-center">Add New Product</h1>
+    <div className="mx-auto w-full max-w-3xl rounded-lg bg-white px-4 py-6 shadow-md sm:px-6 sm:py-10">
+      <h1 className="mb-8 text-center text-2xl font-bold sm:text-3xl">Add New Product</h1>
 
       <form onSubmit={handleSubmit} className="space-y-6">
         <FormInput
@@ -183,7 +183,7 @@ const CreateProductPage = () => {
           />
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <FormInput
             label="Price (৳)"
             name="price"
@@ -216,13 +216,13 @@ const CreateProductPage = () => {
         <div>
           <Label className="mb-1 block font-semibold">Product Sizes</Label>
           {form.sizes.map((size, index) => (
-            <div key={index} className="flex gap-2 mb-2">
+            <div key={index} className="mb-3 flex min-w-0 flex-col gap-2 sm:flex-row">
               <input
                 type="text"
                 placeholder="Size Label (e.g., 500 gm)"
                 value={size.label}
                 onChange={(e) => handleSizeChange(index, 'label', e.target.value)}
-                className="px-3 py-2 border rounded-md w-1/2"
+                className="min-w-0 w-full rounded-md border px-3 py-2 sm:flex-1"
                 required
               />
               <input
@@ -230,10 +230,10 @@ const CreateProductPage = () => {
                 placeholder="Price"
                 value={size.price}
                 onChange={(e) => handleSizeChange(index, 'price', e.target.value)}
-                className="px-3 py-2 border rounded-md w-1/2"
+                className="min-w-0 w-full rounded-md border px-3 py-2 sm:flex-1"
                 required
               />
-              <Button type="button" variant="destructive" onClick={() => handleRemoveSize(index)}>
+              <Button className="w-full sm:w-auto" type="button" variant="destructive" onClick={() => handleRemoveSize(index)}>
                 Remove
               </Button>
             </div>

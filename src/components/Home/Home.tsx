@@ -19,14 +19,14 @@ export default function Home() {
   const closeCart = () => setCartOpen(false);
 
   return (
-    <div className="min-h-screen flex md:flex-row flex-col bg-white gap-6 relative">
+    <div className="relative flex min-h-screen min-w-0 max-w-full flex-col bg-white md:flex-row md:gap-6">
       {/* Sidebar */}
       <div className="w-full md:w-64 border-r shadow-sm md:block flex-shrink-0">
         <Sidebar />
       </div>
 
       {/* Main Content */}
-      <main className="flex-1 overflow-y-auto scrollbar-none p-4 md:p-6">
+      <main className="scrollbar-none min-w-0 max-w-full flex-1 overflow-y-auto p-3 sm:p-4 md:p-6">
         <BannerSlider />
         <AllService />
         <ProductsBySubcategoryPage onOpenCart={openCart} />

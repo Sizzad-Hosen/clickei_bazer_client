@@ -108,12 +108,12 @@ const ServicePage = () => {
 
   return (
     <div className="max-w-5xl mx-auto py-10 px-4">
-      <div className="flex justify-between items-center mb-6">
+      <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <h1 className="text-2xl font-bold">All Services</h1>
         <Button
           variant="secondary"
           onClick={() => setIsAddOpen(true)}
-          className="flex items-center gap-2"
+          className="flex w-full items-center gap-2 sm:w-auto"
         >
           <Plus className="w-4 h-4" /> Add Service
         </Button>

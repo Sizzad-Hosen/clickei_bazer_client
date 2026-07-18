@@ -109,13 +109,13 @@ function UserOrdersPage() {
   }
 
   return (
-    <div className="flex min-h-screen bg-gray-100">
-      <aside>
+    <div className="flex min-h-screen min-w-0 max-w-full bg-gray-100">
+      <aside className="w-0 shrink-0 md:w-72">
         <Sidebar />
       </aside>
 
-      <main className="flex-1 p-6 md:p-8 max-w-5xl mx-auto w-full">
-        <h1 className="text-3xl font-bold mb-6 text-center md:text-left">Your Orders</h1>
+      <main className="mx-auto w-full min-w-0 max-w-5xl flex-1 p-3 sm:p-6 md:p-8">
+        <h1 className="mb-6 text-center text-2xl font-bold md:text-left md:text-3xl">Your Orders</h1>
 
         {/* Normal Orders */}
         {orders.length === 0 ? (
@@ -125,7 +125,7 @@ function UserOrdersPage() {
             {orders.map((order: Order) => (
               <div
                 key={order._id}
-                className="bg-white shadow rounded-lg p-6 border border-gray-200 relative"
+                className="relative rounded-lg border border-gray-200 bg-white p-4 shadow sm:p-6"
               >
                 {/* Delete Button */}
                 <button
@@ -145,8 +145,8 @@ function UserOrdersPage() {
                   </svg>
                 </button>
 
-                <div className="flex justify-between items-center mb-4 mt-3">
-                  <h2 className="text-xl font-semibold">Order #{order.invoiceId || order._id}</h2>
+                <div className="mb-4 mt-3 flex min-w-0 flex-col items-start gap-1 pr-8 sm:flex-row sm:items-center sm:justify-between">
+                  <h2 className="min-w-0 break-all text-lg font-semibold sm:text-xl">Order #{order.invoiceId || order._id}</h2>
                   <span className="text-sm text-gray-500">
                     {order.createdAt ? format(new Date(order.createdAt), 'PPP p') : 'N/A'}
                   </span>
@@ -171,16 +171,16 @@ function UserOrdersPage() {
                   <h3 className="font-semibold mb-4">Items:</h3>
                   <ul className="divide-y divide-gray-200 max-h-60 overflow-y-auto">
                     {order?.items.map((item: OrderItem) => (
-                      <li key={item.productId} className="flex items-center py-3">
+                      <li key={item.productId} className="flex min-w-0 items-center gap-3 py-3">
                         <Image
                           width={40}
                           height={40}
                           src={item.image || '/placeholder.png'}
                           alt={item.title}
-                          className="w-16 h-16 object-cover rounded-md border border-gray-300 mr-4"
+                          className="h-14 w-14 shrink-0 rounded-md border border-gray-300 object-cover sm:h-16 sm:w-16"
                         />
-                        <div className="flex-1">
-                          <p className="font-medium text-gray-900">{item.title}</p>
+                        <div className="min-w-0 flex-1">
+                          <p className="break-words font-medium text-gray-900">{item.title}</p>
                           <p className="text-sm text-gray-600">
                             Quantity: {item.quantity} 
                           </p>
@@ -189,7 +189,7 @@ function UserOrdersPage() {
                           
                           </p>
                         </div>
-                        <div className="ml-4 font-semibold text-gray-900">
+                        <div className="shrink-0 text-sm font-semibold text-gray-900 sm:text-base">
                           Tk {item.price.toFixed(2)}
                         </div>
                       </li>
@@ -217,7 +217,7 @@ function UserOrdersPage() {
               return (
                 <div
                   key={customOrder._id}
-                  className="bg-white shadow rounded-lg p-6 border border-gray-200 relative mb-6"
+                  className="relative mb-6 rounded-lg border border-gray-200 bg-white p-4 shadow sm:p-6"
                 >
                   {/* Delete Button */}
                   <button
@@ -238,8 +238,8 @@ function UserOrdersPage() {
                   </button>
 
                   {/* Header */}
-                  <div className="flex justify-between pt-4 items-center mb-4">
-                    <h2 className="text-xl font-semibold">Order #{customOrder.invoiceId}</h2>
+                  <div className="mb-4 flex min-w-0 flex-col items-start gap-1 pr-8 pt-4 sm:flex-row sm:items-center sm:justify-between">
+                    <h2 className="min-w-0 break-all text-lg font-semibold sm:text-xl">Order #{customOrder.invoiceId}</h2>
                     <span className="text-sm text-gray-500">
                       {customOrder.createdAt
                         ? format(new Date(customOrder.createdAt), 'PPP p')
@@ -275,14 +275,14 @@ function UserOrdersPage() {
                     <ul className="divide-y divide-gray-200 max-h-60 overflow-y-auto">
                       {customOrder.orderItems.map((item, index) => (
                         <li key={index} className="py-2">
-                          <div className="flex justify-between items-center">
-                            <div>
-                              <p className="font-medium text-gray-900">{item.subcategoryName}</p>
+                          <div className="flex min-w-0 items-center justify-between gap-3">
+                            <div className="min-w-0">
+                              <p className="break-words font-medium text-gray-900">{item.subcategoryName}</p>
                               <p className="text-sm text-gray-600">
                                 {item.quantity}  × Tk {(item.pricePerUnit ?? 0).toFixed(2)}
                               </p>
                             </div>
-                            <div className="text-right font-semibold text-gray-900">
+                            <div className="shrink-0 text-right font-semibold text-gray-900">
                               Tk {(item.totalPrice ?? 0).toFixed(2)}
                             </div>
                           </div>

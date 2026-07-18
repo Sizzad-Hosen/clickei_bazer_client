@@ -114,7 +114,7 @@ export default function CartDrawer({
 
   return (
     <Drawer open={open} onOpenChange={onClose} direction="right">
-      <DrawerContent className="max-w-md w-full ml-auto h-full rounded-l-2xl border-l shadow-lg bg-white">
+      <DrawerContent className="ml-auto h-full w-full max-w-md overflow-hidden rounded-l-2xl border-l bg-white shadow-lg">
         <DrawerHeader>
           <DrawerTitle>Shopping Cart</DrawerTitle>
           <DrawerDescription>{totalQuantity} item(s) in your cart</DrawerDescription>
@@ -149,8 +149,8 @@ export default function CartDrawer({
                     className="rounded object-cover"
                   />
 
-                  <div className="flex-1">
-                    <p className="font-medium">{item.title}</p>
+                  <div className="min-w-0 flex-1">
+                    <p className="break-words font-medium">{item.title}</p>
 
                     {item.selectedSize && (
                       <p className="text-sm text-gray-600">
@@ -188,6 +188,7 @@ export default function CartDrawer({
                   <Button
                     variant="destructive"
                     size="icon"
+                    className="shrink-0"
                     onClick={() => handleRemoveItemFromCart(item.productId)}
                   >
                     ×

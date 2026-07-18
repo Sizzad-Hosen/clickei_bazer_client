@@ -122,7 +122,7 @@ export default function CustomBazarForm({ onSuccess }: CustomBazarFormProps) {
   };
 
   return (
-    <div className="max-w-3xl mx-auto p-6 bg-white rounded-lg shadow-md mt-10">
+    <div className="mx-auto mt-4 w-full max-w-3xl rounded-lg bg-white p-4 shadow-md sm:mt-10 sm:p-6">
       <h2 className="text-2xl font-semibold mb-6">Add Custom Bazar Category</h2>
 
       <form onSubmit={handleSubmit} className="space-y-4">
@@ -145,7 +145,7 @@ export default function CustomBazarForm({ onSuccess }: CustomBazarFormProps) {
         {subcategories.map((item, index) => (
           <div
             key={index}
-            className="grid grid-cols-3 gap-4 items-end"
+            className="grid grid-cols-1 items-end gap-4 sm:grid-cols-3"
             aria-label={`Subcategory row ${index + 1}`}
           >
             <div>

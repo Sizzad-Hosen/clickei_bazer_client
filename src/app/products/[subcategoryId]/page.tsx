@@ -133,13 +133,13 @@ const ProductListBySubcategory = () => {
   }
 
   return (
-    <div className="min-h-screen flex flex-col lg:flex-row md:flex-row bg-white gap-6 overflow-hidden">
-      <div className="flex flex-1">
-        <aside className="md:w-64 border-r min-h-screen ">
+    <div className="flex min-h-screen min-w-0 max-w-full flex-col bg-white md:flex-row">
+      <div className="flex min-w-0 flex-1">
+        <aside className="w-0 shrink-0 border-r md:min-h-screen md:w-64">
           <Sidebar onSelectSubcategory={() => {}} />
         </aside>
 
-        <main className="flex-1 ms-6 p-4 md:p-6">
+        <main className="min-w-0 max-w-full flex-1 p-3 sm:p-4 md:p-6">
           {breadcrumbs.length > 0 && (
             <nav
               aria-label="Breadcrumb"

@@ -1,5 +1,6 @@
 'use client';
 import { useState } from 'react';
+import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { ChevronDown, ChevronRight, Menu, X } from 'lucide-react';
 import { useGetAllServicesQuery, useLazyServiceFullTreeQuery } from '@/redux/features/Services/serviceApi';
@@ -26,6 +27,15 @@ export default function Sidebar({ onSelectSubcategory }: SidebarProps) {
 
   const [fetchFullTree] = useLazyServiceFullTreeQuery();
 
+  useEffect(() => {
+    if (!mobileOpen) return;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [mobileOpen]);
+
   const handleServiceClick = async (serviceId: string) => {
     // Always fetch, even if the same service
     await fetchFullTree(serviceId)
@@ -49,7 +59,8 @@ export default function Sidebar({ onSelectSubcategory }: SidebarProps) {
       <button
         aria-label="Toggle menu"
         onClick={() => setMobileOpen(!mobileOpen)}
-        className={`fixed left-4 z-[999] md:hidden bg-white rounded-md p-1 shadow-md ${mobileOpen ? 'top-0' : 'top-8'}`}
+        aria-expanded={mobileOpen}
+        className={`fixed left-3 z-[999] rounded-md bg-white p-2 shadow-md md:hidden ${mobileOpen ? 'top-2' : 'top-28'}`}
       >
         {mobileOpen ? <X size={20} /> : <Menu size={24} />}
       </button>
@@ -59,7 +70,7 @@ export default function Sidebar({ onSelectSubcategory }: SidebarProps) {
       )}
 
       {/* Sidebar */}
-      <aside className={`fixed top-0 left-0 h-full w-72 bg-gray-100 p-3 border-r border-gray-200 shadow-md transform transition-transform duration-300 z-50 md:static md:translate-x-0 ${mobileOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+      <aside className={`fixed top-0 left-0 z-50 h-full w-72 max-w-[calc(100vw-2rem)] transform overflow-y-auto border-r border-gray-200 bg-gray-100 p-3 shadow-md transition-transform duration-300 md:static md:max-w-none md:translate-x-0 ${mobileOpen ? 'translate-x-0' : '-translate-x-full'}`}>
         <div className="mb-6">
           <h1 className="text-xl md:text-2xl font-bold text-gray-800 mb-4 text-center">Our Services</h1>
           <hr className="border-t border-dashed border-gray-400 my-2" />

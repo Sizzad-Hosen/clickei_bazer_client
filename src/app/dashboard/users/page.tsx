@@ -58,8 +58,8 @@ console.log("users", data?.data?.data)
     return <div className="text-center text-red-500 mt-10">Failed to load users.</div>;
 
   return (
-    <div className="p-6 max-w-6xl mx-auto">
-      <h1 className="text-3xl font-bold mb-6 text-center">All Users</h1>
+    <div className="mx-auto w-full max-w-6xl p-3 sm:p-6">
+      <h1 className="mb-6 text-center text-2xl font-bold sm:text-3xl">All Users</h1>
 
       <Input
         type="text"
@@ -69,8 +69,8 @@ console.log("users", data?.data?.data)
         className="mb-6 p-3 text-base max-w-sm mx-auto block"
       />
 
-      <div className="overflow-x-auto border rounded-lg shadow">
-        <table className="min-w-full divide-y divide-gray-200">
+      <div className="w-full max-w-full overflow-x-auto rounded-lg border shadow">
+        <table className="min-w-[640px] divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
               <th

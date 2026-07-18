@@ -49,7 +49,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
   };
 
   return (
-    <div className="flex flex-col md:flex-row min-h-screen bg-gray-50">
+    <div className="flex min-h-screen min-w-0 max-w-full flex-col bg-gray-50 md:flex-row">
       {/* Mobile Menu Toggle */}
       <div className="flex justify-between items-center md:hidden p-4 bg-white shadow">
         <h2 className="text-xl font-bold">Dashboard</h2>
@@ -90,7 +90,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 p-4 sm:p-6 md:p-10 bg-white rounded-lg shadow-lg overflow-y-auto">
+      <main className="min-w-0 max-w-full flex-1 overflow-y-auto bg-white p-3 shadow-lg sm:p-6 md:rounded-lg md:p-10">
         {children}
       </main>
     </div>

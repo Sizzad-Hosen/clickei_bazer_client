@@ -102,7 +102,7 @@ export default function ProductCard({ product, onOpenCart }: Props) {
 
   return (
     <>
-<div className="relative rounded-lg border bg-white shadow-sm hover:shadow-md transition-all w-full flex flex-col overflow-hidden">
+<div className="relative flex w-full min-w-0 max-w-full flex-col overflow-hidden rounded-lg border bg-white shadow-sm transition-all hover:shadow-md">
       {/* Wishlist Icon */}
       <button
         onClick={handleToggleWishlist}
@@ -150,12 +150,12 @@ export default function ProductCard({ product, onOpenCart }: Props) {
       </motion.div>
 
       {/* Product Info */}
-      <div className="p-3 flex flex-col flex-1">
+      <div className="flex min-w-0 flex-1 flex-col p-2 sm:p-3">
 
       <div className="flex flex-col md:flex-row justify-between mb-2">
 
           {/* Product Title */}
-          <h3 className="font-medium text-base line-clamp-2 sm:truncate">
+          <h3 className="line-clamp-2 min-w-0 break-words text-sm font-medium sm:text-base">
             {product.name}
           </h3>
 
@@ -174,7 +174,7 @@ export default function ProductCard({ product, onOpenCart }: Props) {
         </div>
 
         {/* Price Section */}
-        <div className="flex items-center gap-2 mb-2">
+        <div className="mb-2 flex min-w-0 flex-wrap items-center gap-1 sm:gap-2">
           {product.discount && product.discount > 0 ? (
             <>
               <span className="text-red-600 font-bold text-lg">৳{discountedPrice}</span>
@@ -262,7 +262,7 @@ export default function ProductCard({ product, onOpenCart }: Props) {
 
       {/* Product Details Modal */}
       <Dialog open={isDetailsOpen} onOpenChange={setIsDetailsOpen}>
-        <DialogContent className="sm:max-w-3xl lg:max-w-5xl max-h-[95vh] overflow-y-auto p-6 rounded-2xl shadow-xl">
+        <DialogContent className="max-h-[calc(100dvh-2rem)] overflow-y-auto rounded-2xl p-4 shadow-xl sm:max-w-3xl sm:p-6 lg:max-w-5xl">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             {/* Left: Gallery */}
             <div className="flex flex-col items-center">

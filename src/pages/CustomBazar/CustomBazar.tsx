@@ -209,12 +209,12 @@ const orderItems: TCustomBazerOrderItem[] = Object.entries(selections)
   };
 
   return (
-    <div className="p-4 max-w-5xl mx-auto">
+    <div className="mx-auto w-full max-w-5xl p-3 sm:p-4">
       <h2 className="text-2xl font-bold mb-6 text-center">🛒 কাস্টম বাজার অর্ডার</h2>
 
       <form onSubmit={handleSubmitOrder} className="space-y-6" noValidate>
         {/* Product Selection */}
-        <div className="space-y-4 max-h-[70vh] overflow-y-auto pr-2">
+        <div className="max-h-[70vh] space-y-4 overflow-y-auto pr-1 sm:pr-2">
           {categories.map(category => (
             <div key={category._id} className="space-y-2 border p-4 rounded-lg bg-white shadow-sm">
               <h3 className="font-semibold text-gray-700">{category.category}</h3>
@@ -237,9 +237,9 @@ const orderItems: TCustomBazerOrderItem[] = Object.entries(selections)
                 {(selections[category._id] || []).map((sel, idx) => (
                   <div
                     key={idx}
-                    className="flex items-center justify-between border p-2 rounded-lg bg-gray-50"
+                    className="grid min-w-0 grid-cols-[minmax(0,1fr)_auto] items-center gap-2 rounded-lg border bg-gray-50 p-2 sm:grid-cols-[minmax(0,1fr)_auto_auto_auto_auto]"
                   >
-                    <span>{sel.selectedSub?.name}</span>
+                    <span className="break-words font-medium">{sel.selectedSub?.name}</span>
 
                     {/* Read-only unit */}
                     <span className="border px-2 py-1 rounded bg-gray-100 text-center">
@@ -247,7 +247,7 @@ const orderItems: TCustomBazerOrderItem[] = Object.entries(selections)
                     </span>
 
                     {/* Quantity controls */}
-                    <div className="flex items-center gap-1">
+                    <div className="flex items-center gap-1 justify-self-end sm:justify-self-auto">
                       <button
                         type="button"
                         className="bg-red-500 text-white px-2 rounded"
@@ -265,13 +265,13 @@ const orderItems: TCustomBazerOrderItem[] = Object.entries(selections)
                         +
                       </button>
                     </div>
-          <span className="font-semibold">
+          <span className="font-semibold sm:justify-self-auto">
             {(sel.selectedSub?.pricePerUnit ?? 0) * sel.quantity}৳
           </span>
 
                     <button
                       type="button"
-                      className="text-red-600 font-bold px-2"
+                      className="col-span-2 justify-self-end px-2 font-bold text-red-600 sm:col-span-1 sm:justify-self-auto"
                       onClick={() => handleRemoveProduct(category._id, idx)}
                     >
                       ✕
@@ -372,7 +372,7 @@ const orderItems: TCustomBazerOrderItem[] = Object.entries(selections)
         {/* Payment Method */}
         <section className="bg-white rounded-lg shadow-md p-4 border border-gray-200 space-y-3">
           <h3 className="text-lg font-semibold mb-4">পেমেন্ট পদ্ধতি</h3>
-          <div className="flex gap-4 max-w-sm">
+          <div className="flex max-w-sm flex-col gap-3 sm:flex-row sm:gap-4">
             <label
               className={`cursor-pointer border rounded-lg p-4 flex-1 text-center ${
                 paymentMethod === 'cash_on_delivery'
@@ -416,14 +416,14 @@ const orderItems: TCustomBazerOrderItem[] = Object.entries(selections)
         </section>
 
         {/* Order Summary */}
-        <div className="mt-6 border-t pt-4 flex flex-col items-end">
-          <div className="text-xl font-bold text-gray-800">
+        <div className="mt-6 flex flex-col items-stretch border-t pt-4 sm:items-end">
+          <div className="break-words text-lg font-bold text-gray-800 sm:text-xl">
             মোট অর্ডার মূল্য:{' '}
             <span className="text-green-600">{getTotalPrice()}৳</span>
           </div>
           <button
             type="submit"
-            className="mt-3 bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded transition disabled:opacity-50"
+            className="mt-3 w-full rounded bg-blue-600 px-5 py-2 text-white transition hover:bg-blue-700 disabled:opacity-50 sm:w-auto"
             disabled={isSubmitting}
           >
             {isSubmitting ? 'অর্ডার সাবমিট করা হচ্ছে...' : 'অর্ডার সাবমিট করুন'}

@@ -141,8 +141,8 @@ export default function CheckoutPage() {
   };
 
   return (
-    <div className="min-h-screen p-6 max-w-7xl mx-auto mb-9">
-      <h1 className="text-3xl font-semibold mb-8">Checkout</h1>
+    <div className="mx-auto mb-9 min-h-screen w-full max-w-7xl p-4 sm:p-6">
+      <h1 className="mb-6 text-2xl font-semibold sm:mb-8 sm:text-3xl">Checkout</h1>
 
       <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-3 gap-8" noValidate>
         {/* Left */}
@@ -153,8 +153,8 @@ export default function CheckoutPage() {
             </div>
           )}
 
-          <section className="rounded-lg p-6 space-y-6 border border-amber-300 bg-white shadow-sm">
-            <h2 className="text-2xl font-bold">Shipping Address</h2>
+          <section className="space-y-6 rounded-lg border border-amber-300 bg-white p-4 shadow-sm sm:p-6">
+            <h2 className="text-xl font-bold sm:text-2xl">Shipping Address</h2>
 
             <FormInput type="text" label="Full Name" name="fullName" value={shippingAddress.fullName} onChange={handleChange} error={validationErrors.fullName} />
             <FormInput type="tel" label="Phone" name="phone" value={shippingAddress.phone} onChange={handleChange} error={validationErrors.phone} />
@@ -180,7 +180,7 @@ export default function CheckoutPage() {
           {/* Payment Method */}
           <section className="bg-white rounded-lg shadow-md p-4 border border-gray-200">
             <label className="block text-lg font-semibold mb-4">Payment Method</label>
-            <div className="flex flex-row gap-4">
+            <div className="flex flex-col gap-3 sm:flex-row sm:gap-4">
               {[
                 { value: 'cash_on_delivery', label: 'Cash on Delivery', disabled: false },
                 { value: 'sslCommerz', label: 'SSLCommerz (Coming Soon)', disabled: true },
@@ -200,7 +200,7 @@ export default function CheckoutPage() {
         </div>
 
         {/* Right */}
-        <aside className="bg-white rounded-lg shadow-md p-6 flex flex-col justify-between border border-gray-200">
+        <aside className="flex min-w-0 flex-col justify-between rounded-lg border border-gray-200 bg-white p-4 shadow-md sm:p-6">
           <div>
             <h2 className="text-2xl font-bold mb-6">Order Summary</h2>
 
@@ -209,20 +209,20 @@ export default function CheckoutPage() {
             ) : (
               <div className="space-y-3 mb-6">
                 {cartItems.map((item) => (
-                  <div key={item._id} className="flex justify-between items-center text-gray-700">
-                    <div className="flex items-center gap-3">
+                  <div key={item._id} className="flex min-w-0 items-center justify-between gap-3 text-gray-700">
+                    <div className="flex min-w-0 items-center gap-3">
                       {item.image ? (
                         <Image width={40} height={40} src={item.image} alt={item.name} className="w-12 h-12 object-cover rounded border" />
                       ) : (
                         <div className="w-12 h-12 bg-gray-200 rounded border flex items-center justify-center text-gray-500 text-xs">No Image</div>
                       )}
-                      <div>
-                        <p>{item.name} × {item.quantity}</p>
+                      <div className="min-w-0">
+                        <p className="break-words">{item.name} × {item.quantity}</p>
                         {item.size && <p className="text-sm text-gray-500">Size: {item.size.label}</p>}
                         {item.discount && <p className="text-sm text-red-600 font-semibold">{item.discount}% OFF</p>}
                       </div>
                     </div>
-                    <span>৳ {(item.price * item.quantity).toFixed(2)}</span>
+                    <span className="shrink-0">৳ {(item.price * item.quantity).toFixed(2)}</span>
                   </div>
                 ))}
 
