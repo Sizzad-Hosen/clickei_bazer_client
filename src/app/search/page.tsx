@@ -60,7 +60,7 @@ const SearchPageContent = () => {
   const closeCart = () => setCartOpen(false);
 
   if (!searchTerm) {
-    return <div className="text-center py-10 text-gray-600">Please enter a search term.</div>;
+    return <FeedbackState title="Enter a search term" description="Use the navigation search to find products." />;
   }
 
   return (
@@ -77,9 +77,7 @@ const SearchPageContent = () => {
         ) : isError ? (
           <FeedbackState tone="error" title="Could not load products" description="Check your connection and try again." onRetry={refetch} />
         ) : products.length === 0 ? (
-          <p className="text-gray-600 text-center text-lg font-medium">
-            No products found for &quot;{searchTerm}&quot;
-          </p>
+          <FeedbackState title={`No products found for “${searchTerm}”`} description="Try a shorter or more general search." />
         ) : (
           <>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">

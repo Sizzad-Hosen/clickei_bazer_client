@@ -5,6 +5,7 @@ import { useGetWishlistQuery, useRemoveFromWishlistMutation } from '@/redux/feat
 import { Trash2 } from 'lucide-react';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import { FeedbackState } from '@/components/shared/FeedbackState';
+import { PageContainer } from '@/components/shared/PageContainer';
 
 interface Product {
   _id: string;
@@ -35,7 +36,7 @@ function WishlistContent() {
   }
 
   return (
-    <div className="p-4 sm:p-6 md:p-10 max-w-7xl mx-auto">
+    <PageContainer className="py-6 sm:py-8">
       <h2 className="text-2xl sm:text-3xl font-bold mb-8 text-center sm:text-left">Your Wishlist</h2>
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
         {data.data.map((item: WishlistItem) => (
@@ -51,7 +52,7 @@ function WishlistContent() {
                 {item.product?.description || 'No description available.'}
               </p>
               <p className="text-sm text-gray-700 mt-3 font-medium">
-                Price: ${item.product?.price}
+                Price: ৳{item.product?.price}
               </p>
             </div>
             <Button
@@ -65,7 +66,7 @@ function WishlistContent() {
           </div>
         ))}
       </div>
-    </div>
+    </PageContainer>
   );
 }
 
