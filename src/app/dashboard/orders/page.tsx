@@ -41,7 +41,7 @@ import {
 } from "@/redux/features/Order/ordersApi";
 import { MdDelete } from "react-icons/md";
 import Swal from "sweetalert2";
-import { Order } from "@/types/order";
+import { ORDER_STATUSES, Order, OrderStatus } from "@/types/order";
 import { TQueryParam } from "@/types/global";
 
 const ORDERS_PER_PAGE = 10;
@@ -72,7 +72,7 @@ console.log("orders", orders)
 
   const handlePageChange = (newPage: number) => setPage(newPage);
 
-  const handleUpdateStatus = async (invoiceId: string, newStatus: string) => {
+  const handleUpdateStatus = async (invoiceId: string, newStatus: OrderStatus) => {
     try {
       await updateStatus({ invoiceId, status: newStatus }).unwrap();
       toast.success("Order status updated");
@@ -236,33 +236,28 @@ console.log("orders", orders)
                   <TableCell>{order.user?.email}</TableCell>
 
                   <TableCell>
-                    {order.status === "shipped" ? (
-                      <span className="text-blue-600 font-semibold">shipped</span>
-                    ) : (
+                    <div className="min-w-36 space-y-1">
                       <Select
                         value={order.orderStatus}
                         onValueChange={(val) =>
-                          handleUpdateStatus(order.invoiceId, val)
+                          handleUpdateStatus(order.invoiceId, val as OrderStatus)
                         }
                       >
                         <SelectTrigger>
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          {[
-                            "pending",
-                            "confirmed",
-                            "shipped",
-                            "delivered",
-                            "cancelled",
-                          ].map((s) => (
+                          {ORDER_STATUSES.map((s) => (
                             <SelectItem key={s} value={s}>
                               {s}
                             </SelectItem>
                           ))}
                         </SelectContent>
                       </Select>
-                    )}
+                      {order.orderStatus === 'completed' && (
+                        <span className="block text-xs font-medium text-green-700">Completed</span>
+                      )}
+                    </div>
                   </TableCell>
 
                   <TableCell>
@@ -313,6 +308,12 @@ console.log("orders", orders)
                           <p>
                             <strong>Address:</strong> {order.address?.fullAddress}
                           </p>
+                          {order.completedAt && (
+                            <p>
+                              <strong>Completed:</strong>{' '}
+                              {new Date(order.completedAt).toLocaleString()}
+                            </p>
+                          )}
                           <hr />
                           <h4 className="font-semibold">Items:</h4>
                           {order?.items?.map((item, idx) => (

@@ -13,6 +13,18 @@ export interface IProductSize {
   price: number;
 }
 
+export const ORDER_STATUSES = [
+  "pending",
+  "processing",
+  "confirmed",
+  "shipped",
+  "delivered",
+  "completed",
+  "cancelled",
+] as const;
+
+export type OrderStatus = (typeof ORDER_STATUSES)[number];
+
 
 export interface Order {
   _id: string;
@@ -25,7 +37,8 @@ export interface Order {
   discount?: number;
   totalPrice: number;
 grandTotal:number;
-  orderStatus:string;
+  orderStatus: OrderStatus;
+  completedAt?: string | null;
   user?: {
     name?: string;
     email?: string;

@@ -42,6 +42,15 @@ export interface TCustomBazerOrderItem {
 }
 
 export type TPaymentStatus = "pending" |"paid"| "success" | "failed";
+export const CUSTOM_ORDER_STATUSES = [
+  "pending",
+  "confirmed",
+  "shipped",
+  "delivered",
+  "completed",
+  "cancelled",
+] as const;
+export type TCustomOrderStatus = (typeof CUSTOM_ORDER_STATUSES)[number];
 
 type USER = {
   name:string;
@@ -53,7 +62,7 @@ export interface TCustomBazerOrder {
   _id?: string;
   orderItems: TCustomBazerOrderItem[];
   totalAmount: number;
-  status: "pending" | "confirmed" | "shipped" | "delivered" | "cancelled";
+  status: TCustomOrderStatus;
   paymentMethod: 'sslcommerz' | 'cash_on_delivery';
   paymentStatus?: TPaymentStatus;
   user?: USER
@@ -64,5 +73,6 @@ export interface TCustomBazerOrder {
   deletedByUser?: boolean;
   createdAt?: Date;
   updatedAt?: Date;
+  completedAt?: Date | null;
 }
 

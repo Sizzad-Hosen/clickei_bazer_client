@@ -42,7 +42,7 @@ import { toast } from 'sonner';
 import { MdDelete } from 'react-icons/md';
 import Swal from 'sweetalert2';
 import { TMeta } from '@/types/global';
-import { TCustomBazerOrder } from '@/types/CustomBazar';
+import { CUSTOM_ORDER_STATUSES, TCustomBazerOrder, TCustomOrderStatus, TPaymentStatus } from '@/types/CustomBazar';
 import { Plus } from 'lucide-react';
 import CustomBazarForm from '@/pages/CustomBazar/CreateCustomBazar';
 
@@ -74,12 +74,12 @@ console.log("data", orders)
 
   const handleStatusChange = async (
     invoiceId: string,
-    newStatus: string,
+    newStatus: TCustomOrderStatus | TPaymentStatus,
     type: 'order' | 'payment'
   ) => {
     try {
       if (type === 'order') {
-        await updateStatus({ invoiceId, status: newStatus }).unwrap();
+        await updateStatus({ invoiceId, status: newStatus as TCustomOrderStatus }).unwrap();
       } else {
         await updatePaymentStatus({ invoiceId, status: newStatus }).unwrap();
       }
@@ -250,6 +250,9 @@ console.log("data", orders)
                             <p><strong>Phone:</strong> {order.user?.phone}</p>
                             <p><strong>Address:</strong> {order.address?.fullAddress}</p>
                             <p><strong>Status:</strong> {order.status}</p>
+                            {order.completedAt && (
+                              <p><strong>Completed:</strong> {new Date(order.completedAt).toLocaleString()}</p>
+                            )}
                             <p><strong>OrderNote:</strong> {order.siteNote}</p>
                             <p><strong>Total:</strong> ৳{order.totalAmount?.toFixed(2)}</p>
                             <hr />
@@ -272,22 +275,25 @@ console.log("data", orders)
                       {/* Order Status */}
                       <Select
                         value={order.status}
-                        onValueChange={(val) => handleStatusChange(order.invoiceId as string, val, 'order')}
+                        onValueChange={(val) => handleStatusChange(order.invoiceId as string, val as TCustomOrderStatus, 'order')}
                       >
                         <SelectTrigger className="w-24 h-8 text-sm">
                           <SelectValue placeholder={order.status} />
                         </SelectTrigger>
                         <SelectContent>
-                          {['pending', 'confirmed', 'shipped', 'delivered', 'cancelled'].map((s) => (
+                          {CUSTOM_ORDER_STATUSES.map((s) => (
                             <SelectItem key={s} value={s}>{s}</SelectItem>
                           ))}
                         </SelectContent>
                       </Select>
+                      {order.status === 'completed' && (
+                        <span className="text-xs font-medium text-green-700">Completed</span>
+                      )}
 
                       {/* Payment Status */}
                       <Select
                         value={order.paymentStatus ?? 'pending'}
-                        onValueChange={(val) => handleStatusChange(order.invoiceId as string, val, 'payment')}
+                        onValueChange={(val) => handleStatusChange(order.invoiceId as string, val as TPaymentStatus, 'payment')}
                       >
                         <SelectTrigger className="w-24 h-8 text-sm">
                           <SelectValue placeholder={order.paymentStatus ?? 'pending'} />

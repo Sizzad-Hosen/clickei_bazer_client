@@ -1,4 +1,5 @@
 import { baseApi } from "@/redux/api/baseApi";
+import { OrderStatus } from '@/types/order';
 interface OrdersApiResponse {
   data: Order[];
   meta: {
@@ -84,7 +85,7 @@ updateOrderPaymentStatus: builder.mutation<
 }),
 
 updateStatus: builder.mutation<{ success: boolean; message: string },
-  { invoiceId: string; status: string }>
+  { invoiceId: string; status: OrderStatus }>
   ({
   query: ({ invoiceId, status }) => ({
     url: `/orders/update-status/${invoiceId}`,

@@ -1,6 +1,6 @@
 
 import { baseApi } from "@/redux/api/baseApi";
-import { TCustomBazerOrder, TCustomProduct } from "@/types/CustomBazar";
+import { TCustomBazerOrder, TCustomOrderStatus, TCustomProduct } from "@/types/CustomBazar";
 import { ApiResponse, TMeta, TResponseRedux } from "@/types/global";
 
 
@@ -115,7 +115,7 @@ getAllCustomBazarOrders: builder.query<
     // update status of a custom bazar order (returns updated order)
     updateCustomBazarOrderStatus: builder.mutation<
       TCustomBazerOrder,
-      { invoiceId: string; status: string }
+      { invoiceId: string; status: TCustomOrderStatus }
     >({
       query: ({ invoiceId, status }) => ({
         url: `/customBazerOrders/status/${invoiceId}`,
