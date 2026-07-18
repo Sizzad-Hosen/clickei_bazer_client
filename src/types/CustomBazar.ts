@@ -23,7 +23,7 @@ export interface Selection {
   unit: string;
 }
 
-export interface TCustomProduct extends Document {
+export interface TCustomProduct {
   _id: string;          
   category: string;
   subcategories: Subcategory[]; 

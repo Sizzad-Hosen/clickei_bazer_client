@@ -1,5 +1,5 @@
 "use client"
-import CustomBazarPage from '@/pages/CustomBazar/CustomBazar'
+import CustomBazarPage from '@/features/custom-bazar/CustomBazar'
 
 
 const CustomBazar = () => {

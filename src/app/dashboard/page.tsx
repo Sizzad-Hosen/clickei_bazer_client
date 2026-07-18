@@ -12,7 +12,6 @@ const { data: AllUsers } = useGetAllUsersQuery();
 // if no args expected here
 const { data: AllOrders } = useGetAllOrdersCountQuery();
 
-console.log("AllOrders", AllOrders);
 
 const userCount = AllUsers?.data?.data.length ?? 0; 
 

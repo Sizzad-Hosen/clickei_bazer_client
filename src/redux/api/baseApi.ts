@@ -2,6 +2,8 @@ import { createApi, fetchBaseQuery, FetchArgs, FetchBaseQueryError } from "@redu
 import type { BaseQueryFn } from '@reduxjs/toolkit/query';
 import type { RootState } from "../store";
 import { logout, setUser } from "../features/auth/authSlices";
+import { jwtDecode } from "jwt-decode";
+import type { TUser } from "../features/auth/authSlices";
 
 const base_url = process.env.NEXT_PUBLIC_API_URL;
 
@@ -25,6 +27,7 @@ const baseQuery = fetchBaseQuery({
 
 // Define type for the arguments of baseQueryWithRefreshToken
 type BaseQueryArgs = string | FetchArgs;
+let refreshPromise: Promise<string | null> | null = null;
 
 // Define a BaseQueryFn type with expected inputs and outputs
 const baseQueryWithRefreshToken: BaseQueryFn<
@@ -36,36 +39,28 @@ const baseQueryWithRefreshToken: BaseQueryFn<
   let result = await baseQuery(args, api, extraOptions);
 
   // If 401 Unauthorized, try refreshing token
-  if (result.error?.status === 401) {
-    const refreshResult = await baseQuery(
-      { url: '/auth/refresh-token', method: 'POST' },
-      api,
-      extraOptions
-    );
+  const url = typeof args === 'string' ? args : args.url;
+  const mayRefresh = !url.includes('/auth/refresh-token') && !url.includes('/auth/login');
 
-    if (refreshResult.data) {
-      // Extract the accessToken safely
-      const refreshData = refreshResult.data as { data?: { accessToken: string } };
-      const accessToken = refreshData.data?.accessToken;
+  if (result.error?.status === 401 && mayRefresh) {
+    refreshPromise ??= (async () => {
+      const refreshResult = await baseQuery(
+        { url: '/auth/refresh-token', method: 'POST' },
+        api,
+        extraOptions
+      );
+      const refreshData = refreshResult.data as { data?: { accessToken?: string } } | undefined;
+      return refreshData?.data?.accessToken ?? null;
+    })().finally(() => {
+      refreshPromise = null;
+    });
 
-      if (accessToken) {
-        const user = (api.getState() as RootState).auth.user;
-
-        if (user) {
-          // Update user and token in store
-          api.dispatch(
-            setUser({
-              user,
-              token: accessToken,
-            })
-          );
-
-          // Retry the original query with new token
-          result = await baseQuery(args, api, extraOptions);
-        } else {
-          api.dispatch(logout());
-        }
-      } else {
+    const accessToken = await refreshPromise;
+    if (accessToken) {
+      try {
+        api.dispatch(setUser({ user: jwtDecode<TUser>(accessToken), token: accessToken }));
+        result = await baseQuery(args, api, extraOptions);
+      } catch {
         api.dispatch(logout());
       }
     } else {

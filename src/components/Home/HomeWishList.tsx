@@ -21,7 +21,7 @@ export default function WishlistHome({ onOpenCart }: WishlistHomeProps) {
   const wishlistProducts: Product[] =
     wishlistData?.data
       ?.map((item: WishlistItem) => item.product)
-      ?.filter((product): product is Product => Boolean(product && product._id)) || [];
+      ?.filter((product: Product | null): product is Product => Boolean(product?._id)) || [];
 
   return (
     <section className="mt-10 space-y-4">

@@ -27,6 +27,12 @@ type Item = {
   size?: { label: string; price: number };
 };
 
+type CartApiItem = Item & {
+  productId: string | { image?: string };
+  title: string;
+  selectedSize?: Item['size'];
+};
+
 export default function CheckoutPage() {
   const [shippingAddress, setShippingAddress] = useState<ShippingAddress>({
     fullName: '',
@@ -34,7 +40,6 @@ export default function CheckoutPage() {
     fullAddress: '',
   });
 
-  const [siteNote, setSiteNote] = useState('');
   const [validationErrors, setValidationErrors] = useState<ValidationErrors>({});
   const [backendError, setBackendError] = useState<string | null>(null);
   const [paymentMethod, setPaymentMethod] = useState<'cash_on_delivery' | 'sslCommerz'>('cash_on_delivery');
@@ -45,12 +50,12 @@ export default function CheckoutPage() {
   const router = useRouter();
   const [addOrder] = useAddOrderMutation();
 
-  const cartItems: Item[] = data?.data?.items?.map((item) => ({
-    _id: item.productId,
+  const cartItems: Item[] = data?.data?.items?.map((item: CartApiItem) => ({
+    _id: typeof item.productId === 'string' ? item.productId : '',
     name: item.title,
     price: item.price,
     quantity: item.quantity,
-    image: item.image || item.productId?.image || '',
+    image: item.image || (typeof item.productId === 'object' ? item.productId.image : '') || '',
     discount: item.discount,
     selectedSize: item.selectedSize,
   })) ?? [];
@@ -73,10 +78,6 @@ export default function CheckoutPage() {
 
   const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
-    if (name === 'siteNote') {
-      setSiteNote(value);
-      return;
-    }
     setShippingAddress((prev) => ({ ...prev, [name]: value }));
     setValidationErrors((prev) => ({ ...prev, [name]: undefined }));
     setBackendError(null);
@@ -120,12 +121,6 @@ export default function CheckoutPage() {
         paymentMethod,
         address: shippingAddress,
         deliveryOption,
-        siteNote,
-        cartItems,
-        subtotal,
-        discountAmount,
-        shippingCost,
-        grandTotal,
       };
 
       await addOrder(orderPayload).unwrap();
@@ -161,7 +156,6 @@ export default function CheckoutPage() {
             <FormInput type="text" label="Full Address" name="fullAddress" value={shippingAddress.fullAddress} onChange={handleChange} error={validationErrors.fullAddress} />
           </section>
 
-          <FormInput type="text" label="Site Note (Optional)" name="siteNote" value={siteNote} onChange={handleChange} />
 
           {/* Delivery Option */}
           <section className="bg-white rounded-lg shadow-md p-4 border border-gray-200">

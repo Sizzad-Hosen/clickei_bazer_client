@@ -6,6 +6,7 @@ import { ChevronDown, ChevronRight, Menu, X } from 'lucide-react';
 import { useGetAllServicesQuery, useLazyServiceFullTreeQuery } from '@/redux/features/Services/serviceApi';
 import { Button } from '../ui/button';
 import Link from 'next/link';
+import type { Service } from '@/types/products';
 
 interface SubcategoryItem { _id: string; name: string; }
 interface CategoryItem { _id: string; name: string; }
@@ -66,7 +67,7 @@ export default function Sidebar({ onSelectSubcategory }: SidebarProps) {
       </button>
 
       {mobileOpen && (
-        <div onClick={() => setMobileOpen(false)} className="fixed inset-0 bg-black bg-opacity-40 z-40" />
+        <button type="button" aria-label="Close services menu" onClick={() => setMobileOpen(false)} className="fixed inset-0 z-40 bg-black bg-opacity-40" />
       )}
 
       {/* Sidebar */}
@@ -80,7 +81,7 @@ export default function Sidebar({ onSelectSubcategory }: SidebarProps) {
         </div>
 
         <div className="space-y-1   max-h-[calc(100vh-140px)]">
-          {services.map(service => (
+          {services.map((service: Service) => (
             <div key={service._id}>
               <button
                 onClick={() => handleServiceClick(service._id)}

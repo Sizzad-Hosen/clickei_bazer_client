@@ -1,4 +1,4 @@
-import CreateProductPage from '@/pages/Products/CreateProduct'
+import CreateProductPage from '@/features/products/CreateProduct'
 import React from 'react'
 
 const CreateProduct = () => {

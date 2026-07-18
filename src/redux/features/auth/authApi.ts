@@ -1,9 +1,10 @@
 import { baseApi } from "@/redux/api/baseApi";
+import type { IUser } from "@/types/user";
 
 const authApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
 
-    login: builder.mutation({
+    login: builder.mutation<{ success: boolean; message?: string; data: { accessToken: string } }, { email: string; password: string }>({
       query: (userInfo) => ({
         url: '/auth/login',
         method: 'POST',
@@ -11,7 +12,7 @@ const authApi = baseApi.injectEndpoints({
       }),
     }),
 
-    getMe: builder.query({
+    getMe: builder.query<{ data: IUser }, void>({
       query: () => `/auth/getMe`,
       providesTags: ['Auth'],
     }),
@@ -22,6 +23,11 @@ const authApi = baseApi.injectEndpoints({
         method: 'PUT',
         body: userInfo,
       }),
+      invalidatesTags: ['Auth'],
+    }),
+
+    logout: builder.mutation<void, void>({
+      query: () => ({ url: '/auth/logout', method: 'POST' }),
       invalidatesTags: ['Auth'],
     }),
 
@@ -53,4 +59,5 @@ export const {
   useChangePasswordMutation,
   useForgotPasswordMutation,
   useResetPasswordMutation,
+  useLogoutMutation,
 } = authApi;

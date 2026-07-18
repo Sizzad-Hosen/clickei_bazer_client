@@ -1,5 +1,5 @@
 "use client"
-import ProductsListPage from '@/pages/Products/Products'
+import ProductsListPage from '@/features/products/Products'
 
 
 

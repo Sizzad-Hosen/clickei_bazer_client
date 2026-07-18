@@ -61,7 +61,7 @@ function ProfilePage() {
     data: meData,
     isLoading: meLoading,
     isError: meError,
-  } = useGetMeQuery({});
+  } = useGetMeQuery();
 
   const userId = meData?.data?._id;
 

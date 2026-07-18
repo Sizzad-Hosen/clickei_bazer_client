@@ -2,14 +2,14 @@
 const nextConfig = {
   reactStrictMode: true,
   images: {
-    domains: [
-      'example.com',
-      'res.cloudinary.com',
-      'encrypted-tbn0.gstatic.com',
-      'via.placeholder.com',
-      "static.vecteezy.com",
-      'cdn.pixabay.com'
-    ],
+    remotePatterns: [
+      'https://example.com/**',
+      'https://res.cloudinary.com/**',
+      'https://encrypted-tbn0.gstatic.com/**',
+      'https://via.placeholder.com/**',
+      'https://static.vecteezy.com/**',
+      'https://cdn.pixabay.com/**',
+    ].map((url) => new URL(url)),
   },
 };
 

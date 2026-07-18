@@ -46,7 +46,8 @@ const authSlice = createSlice({
     builder.addCase(REHYDRATE, (state, action: RehydrateAction<TAuthState>) => {
       if (action.payload?.auth) {
         state.user = action.payload.auth.user;
-        state.token = action.payload.auth.token;
+        // Tokens are intentionally not restored from browser storage.
+        state.token = null;
       }
     });
   },

@@ -5,7 +5,7 @@ export interface OrderItem {
   quantity: number;
   discount?: number;
   price: number;
-   selectedSize: IProductSize; 
+  selectedSize?: IProductSize;
 }
 
 export interface IProductSize {
@@ -30,13 +30,14 @@ export interface Order {
   _id: string;
   invoiceId: string;
   status: string;
-  selectedSize: IProductSize; 
+  selectedSize?: IProductSize;
   paymentStatus: string;
   paymentMethod?:string;
 
   discount?: number;
   totalPrice: number;
-grandTotal:number;
+  /** Legacy field; current API responses use totalPrice. */
+  grandTotal?: number;
   orderStatus: OrderStatus;
   completedAt?: string | null;
   user?: {
@@ -59,3 +60,6 @@ grandTotal:number;
   items: OrderItem[];
   // other fields...
 }
+
+export const getOrderTotal = (order: Pick<Order, 'totalPrice' | 'grandTotal'>) =>
+  order.totalPrice ?? order.grandTotal ?? 0;

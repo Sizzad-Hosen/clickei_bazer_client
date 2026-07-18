@@ -196,8 +196,7 @@ const orderItems: TCustomBazerOrderItem[] = Object.entries(selections)
     };
 
     try {
-      const res = await addCustomBazarOrder(completePayload).unwrap();
-      console.log("res", res)
+      await addCustomBazarOrder(completePayload).unwrap();
 
       toast.success('✅ অর্ডার সফলভাবে সাবমিট হয়েছে!');
       router.push('/order')

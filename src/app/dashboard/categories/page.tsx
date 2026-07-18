@@ -1,5 +1,5 @@
 "use client"
-import CategoriesPage from "@/pages/Categories/Categories"
+import CategoriesPage from "@/features/categories/Categories"
 
 const Categories = () => {
   return (

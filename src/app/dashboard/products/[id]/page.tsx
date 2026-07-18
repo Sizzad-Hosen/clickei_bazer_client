@@ -60,8 +60,8 @@ const ProductDetailsPage = () => {
   };
 
   return (
-    <main className="max-w-4xl mx-auto p-6 bg-white rounded-2xl shadow-lg">
-      <h1 className="text-4xl font-extrabold mb-8 text-gray-900">{productExists.name}</h1>
+    <main className="mx-auto max-w-4xl rounded-2xl bg-white p-4 shadow-lg sm:p-6">
+      <h1 className="mb-8 break-words text-2xl font-extrabold text-gray-900 sm:text-4xl">{productExists.name}</h1>
 
       <section className="mb-8">
         <div className="flex space-x-4 overflow-x-auto pb-2">
@@ -99,15 +99,15 @@ const ProductDetailsPage = () => {
           <span className="text-green-600 font-semibold">৳ {productExists.price}</span>
         </p>
       <p>
-  <span className="font-semibold">Stock:</span>{' '}
-  <span className={productExists.stock ? 'text-green-600 font-semibold' : 'text-red-600 font-semibold'}>
-    {productExists.stock ? 'Yes' : 'No'}
+  <span className="font-semibold">Inventory:</span>{' '}
+  <span className={productExists.quantity > 0 ? 'text-green-600 font-semibold' : 'text-red-600 font-semibold'}>
+    {productExists.quantity} available
   </span>
 </p>
 
         <div>
           <span className="font-semibold">Sizes:</span>
-          {productExists.sizes.length > 0 ? (
+          {productExists.sizes?.length ? (
             <ul className="ml-4 list-disc">
               {productExists.sizes.map((s, idx) => (
                 <li key={idx}>

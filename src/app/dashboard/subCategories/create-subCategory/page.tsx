@@ -1,5 +1,5 @@
 "use client"
-import CreateSubCategoryPage from '@/pages/SubCategories/CreateSubCategory'
+import CreateSubCategoryPage from '@/features/subcategories/CreateSubCategory'
 import React from 'react'
 
 const CreateSubCategory = () => {

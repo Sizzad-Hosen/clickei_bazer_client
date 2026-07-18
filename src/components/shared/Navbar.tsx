@@ -13,11 +13,13 @@ import { toast } from 'sonner';
 import { useAppSelector } from '@/redux/hook';
 import { useGetAllProductsBySearchQuery } from '@/redux/features/Products/productApi';
 import type { Product } from '@/types/products';
+import { useLogoutMutation } from '@/redux/features/auth/authApi';
 
 const Navbar = () => {
   const router = useRouter();
   const dispatch = useDispatch();
   const user = useAppSelector(selectCurrentUser);
+  const [logoutFromServer] = useLogoutMutation();
 
   const [query, setQuery] = useState('');
   const [debouncedQuery, setDebouncedQuery] = useState('');
@@ -69,7 +71,8 @@ const Navbar = () => {
     if (e.key === 'Enter') handleSearch();
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    try { await logoutFromServer().unwrap(); } catch { /* Clear local session even if offline. */ }
     dispatch(logout());
     toast.success('Successfully logged out');
     router.push('/login');
@@ -141,7 +144,7 @@ const Navbar = () => {
               placeholder="Search ..."
               className="w-full h-12 pl-4 pr-12 border-2 border-amber-600 bg-white rounded-md text-sm"
             />
-            <button onClick={handleSearch} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-amber-600">
+            <button type="button" aria-label="Search products" onClick={handleSearch} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-amber-600">
               <Search size={20} />
             </button>
             {renderSuggestions()}
@@ -150,8 +153,8 @@ const Navbar = () => {
 
         {/* MOBILE SIDEBAR */}
         {sidebarOpen && (
-          <div className="fixed inset-0 z-50 flex justify-end">
-            <div className="fixed inset-0 bg-black/50" onClick={() => setSidebarOpen(false)} />
+          <div className="fixed inset-0 z-50 flex justify-end" role="dialog" aria-modal="true" aria-label="Account menu">
+            <button type="button" aria-label="Close account menu" className="fixed inset-0 bg-black/50" onClick={() => setSidebarOpen(false)} />
             <div id="mobile-sidebar" className="relative flex h-full w-64 max-w-[calc(100vw-2rem)] flex-col overflow-y-auto bg-white p-2 shadow-lg">
               <button type="button" aria-label="Close account menu" className="mb-4 self-end p-2" onClick={() => setSidebarOpen(false)}>
                 <X size={24} />
@@ -192,7 +195,7 @@ const Navbar = () => {
               placeholder="Search ..."
               className="w-full h-12 pl-4 pr-12 border-2 border-amber-600 bg-white rounded-md text-sm"
             />
-            <button onClick={handleSearch} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-amber-600">
+            <button type="button" aria-label="Search products" onClick={handleSearch} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-amber-600">
               <Search size={20} />
             </button>
             {renderSuggestions()}

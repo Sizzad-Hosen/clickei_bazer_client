@@ -26,7 +26,6 @@ const meta = data?.data?.meta ?? { totalPages: 1, total: 0, limit: 6, page: 1 };
 
 const totalPages = meta.totalPages ?? 1;  // default to 1 page if missing
 
-console.log("users", data?.data?.data)
 
   const [search, setSearch] = useState('');
   const [filteredUsers, setFilteredUsers] = useState<typeof users>([]);

@@ -29,7 +29,11 @@ export default function ProtectedRoute({
     }
   }, [user, pathname, allowedRoles, router]);
 
-  if (!user || typeof user.role === "undefined") return <Spinner />;
+  if (
+    !user ||
+    typeof user.role === "undefined" ||
+    (allowedRoles && !allowedRoles.includes(user.role))
+  ) return <Spinner />;
 
   return <>{children}</>;
 }

@@ -44,7 +44,7 @@ import Swal from 'sweetalert2';
 import { TMeta } from '@/types/global';
 import { CUSTOM_ORDER_STATUSES, TCustomBazerOrder, TCustomOrderStatus, TPaymentStatus } from '@/types/CustomBazar';
 import { Plus } from 'lucide-react';
-import CustomBazarForm from '@/pages/CustomBazar/CreateCustomBazar';
+import CustomBazarForm from '@/features/custom-bazar/CreateCustomBazar';
 
 const ORDERS_PER_PAGE = 10;
 
@@ -60,7 +60,6 @@ const AllCustomBazarOrders: React.FC = () => {
 
   const orders: TCustomBazerOrder[] = data?.data || [];
   const meta: TMeta = data?.meta || { total: 0, totalPages: 0, limit: 0, page: 0 };
-console.log("data", orders)
   const [updateStatus] = useUpdateCustomBazarOrderStatusMutation();
   const [updatePaymentStatus] = useUpdateCustomOrderPaymentStatusMutation();
   const [deleteOrder] = useDeleteCustomOrderByIdMutation();

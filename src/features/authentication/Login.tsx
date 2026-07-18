@@ -14,7 +14,7 @@ import Link from "next/link";
 
 const LoginPage = () => {
   const router = useRouter();
-  const [addLogin] = useLoginMutation();
+  const [addLogin, { isLoading }] = useLoginMutation();
   const dispatch = useDispatch();
 
   const [form, setForm] = useState({
@@ -29,22 +29,21 @@ const LoginPage = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const res = await addLogin(form);
-      const token = res?.data?.data?.accessToken;
+      const res = await addLogin(form).unwrap();
+      const token = res.data.accessToken;
       const user = verifyToken(token) as TUser;
 
       if (!user) throw new Error("Invalid token");
 
       dispatch(setUser({ user, token }));
 
-      if (res?.data.success) {
+      if (res.success) {
         toast.success("Login successful!");
         router.push("/");
       } else {
-        toast.error(res?.data.message || "Login failed");
+        toast.error(res.message || "Login failed");
       }
-    } catch (error) {
-      console.error("Login failed:", error);
+    } catch {
       toast.error("Login failed. Please try again.");
     }
   };
@@ -83,8 +82,8 @@ const LoginPage = () => {
                 Forgot password?
               </Link>
             </div>
-            <Button variant={"secondary"} type="submit" className="w-full">
-              Login
+            <Button variant={"secondary"} type="submit" className="w-full" disabled={isLoading}>
+              {isLoading ? 'Signing in…' : 'Login'}
             </Button>
           </form>
 

@@ -18,13 +18,11 @@ const ProductsListPage = () => {
   const { data, isLoading, isError } = useGetAllProductsQuery({ page, limit: PAGE_SIZE });
 
   
-  console.log("products", data)
 
  const products = data?.data
 const meta = data?.meta;
 
 
-console.log("meta", meta)
   if (isLoading) return <Spinner></Spinner>
   if (isError) return <p className="text-center text-red-500">Failed to load products</p>;
   if (!Array.isArray(products) || products.length === 0) return <p className="text-center">No products found.</p>;

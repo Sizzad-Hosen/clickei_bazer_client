@@ -5,7 +5,6 @@ import Swal from 'sweetalert2';
 import Sidebar from '@/components/shared/Sidebar';
 import Spinner from '@/components/Spinner';
 import ProtectedRoute from '@/components/ProtectedRoute';
-import { format } from 'date-fns';
 import { toast } from 'sonner';
 import Image from 'next/image';
 
@@ -18,14 +17,15 @@ import {
   useGetAllCustomOrdersByUserIdQuery,
 } from '@/redux/features/CustomBazar/customBazarApi';
 
-import { Order, OrderItem } from '@/types/order';
+import { getOrderTotal, Order, OrderItem } from '@/types/order';
 import { TCustomBazerOrder } from '@/types/CustomBazar';
 
 function UserOrdersPage() {
+  const formatDateTime = (value: string | Date) =>
+    new Intl.DateTimeFormat('en-BD', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(value));
   // Normal Orders
   const { data: response, isLoading, isError, error, refetch } = useGetAllOrdersByUserIdQuery({});
   const orders: Order[] = response?.data || [];
-  console.log('Orders:', orders);
 
   // Custom Bazar Orders
   const { data: customOrdersResponse } = useGetAllCustomOrdersByUserIdQuery();
@@ -148,7 +148,7 @@ function UserOrdersPage() {
                 <div className="mb-4 mt-3 flex min-w-0 flex-col items-start gap-1 pr-8 sm:flex-row sm:items-center sm:justify-between">
                   <h2 className="min-w-0 break-all text-lg font-semibold sm:text-xl">Order #{order.invoiceId || order._id}</h2>
                   <span className="text-sm text-gray-500">
-                    {order.createdAt ? format(new Date(order.createdAt), 'PPP p') : 'N/A'}
+                    {order.createdAt ? formatDateTime(order.createdAt) : 'N/A'}
                   </span>
                 </div>
 
@@ -162,7 +162,7 @@ function UserOrdersPage() {
                 <p>
                   <span className="font-medium">GrandTotal:</span>{' '}
               <span className="text-green-600 font-semibold">
-  Tk {(order?.grandTotal ?? 0).toFixed(2)}
+  Tk {getOrderTotal(order).toFixed(2)}
 </span>
 
                 </p>
@@ -242,7 +242,7 @@ function UserOrdersPage() {
                     <h2 className="min-w-0 break-all text-lg font-semibold sm:text-xl">Order #{customOrder.invoiceId}</h2>
                     <span className="text-sm text-gray-500">
                       {customOrder.createdAt
-                        ? format(new Date(customOrder.createdAt), 'PPP p')
+                        ? formatDateTime(customOrder.createdAt)
                         : 'N/A'}
                     </span>
                   </div>

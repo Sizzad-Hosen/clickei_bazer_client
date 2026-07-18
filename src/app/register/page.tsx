@@ -1,6 +1,6 @@
 "use client"
 
-import RegisterPage from '@/pages/Authentication/Register'
+import RegisterPage from '@/features/authentication/Register'
 
 
 const Register = () => {

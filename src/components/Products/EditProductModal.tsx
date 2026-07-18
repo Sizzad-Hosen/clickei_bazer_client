@@ -16,12 +16,6 @@ import { useGetAllCategoriesQuery } from '@/redux/features/Categories/categoryAp
 import { useGetAllSubCategoriesQuery } from '@/redux/features/SubCategories/subCategoryApi';
 import { useUpdateProductMutation } from '@/redux/features/Products/productApi';
 
-// Types
-interface IProductSize {
-  label: string;
-  price:number;
-}
-
 interface IProduct {
   _id: string;
   title: string;
@@ -29,12 +23,11 @@ interface IProduct {
   description: string;
   price: number;
   discount?: number;
-  stock: boolean;
+  quantity: number;
   serviceId: string | { _id: string };
   categoryId: string | { _id: string };
   subCategoryId: string | { _id: string };
   isPublished: boolean;
-  sizes?: IProductSize[];
 }
 
 interface IService { _id: string; name: string }
@@ -60,12 +53,11 @@ const EditProductModal = ({ product, isOpen, onClose }: IEditProductModalProps) 
     description: '',
     price: '',
     discount: '',
-    stock: true,
+    quantity: '',
     serviceId: '',
     categoryId: '',
     subCategoryId: '',
     isPublished: false,
-    sizes: [] as IProductSize[],
   });
 
   const [files, setFiles] = useState<File[]>([]);
@@ -82,12 +74,11 @@ const EditProductModal = ({ product, isOpen, onClose }: IEditProductModalProps) 
         description: product.description,
         price: product.price.toString(),
         discount: product.discount?.toString() || '',
-        stock: product.stock,
+        quantity: (product.quantity ?? 0).toString(),
         serviceId: normalizeId(product.serviceId),
         categoryId: normalizeId(product.categoryId),
         subCategoryId: normalizeId(product.subCategoryId),
         isPublished: product.isPublished,
-        sizes: product.sizes?.map(s => ({ label: s.label, price: s.price })) || [],
       });
     }
   }, [product]);
@@ -100,7 +91,7 @@ const EditProductModal = ({ product, isOpen, onClose }: IEditProductModalProps) 
 
   const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     let value = e.target.value;
-    if (['price', 'discount'].includes(e.target.name)) {
+    if (['price', 'discount', 'quantity'].includes(e.target.name)) {
       value = value.replace(/[^0-9০-৯.]/g, '');
     }
     setForm({ ...form, [e.target.name]: value });
@@ -112,21 +103,6 @@ const EditProductModal = ({ product, isOpen, onClose }: IEditProductModalProps) 
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) setFiles(Array.from(e.target.files));
   };
-
-  const handleAddSize = () => setForm({ ...form, sizes: [...form.sizes, { label: '', price: 0 }] });
-  const handleRemoveSize = (index: number) =>
-    setForm({ ...form, sizes: form.sizes.filter((_, i) => i !== index) });
-  
-const handleSizeChange = (index: number, field: 'label' | 'price', value: string) => {
-  const updatedSizes = [...form.sizes];
-
-  updatedSizes[index] = {
-    ...updatedSizes[index],
-    [field]: field === 'price' ? Number(value) : value
-  };
-
-  setForm({ ...form, sizes: updatedSizes });
-};
 
   const validateDiscount = () => {
     if (form.discount) {
@@ -147,11 +123,10 @@ const handleSizeChange = (index: number, field: 'label' | 'price', value: string
       ...form,
       price: Number(banglaToEnglish(form.price)) || 0,
       discount: Number(banglaToEnglish(form.discount)) || 0,
-      stock: form.stock,
+      quantity: Number(banglaToEnglish(form.quantity)),
       serviceId: form.serviceId,
       categoryId: form.categoryId,
       subCategoryId: form.subCategoryId,
-      sizes: form.sizes.map(s => ({ label: s.label, price: (s.price) || 0 })),
     };
 
     const formData = new FormData();
@@ -191,41 +166,12 @@ const handleSizeChange = (index: number, field: 'label' | 'price', value: string
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <FormInput label="Price (৳)" name="price" type="text" value={form.price} onChange={handleChange} required />
             <FormInput label="Discount (%)" name="discount" type="text" value={form.discount} onChange={handleChange} />
           </div>
 
-          <div className="flex items-center gap-3">
-            <Label className="font-semibold">In Stock</Label>
-            <Switch checked={form.stock} onCheckedChange={(val) => setForm({ ...form, stock: val })} />
-          </div>
-
-          <div>
-            <Label className="mb-1 block font-semibold">Product Sizes</Label>
-            {form.sizes.map((size, index) => (
-              <div key={index} className="flex gap-2 mb-2">
-                <input
-                  type="text"
-                  placeholder="Size Label"
-                  value={size.label}
-                  onChange={e => handleSizeChange(index, 'label', e.target.value)}
-                  className="px-3 py-2 border rounded-md w-1/2"
-                  required
-                />
-                <input
-                  type="text"
-                  placeholder="Price"
-                  value={size.price}
-                  onChange={e => handleSizeChange(index, 'price', e.target.value)}
-                  className="px-3 py-2 border rounded-md w-1/2"
-                  required
-                />
-                <Button type="button" variant="destructive" onClick={() => handleRemoveSize(index)}>Remove</Button>
-              </div>
-            ))}
-            <Button className='text-black bg-amber-400 hover:text-black' type="button" onClick={handleAddSize}>Add Size</Button>
-          </div>
+          <FormInput label="Inventory quantity" name="quantity" type="number" min={0} step={1} value={form.quantity} onChange={handleChange} required />
 
           <div>
             <Label className="mb-1 block font-semibold">Upload Images</Label>

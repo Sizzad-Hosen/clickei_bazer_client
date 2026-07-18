@@ -32,8 +32,9 @@ export type TQueryParam = {
   page?: number;
   limit?: number;
   invoiceId?: string;
-  name: string;
-  value: string | number | boolean; 
+  name?: string;
+  value?: string | number | boolean;
+  [key: string]: string | number | boolean | undefined;
 };
 
 export type TResponseRedux<T> = TResponse<T> & BaseQueryApi;

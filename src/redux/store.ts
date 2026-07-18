@@ -18,9 +18,10 @@ import { baseApi } from './api/baseApi';
 import authReducer from './features/auth/authSlices'; 
 
 const persistConfig = {
-  key: 'auth',
+  key: 'auth-v2',
   storage,
-  whitelist: ['token', 'user'],
+  // Access tokens remain in memory; the refresh token is an HttpOnly cookie.
+  whitelist: ['user'],
 };
 
 const persistedAuthReducer = persistReducer(persistConfig, authReducer);

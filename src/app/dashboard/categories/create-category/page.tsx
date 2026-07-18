@@ -1,5 +1,5 @@
 "use client"
-import CreateCategoriesPage from '@/pages/Categories/CreateCategories'
+import CreateCategoriesPage from '@/features/categories/CreateCategories'
 import React from 'react'
 
 const CreateCategory = () => {

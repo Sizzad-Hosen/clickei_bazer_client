@@ -19,6 +19,8 @@ import {
   LogOut
 } from "lucide-react";
 import { logout } from "@/redux/features/auth/authSlices";
+import ProtectedRoute from "@/components/ProtectedRoute";
+import { useLogoutMutation } from "@/redux/features/auth/authApi";
 
 interface DashboardLayoutProps {
   children: ReactNode;
@@ -42,18 +44,21 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const dispatch = useDispatch();
   const router = useRouter();
+  const [logoutFromServer] = useLogoutMutation();
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    try { await logoutFromServer().unwrap(); } catch { /* Clear local session even if offline. */ }
     dispatch(logout());
-    router.push("/login");
+    router.replace("/login");
   };
 
   return (
+    <ProtectedRoute allowedRoles={['admin']}>
     <div className="flex min-h-screen min-w-0 max-w-full flex-col bg-gray-50 md:flex-row">
       {/* Mobile Menu Toggle */}
       <div className="flex justify-between items-center md:hidden p-4 bg-white shadow">
         <h2 className="text-xl font-bold">Dashboard</h2>
-        <button onClick={() => setSidebarOpen(!sidebarOpen)}>
+        <button type="button" aria-label={sidebarOpen ? 'Close dashboard menu' : 'Open dashboard menu'} onClick={() => setSidebarOpen(!sidebarOpen)}>
           {sidebarOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
         </button>
       </div>
@@ -94,5 +99,6 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
         {children}
       </main>
     </div>
+    </ProtectedRoute>
   );
 }

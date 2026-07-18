@@ -90,10 +90,10 @@ const RegisterPage: React.FC = () => {
       toast.success("Registration successful!");
       router.push("/login");
     } catch (err: unknown) {
-      const isGenericError = (error): error is TGenericErrorResponse => {
+      const isGenericError = (error: unknown): error is TGenericErrorResponse => {
         return (
-          error &&
           typeof error === 'object' &&
+          error !== null &&
           'errorSources' in error &&
           Array.isArray(error.errorSources)
         );

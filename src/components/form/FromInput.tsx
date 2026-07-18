@@ -17,6 +17,8 @@ interface FormInputProps {
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => void;
   required?: boolean;
+  autoComplete?: string;
+  inputMode?: React.HTMLAttributes<HTMLInputElement>["inputMode"];
   options?: string[]; // optional, if provided render select dropdown
 }
 
@@ -31,6 +33,11 @@ export const FormInput: React.FC<FormInputProps> = ({
   touched,
   required,
   options,
+  min,
+  max,
+  step,
+  autoComplete,
+  inputMode,
 }) => {
   const [showPassword, setShowPassword] = useState(false);
   const isPassword = type === "password";
@@ -48,6 +55,8 @@ export const FormInput: React.FC<FormInputProps> = ({
             value={value}
             onChange={onChange}
             required={required}
+            aria-invalid={Boolean(error && touched)}
+            aria-describedby={error && touched ? `${name}-error` : undefined}
             className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
           >
             <option value="" disabled>
@@ -68,6 +77,13 @@ export const FormInput: React.FC<FormInputProps> = ({
             value={value}
             onChange={onChange}
             required={required}
+            min={min}
+            max={max}
+            step={step}
+            autoComplete={autoComplete}
+            inputMode={inputMode}
+            aria-invalid={Boolean(error && touched)}
+            aria-describedby={error && touched ? `${name}-error` : undefined}
             className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
           />
         )}
@@ -75,6 +91,7 @@ export const FormInput: React.FC<FormInputProps> = ({
         {isPassword && (
           <button
             type="button"
+            aria-label={showPassword ? "Hide password" : "Show password"}
             onClick={() => setShowPassword(!showPassword)}
             className="absolute right-3 top-2.5 text-gray-500 hover:text-gray-700"
           >
@@ -83,7 +100,7 @@ export const FormInput: React.FC<FormInputProps> = ({
         )}
       </div>
       {error && touched && (
-        <p className="text-red-600 text-sm mt-1">{error}</p>
+        <p id={`${name}-error`} role="alert" className="text-red-600 text-sm mt-1">{error}</p>
       )}
     </div>
   );

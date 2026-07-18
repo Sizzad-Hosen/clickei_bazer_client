@@ -49,14 +49,16 @@ export interface Product {
   _id: string;
   name: string;
   title: string;
-   stock: boolean;  // must be boolean
-  sizes: IProductSize[];
-  description: string;
+  /** Inventory is controlled by the backend quantity field. */
   quantity: number;
+  /** Kept optional while older API records are phased out. */
+  stock?: boolean;
+  sizes?: IProductSize[];
+  description: string;
   price: number;
   images?: string[];
-  isPublished:boolean;
-  discount:number
+  isPublished: boolean;
+  discount: number;
   subcategoryId: string;
 categoryId: string | { _id: string; [key: string]: unknown };
  subCategoryId: string;

@@ -1,5 +1,5 @@
 "use client"
-import CreateServicePage from '@/pages/Services/CreateServices'
+import CreateServicePage from '@/features/services/CreateServices'
 
 
 const CreateServices = () => {

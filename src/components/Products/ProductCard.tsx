@@ -2,14 +2,13 @@
 
 import { useState } from 'react';
 import Image from 'next/image';
-import { motion } from 'framer-motion';
 import { toast } from 'sonner';
 import { ShoppingCart, Eye, Heart, HeartOff, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
 import { Product } from '@/types/products';
-import { useAddCartMutation, useGetAllCartsQuery } from '@/redux/features/AddToCart/addToCartApi';
+import { useAddCartMutation } from '@/redux/features/AddToCart/addToCartApi';
 import { useAddToWishlistMutation, useGetWishlistQuery, useRemoveFromWishlistMutation } from '@/redux/features/WishList/wishListApi';
 import { useAppSelector } from '@/redux/hook';
 import { selectCurrentToken } from '@/redux/features/auth/authSlices';
@@ -29,7 +28,6 @@ interface WishlistItem {
 
 export default function ProductCard({ product, onOpenCart }: Props) {
   const [addCart, { isLoading: isAddingToCart }] = useAddCartMutation();
-  const { refetch } = useGetAllCartsQuery({});
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   const [selectedSize, setSelectedSize] = useState(product.sizes?.[0] ?? null);
 
@@ -42,12 +40,14 @@ export default function ProductCard({ product, onOpenCart }: Props) {
 
   const router = useRouter();
   const token = useAppSelector(selectCurrentToken);
+  const isAvailable = product.isPublished !== false && (product.quantity > 0 || product.stock === true);
+  const basePrice = selectedSize?.price ?? product.price;
 
   const isInWishlist = wishlistData?.data?.some((item: WishlistItem) => item.product?._id === product._id);
 
   const discountedPrice = selectedSize
     ? (selectedSize.price * (1 - (product.discount ?? 0) / 100)).toFixed(2)
-    : product.price.toFixed(2);
+    : (product.price * (1 - (product.discount ?? 0) / 100)).toFixed(2);
 
   const handleAddToCart = async () => {
     if (!token) {
@@ -55,24 +55,18 @@ export default function ProductCard({ product, onOpenCart }: Props) {
       router.push('/login');
       return;
     }
-    if (!selectedSize) {
-      toast.error('Please select a size.');
+    if (!isAvailable) {
+      toast.error('This product is currently out of stock.');
       return;
     }
 
     try {
       await addCart({
         productId: product._id,
-        title: product.title,
-        price: selectedSize.price,
-        discount: product.discount ?? 0,
         quantity: 1,
-        selectedSize: selectedSize,
-        image: product.images?.[0] ?? '/avatar-placeholder.png',
       }).unwrap();
 
       toast.success('Added to cart');
-      refetch();
       onOpenCart();
     } catch (error) {
       toast.error('Failed to add to cart');
@@ -118,36 +112,31 @@ export default function ProductCard({ product, onOpenCart }: Props) {
       </button>
 
       {/* Discount Badge */}
-      {Number(product.discount) > 0 && product.stock && (
+      {Number(product.discount) > 0 && isAvailable && (
         <div className="absolute top-2 left-2 z-10 bg-red-600 text-white text-xs font-bold px-2 py-1 rounded shadow-md select-none">
           {product.discount}% OFF
         </div>
       )}
 
       {/* Product Image */}
-      <motion.div
-        className="relative w-full bg-gray-100 overflow-hidden aspect-[4/3] sm:aspect-square"
-        whileHover={{ scale: 1.02 }}
-        transition={{ type: "spring", stiffness: 400, damping: 10 }}
-      >
+      <div className="relative aspect-[4/3] w-full overflow-hidden bg-gray-100 sm:aspect-square">
         <Image
           src={product.images?.[0] ?? "/placeholder.jpg"}
           alt={product.title}
           fill
-          className={`object-cover ${!product.stock ? "opacity-50" : ""}`}
-          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-          priority
+          className={`object-cover transition-transform duration-200 hover:scale-[1.02] ${!isAvailable ? "opacity-50" : ""}`}
+          sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
         />
 
         {/* Out of Stock Overlay */}
-        {!product.stock && (
+        {!isAvailable && (
           <div className="absolute inset-0 flex items-center justify-center bg-black/40">
             <span className="text-white font-semibold text-sm sm:text-base bg-red-600 px-3 py-1 rounded">
               Out of Stock
             </span>
           </div>
         )}
-      </motion.div>
+      </div>
 
       {/* Product Info */}
       <div className="flex min-w-0 flex-1 flex-col p-2 sm:p-3">
@@ -161,7 +150,7 @@ export default function ProductCard({ product, onOpenCart }: Props) {
 
           {/* Stock Badge */}
           <div className="flex-shrink-0">
-            {product.stock ? (
+            {isAvailable ? (
               <span className="inline-block px-2 py-1 text-green-700 bg-green-100 text-xs font-semibold rounded">
                 In Stock
               </span>
@@ -179,16 +168,16 @@ export default function ProductCard({ product, onOpenCart }: Props) {
             <>
               <span className="text-red-600 font-bold text-lg">৳{discountedPrice}</span>
               <span className="line-through text-gray-400 text-sm">
-                ৳{selectedSize?.price.toFixed(2)}
+                ৳{basePrice.toFixed(2)}
               </span>
             </>
           ) : (
-            <span className="font-bold text-lg">৳{selectedSize?.price.toFixed(2)}</span>
+            <span className="font-bold text-lg">৳{basePrice.toFixed(2)}</span>
           )}
         </div>
 
         {/* Size Selection */}
-        {product.sizes?.length > 0 && (
+        {(product.sizes?.length ?? 0) > 0 && (
           <Button
             variant="outline"
             className="mb-3 w-full h-8 text-sm"
@@ -212,13 +201,13 @@ export default function ProductCard({ product, onOpenCart }: Props) {
             variant="secondary"
             className="w-full sm:w-1/2 h-8 sm:h-9 text-xs sm:text-sm disabled:opacity-50 disabled:cursor-not-allowed"
             onClick={handleAddToCart}
-            disabled={isAddingToCart || !product.stock}
+            disabled={isAddingToCart || !isAvailable}
             type="button"
           >
             <ShoppingCart className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
             {isAddingToCart
               ? "Adding..."
-              : product.stock
+              : isAvailable
               ? "Add to Cart"
               : "Unavailable"}
           </Button>
@@ -316,7 +305,7 @@ export default function ProductCard({ product, onOpenCart }: Props) {
               </div>
 
               {/* Add to Cart Button */}
-              <Button variant="secondary" className="w-full h-12 text-lg" onClick={() => { handleAddToCart(); setIsDetailsOpen(false); }} disabled={isAddingToCart}>
+              <Button variant="secondary" className="w-full h-12 text-lg" onClick={() => { void handleAddToCart(); setIsDetailsOpen(false); }} disabled={isAddingToCart || !isAvailable}>
                 <ShoppingCart className="h-5 w-5 mr-2" />
                 {isAddingToCart ? 'Adding...' : 'Add to Cart'}
               </Button>

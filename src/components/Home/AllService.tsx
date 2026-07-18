@@ -1,17 +1,12 @@
 "use client";
 import Link from "next/link";
-import { useGetAllServicesQuery, useLazyServiceHomeFullTreeQuery } from "@/redux/features/Services/serviceApi";
+import { useGetAllServicesQuery } from "@/redux/features/Services/serviceApi";
 import Spinner from "../Spinner";
 import { Service } from "@/types/products";
 
 export default function AllService() {
   const { data: response, isLoading } = useGetAllServicesQuery({});
-  const [fetchFullTree] = useLazyServiceHomeFullTreeQuery();
   const serviceRes = response?.data;
-
-  const handleServiceClick = async (serviceId: string) => {
-    await fetchFullTree(serviceId).unwrap().catch(console.error); // always fetch
-  };
 
   if (isLoading) return <Spinner />;
 
@@ -30,7 +25,6 @@ export default function AllService() {
       <Link
         key={service._id}
         href={`/${service.name.toLowerCase()}/${service._id}`}
-        onClick={() => handleServiceClick(service._id)}
       >
         <div
           className={`cursor-pointer border ${bColor} ${bgColor} hover:shadow-lg transition p-4 rounded-lg text-center`}

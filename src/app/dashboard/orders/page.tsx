@@ -41,7 +41,7 @@ import {
 } from "@/redux/features/Order/ordersApi";
 import { MdDelete } from "react-icons/md";
 import Swal from "sweetalert2";
-import { ORDER_STATUSES, Order, OrderStatus } from "@/types/order";
+import { getOrderTotal, ORDER_STATUSES, Order, OrderStatus } from "@/types/order";
 import { TQueryParam } from "@/types/global";
 
 const ORDERS_PER_PAGE = 10;
@@ -64,7 +64,6 @@ const OrdersPage: React.FC = () => {
 const orders = data?.data || [];
 const meta = data?.meta || { total: 0, totalPages: 0 };
 
-console.log("orders", orders)
 
   const [updateStatus] = useUpdateStatusMutation();
   const [updatePaymentStatus] = useUpdateOrderPaymentStatusMutation();
@@ -160,7 +159,7 @@ console.log("orders", orders)
             ${itemsHTML}
           </tbody>
         </table>
-        <h3 style="text-align: right;">Grand Total: ৳${order.grandTotal.toFixed(2)}</h3>
+        <h3 style="text-align: right;">Grand Total: ৳${getOrderTotal(order).toFixed(2)}</h3>
       </body>
     </html>
   `;
@@ -284,7 +283,7 @@ console.log("orders", orders)
                     )}
                   </TableCell>
 
-                  <TableCell>৳{order?.grandTotal?.toFixed(2)}</TableCell>
+                  <TableCell>৳{getOrderTotal(order).toFixed(2)}</TableCell>
 
                   <TableCell className="flex gap-2">
                     <Dialog>
@@ -331,7 +330,7 @@ console.log("orders", orders)
 
                     </p>
 
-                    <h1>GrandTotal : ৳ {(order?.grandTotal)?.toFixed(2)}
+                    <h1>GrandTotal : ৳ {getOrderTotal(order).toFixed(2)}
 
                                 </h1>
             

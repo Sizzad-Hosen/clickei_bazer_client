@@ -88,7 +88,7 @@ export default function CustomBazarForm({ onSuccess }: CustomBazarFormProps) {
     if (!validate()) return;
 
     try {
-   const res = await addCustomBazar({
+   await addCustomBazar({
   category,
   subcategories: subcategories.map((item) => ({
     name: item.subcategory,
@@ -97,7 +97,6 @@ export default function CustomBazarForm({ onSuccess }: CustomBazarFormProps) {
   })),
 }).unwrap();
 
-      console.log('result', res);
 
       toast.success('Custom Bazar Products added successfully');
       setCategory('');

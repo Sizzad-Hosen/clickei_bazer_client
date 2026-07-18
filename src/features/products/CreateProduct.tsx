@@ -19,11 +19,7 @@ import { useGetAllServicesQuery } from '@/redux/features/Services/serviceApi';
 import { useGetAllCategoriesQuery } from '@/redux/features/Categories/categoryApi';
 import { useGetAllSubCategoriesQuery } from '@/redux/features/SubCategories/subCategoryApi';
 import { useAddProductMutation } from '@/redux/features/Products/productApi';
-
-interface IProductSize {
-  label: string;
-  price: string;
-}
+import type { Category, Service, Subcategory } from '@/types/products';
 
 const CreateProductPage = () => {
   const router = useRouter();
@@ -40,12 +36,11 @@ const CreateProductPage = () => {
     description: '',
     price: '',
     discount: '',
-    stock: true, // stock as boolean now
+    quantity: '',
     serviceId: '',
     categoryId: '',
     subCategoryId: '',
-    isPublished: false,
-    sizes: [] as IProductSize[],
+    isPublished: true,
   });
 
   const [files, setFiles] = useState<File[]>([]);
@@ -65,7 +60,7 @@ const CreateProductPage = () => {
     let value = e.target.value;
 
     // Allow Bangla or English digits + dot for numeric fields
-    if (['price', 'discount'].includes(e.target.name)) {
+    if (['price', 'discount', 'quantity'].includes(e.target.name)) {
       value = value.replace(/[^0-9০-৯.]/g, '');
     }
 
@@ -78,21 +73,6 @@ const CreateProductPage = () => {
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) setFiles(Array.from(e.target.files));
-  };
-
-  const handleAddSize = () => {
-    setForm({ ...form, sizes: [...form.sizes, { label: '', price: '' }] });
-  };
-
-  const handleRemoveSize = (index: number) => {
-    const updatedSizes = form.sizes.filter((_, i) => i !== index);
-    setForm({ ...form, sizes: updatedSizes });
-  };
-
-  const handleSizeChange = (index: number, field: 'label' | 'price', value: string) => {
-    const updatedSizes = [...form.sizes];
-    updatedSizes[index][field] = value;
-    setForm({ ...form, sizes: updatedSizes });
   };
 
   const validateDiscount = () => {
@@ -114,8 +94,7 @@ const CreateProductPage = () => {
       ...form,
       price: Number(banglaToEnglish(form.price)) || 0,
       discount: Number(banglaToEnglish(form.discount)) || 0,
-      // stock stays boolean
-      sizes: form.sizes.map(s => ({ label: s.label, price: Number(banglaToEnglish(s.price)) || 0 })),
+      quantity: Number(banglaToEnglish(form.quantity)),
     };
 
     const formData = new FormData();
@@ -203,45 +182,17 @@ const CreateProductPage = () => {
           />
         </div>
 
-        {/* Stock as Switch */}
-        <div className="flex items-center gap-3">
-          <Label className="font-semibold">In Stock</Label>
-          <Switch
-            checked={form.stock}
-            onCheckedChange={(val) => setForm({ ...form, stock: val })}
-          />
-        </div>
-
-        {/* Sizes Section */}
-        <div>
-          <Label className="mb-1 block font-semibold">Product Sizes</Label>
-          {form.sizes.map((size, index) => (
-            <div key={index} className="mb-3 flex min-w-0 flex-col gap-2 sm:flex-row">
-              <input
-                type="text"
-                placeholder="Size Label (e.g., 500 gm)"
-                value={size.label}
-                onChange={(e) => handleSizeChange(index, 'label', e.target.value)}
-                className="min-w-0 w-full rounded-md border px-3 py-2 sm:flex-1"
-                required
-              />
-              <input
-                type="text"
-                placeholder="Price"
-                value={size.price}
-                onChange={(e) => handleSizeChange(index, 'price', e.target.value)}
-                className="min-w-0 w-full rounded-md border px-3 py-2 sm:flex-1"
-                required
-              />
-              <Button className="w-full sm:w-auto" type="button" variant="destructive" onClick={() => handleRemoveSize(index)}>
-                Remove
-              </Button>
-            </div>
-          ))}
-          <Button className='text-black bg-amber-400 hover:text-black' type="button" onClick={handleAddSize}>
-            Add Size
-          </Button>
-        </div>
+        <FormInput
+          label="Inventory quantity"
+          name="quantity"
+          type="number"
+          min={0}
+          step={1}
+          value={form.quantity}
+          onChange={handleChange}
+          placeholder="Enter available quantity"
+          required
+        />
 
         {/* File Upload */}
         <div>
@@ -264,7 +215,7 @@ const CreateProductPage = () => {
               <SelectValue placeholder="Choose service" />
             </SelectTrigger>
             <SelectContent>
-              {serviceData?.data?.map((service) => (
+              {serviceData?.data?.map((service: Service) => (
                 <SelectItem key={service._id} value={service._id}>
                   {service.name}
                 </SelectItem>
@@ -281,7 +232,7 @@ const CreateProductPage = () => {
               <SelectValue placeholder="Choose category" />
             </SelectTrigger>
             <SelectContent>
-              {categoryData?.data?.map((cat) => (
+              {categoryData?.data?.map((cat: Category) => (
                 <SelectItem key={cat._id} value={cat._id}>
                   {cat.name}
                 </SelectItem>
@@ -298,7 +249,7 @@ const CreateProductPage = () => {
               <SelectValue placeholder="Choose subcategory" />
             </SelectTrigger>
             <SelectContent>
-              {subCategoryData?.data?.map((sub) => (
+              {subCategoryData?.data?.map((sub: Subcategory) => (
                 <SelectItem key={sub._id} value={sub._id}>
                   {sub.name}
                 </SelectItem>
