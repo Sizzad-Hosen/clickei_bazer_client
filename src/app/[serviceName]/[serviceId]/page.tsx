@@ -67,20 +67,20 @@ export default function ServicePage() {
   if (isFetching) return <Spinner />;
 
   return (
-    <div className="flex flex-col md:flex-row min-h-screen">
+    <div className="flex min-h-screen min-w-0 max-w-full flex-col md:flex-row">
       {/* Sidebar */}
       <div className="w-full md:w-64 border-r bg-gray-50">
         <Sidebar />
       </div>
 
       {/* Main Content */}
-      <main className="flex-1 ms-6 p-4 md:p-8">
+      <main className="min-w-0 flex-1 p-4 md:p-8">
         <h1 className="text-2xl md:text-3xl font-bold mb-6 text-center md:text-left">
           All {serviceName} Categories
         </h1>
 
         {categories.length ? (
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 xl:grid-cols-5 gap-6">
+          <div className="grid grid-cols-1 gap-4 min-[400px]:grid-cols-2 sm:grid-cols-3 sm:gap-6 lg:grid-cols-5">
             {categories.map((cat, index) => {
               const colors = ["bg-yellow-100", "bg-green-100", "bg-blue-100", "bg-pink-100", "bg-purple-100"];
               const bgColor = colors[index % colors.length];

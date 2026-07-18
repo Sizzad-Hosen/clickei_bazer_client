@@ -56,7 +56,7 @@ const ProductsBySubcategoryPage: React.FC<ProductsBySubcategoryPageProps> = ({
       {products.length === 0 ? (
         <p className="text-center text-gray-500">No products found.</p>
       ) : (
-        <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-3">
+        <div className="grid grid-cols-1 gap-3 min-[400px]:grid-cols-2 md:grid-cols-4 lg:grid-cols-5">
           {products.map(product => (
             <ProductCard key={product._id} product={product} onOpenCart={onOpenCart} />
           ))}

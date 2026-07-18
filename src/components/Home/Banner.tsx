@@ -47,8 +47,8 @@ export default function BannerSlider() {
   }, [currentIndex]);
 
   return (
-    <div className="relative w-[90%] sm:w-[75%] md:w-[80%] lg:w-[90%] xl:w-[100%] mb-12 mx-auto overflow-hidden rounded-lg shadow-lg">
-      <div className="relative h-[200px] sm:h-[250px] md:h-[300px] lg:h-[400px] xl:h-[500px]">
+    <section aria-label="Featured offers" className="relative mx-auto mb-8 w-full max-w-7xl overflow-hidden rounded-lg shadow-lg sm:mb-12">
+      <div className="relative aspect-[16/9] w-full sm:aspect-[16/7]">
         {banners.map((banner, index) => (
           <div
             key={banner.id}
@@ -81,6 +81,6 @@ export default function BannerSlider() {
           />
         ))}
       </div>
-    </div>
+    </section>
   );
 }

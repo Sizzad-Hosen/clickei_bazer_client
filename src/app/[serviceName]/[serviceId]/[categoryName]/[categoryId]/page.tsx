@@ -128,7 +128,7 @@ export default function CategoryPage() {
         {productsLoading ? (
           <Spinner />
         ) : productsData?.data?.length ? (
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6">
+          <div className="grid grid-cols-1 gap-4 min-[400px]:grid-cols-2 sm:grid-cols-3 md:gap-6 lg:grid-cols-4 xl:grid-cols-5">
             {productsData.data.map((product: Product) => (
               <div key={product._id} className="flex justify-center items-stretch">
                 <div className="w-full bg-white rounded-lg shadow hover:shadow-lg transition flex flex-col">
