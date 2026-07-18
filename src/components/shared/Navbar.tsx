@@ -132,12 +132,12 @@ const Navbar = () => {
       <div className="mx-auto max-w-7xl px-3 py-2 sm:px-4">
 
         {/* MOBILE NAVBAR */}
-        <div className="flex items-center justify-between md:hidden">
-          <Link href="/" className="flex-1 ps-5 flex justify-center">
+        <div className="flex min-h-10 w-full items-center justify-between gap-3 md:hidden">
+          <Link href="/" className="flex min-w-0 items-center">
             <Image src={logo} alt="ClickeiBazer Logo" width={100} height={40} className="object-contain" />
           </Link>
           {user ? (
-            <button type="button" aria-label="Open account menu" onClick={() => setSidebarOpen(true)}>
+            <button type="button" aria-label="Open account menu" className="flex size-10 shrink-0 items-center justify-center rounded-md" onClick={() => setSidebarOpen(true)}>
               <MoreVertical size={24} className="text-white" />
             </button>
           ) : (

@@ -44,6 +44,15 @@ test('mobile navigation supports keyboard dismissal', async () => {
   }
 });
 
+test('homepage product collections show two cards on mobile', async () => {
+  const [recommended, wishlist] = await Promise.all([
+    read('src/components/Home/SubCategoryWiseProducts.tsx'),
+    read('src/components/Home/HomeWishList.tsx'),
+  ]);
+  assert.match(recommended, /grid grid-cols-2/);
+  assert.match(wishlist, /grid grid-cols-2/);
+});
+
 test('only App Router route files remain', async () => {
   await assert.rejects(read('src/pages/_app.tsx'));
   const appLayout = await read('src/app/layout.tsx');

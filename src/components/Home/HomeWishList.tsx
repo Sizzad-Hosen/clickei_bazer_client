@@ -35,7 +35,7 @@ export default function WishlistHome({ onOpenCart }: WishlistHomeProps) {
       {isLoading ? (
         <Spinner />
       ) : wishlistProducts.length > 0 ? (
-        <div className="grid grid-cols-1 gap-4 min-[400px]:grid-cols-2 md:grid-cols-4 lg:grid-cols-5">
+        <div className="grid grid-cols-2 gap-2 sm:gap-4 md:grid-cols-4 lg:grid-cols-5">
           {wishlistProducts.map((product: Product) => (
             <ProductCard
               key={product._id}
