@@ -10,6 +10,7 @@ import { toast } from "sonner";
 import { setUser, TUser } from "@/redux/features/auth/authSlices";
 import { useDispatch } from "react-redux";
 import { verifyToken } from "@/utils/verifyToken";
+import Link from "next/link";
 
 const LoginPage = () => {
   const router = useRouter();
@@ -74,6 +75,14 @@ const LoginPage = () => {
               onChange={handleChange}
               required
             />
+            <div className="flex justify-end">
+              <Link
+                href="/forgot-password"
+                className="text-sm font-medium text-amber-700 hover:text-amber-800 hover:underline"
+              >
+                Forgot password?
+              </Link>
+            </div>
             <Button variant={"secondary"} type="submit" className="w-full">
               Login
             </Button>
