@@ -262,7 +262,7 @@ export default function ProductCard({ product, onOpenCart }: Props) {
             <div className="space-y-6">
               <div className="flex justify-between items-start">
                 <DialogTitle className="text-2xl font-bold">{product.title}</DialogTitle>
-                <button onClick={handleToggleWishlist} className="bg-white rounded-full p-2 shadow focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <button type="button" aria-label={isInWishlist ? 'Remove from wishlist' : 'Add to wishlist'} onClick={handleToggleWishlist} className="bg-white rounded-full p-2 shadow focus:outline-none focus:ring-2 focus:ring-blue-500">
                   {isInWishlist ? <Heart className="text-red-500 h-6 w-6" /> : <HeartOff className="text-gray-400 h-6 w-6" />}
                 </button>
               </div>

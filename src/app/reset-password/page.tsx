@@ -83,6 +83,7 @@ function ResetPasswordForm() {
               placeholder="Enter a new password"
               value={form.newPassword}
               onChange={(event) => setForm({ ...form, newPassword: event.target.value })}
+              autoComplete="new-password"
               required
             />
             <FormInput
@@ -92,6 +93,7 @@ function ResetPasswordForm() {
               placeholder="Enter the password again"
               value={form.confirmPassword}
               onChange={(event) => setForm({ ...form, confirmPassword: event.target.value })}
+              autoComplete="new-password"
               required
             />
             {error && <p role="alert" className="text-sm text-red-600">{error}</p>}

@@ -14,7 +14,7 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({ images, title }) => {
 
   if (!images || images.length === 0) {
     return (
-      <div className="relative w-full h-64 bg-gray-200 flex items-center justify-center">
+      <div className="relative flex aspect-square w-full items-center justify-center rounded bg-gray-200">
         <span className="text-gray-500">No Image</span>
       </div>
     );
@@ -29,17 +29,20 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({ images, title }) => {
   };
 
   return (
-    <div className="relative w-full max-w-md mx-auto">
-      <div className="relative w-full h-88">
+    <div className="relative mx-auto w-full max-w-md">
+      <div className="relative aspect-square w-full overflow-hidden rounded">
         <Image
           src={images[currentIndex]}
           alt={title || `Image ${currentIndex + 1}`}
           fill
           className="object-cover rounded"
+          sizes="(max-width: 768px) calc(100vw - 2rem), 448px"
         />
 
         {/* Left Arrow */}
         <button
+          type="button"
+          aria-label="Show previous product image"
           onClick={prevImage}
           className="absolute top-1/2 left-2 transform -translate-y-1/2 bg-white/70 p-2 rounded-full hover:bg-white transition"
         >
@@ -48,6 +51,8 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({ images, title }) => {
 
         {/* Right Arrow */}
         <button
+          type="button"
+          aria-label="Show next product image"
           onClick={nextImage}
           className="absolute top-1/2 right-2 transform -translate-y-1/2 bg-white/70 p-2 rounded-full hover:bg-white transition"
         >

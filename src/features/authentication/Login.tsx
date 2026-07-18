@@ -63,6 +63,8 @@ const LoginPage = () => {
               placeholder="john@example.com"
               value={form.email}
               onChange={handleChange}
+              autoComplete="email"
+              inputMode="email"
               required
             />
             <FormInput
@@ -72,6 +74,7 @@ const LoginPage = () => {
               placeholder="••••••••"
               value={form.password}
               onChange={handleChange}
+              autoComplete="current-password"
               required
             />
             <div className="flex justify-end">

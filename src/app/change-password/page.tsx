@@ -69,6 +69,7 @@ const ChangePasswordPage = () => {
               placeholder="Enter old password"
               value={formData.oldPassword}
               onChange={handleChange}
+              autoComplete="current-password"
               required
             />
 
@@ -79,6 +80,7 @@ const ChangePasswordPage = () => {
               placeholder="Enter new password"
               value={formData.newPassword}
               onChange={handleChange}
+              autoComplete="new-password"
               required
             />
 

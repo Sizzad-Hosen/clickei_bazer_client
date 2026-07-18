@@ -75,6 +75,8 @@ export default function ForgotPasswordPage() {
                 placeholder="john@example.com"
                 value={email}
                 onChange={(event) => setEmail(event.target.value)}
+                autoComplete="email"
+                inputMode="email"
                 required
               />
               {error && <p role="alert" className="text-sm text-red-600">{error}</p>}

@@ -135,6 +135,7 @@ const RegisterPage: React.FC = () => {
               placeholder="John Doe"
               value={form.name}
               onChange={handleChange}
+              autoComplete="name"
               required
               error={errors.name}
               touched={touched.name}
@@ -147,6 +148,8 @@ const RegisterPage: React.FC = () => {
               placeholder="john@example.com"
               value={form.email}
               onChange={handleChange}
+              autoComplete="email"
+              inputMode="email"
               required
               error={errors.email}
               touched={touched.email}
@@ -159,6 +162,8 @@ const RegisterPage: React.FC = () => {
               placeholder="01725647800"
               value={form.phone}
               onChange={handleChange}
+              autoComplete="tel"
+              inputMode="tel"
               required
               error={errors.phone}
               touched={touched.phone}
@@ -171,6 +176,7 @@ const RegisterPage: React.FC = () => {
               placeholder="••••••••"
               value={form.password}
               onChange={handleChange}
+              autoComplete="new-password"
               required
               error={errors.password}
               touched={touched.password}
