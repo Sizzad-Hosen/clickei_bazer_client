@@ -177,6 +177,17 @@ getAllCustomBazarOrders: builder.query<
       }),
       invalidatesTags: ["CustomOrder"],
     }),
+    updateCustomOrderItems: builder.mutation<
+      TCustomBazerOrder,
+      { invoiceId: string; orderItems: Array<{ product: string; subcategoryName: string; quantity: number }> }
+    >({
+      query: ({ invoiceId, orderItems }) => ({
+        url: `/customBazerOrders/update-items/${invoiceId}`,
+        method: 'PATCH',
+        body: { orderItems },
+      }),
+      invalidatesTags: ['CustomOrder'],
+    }),
   }),
 });
 
@@ -191,6 +202,7 @@ export const {
   useDeleteCustomProductMutation,
   useUpdateCustomBazarProductMutation,
   useUpdateCustomOrderPaymentStatusMutation,
+  useUpdateCustomOrderItemsMutation,
 } = customBazarApi;
 
 export default customBazarApi;

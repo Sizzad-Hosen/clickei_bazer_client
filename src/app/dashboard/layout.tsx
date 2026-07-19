@@ -1,44 +1,19 @@
 'use client';
 
-import React, { ReactNode, useEffect, useState } from "react";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useDispatch } from "react-redux";
+import type { ReactNode } from 'react';
+import { useEffect, useState } from 'react';
+import { Menu, X } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { useDispatch } from 'react-redux';
 
-import {
-  Home,
-  Box,
-  PlusCircle,
-  Layers,
-  Package,
-  ShoppingCart,
-  Users,
-  HomeIcon,
-  Menu,
-  X,
-  LogOut
-} from "lucide-react";
-import { logout } from "@/redux/features/auth/authSlices";
-import ProtectedRoute from "@/components/ProtectedRoute";
-import { useLogoutMutation } from "@/redux/features/auth/authApi";
+import ProtectedRoute from '@/components/ProtectedRoute';
+import { DashboardNavigation } from '@/components/dashboard/DashboardNavigation';
+import { useLogoutMutation } from '@/redux/features/auth/authApi';
+import { logout } from '@/redux/features/auth/authSlices';
 
 interface DashboardLayoutProps {
   children: ReactNode;
 }
-
-const navItems = [
-  { href: "/dashboard", label: "Dashboard Home", icon: Home },
-  { href: "/dashboard/services", label: "Services", icon: Box },
-  { href: "/dashboard/categories", label: "Categories", icon: Layers },
-  { href: "/dashboard/subCategories", label: "SubCategories", icon: Layers },
-  { href: "/dashboard/products", label: "Products", icon: Package },
-  { href: "/dashboard/products/create-product", label: "Create Product", icon: PlusCircle },
-  { href: "/dashboard/orders", label: "Orders", icon: ShoppingCart },
-  { href: "/dashboard/customBazarOrders", label: "CustomBazar Orders", icon: ShoppingCart },
-  { href: "/dashboard/custom-bazar-products", label: "View CustomBazar Products", icon: Box},
-  { href: "/dashboard/users", label: "Users", icon: Users },
-  { href: "/", label: "Home", icon: HomeIcon },
-];
 
 export default function DashboardLayout({ children }: DashboardLayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -48,11 +23,14 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
 
   useEffect(() => {
     if (!sidebarOpen) return;
+
     const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
+
     const closeOnEscape = (event: KeyboardEvent) => {
       if (event.key === 'Escape') setSidebarOpen(false);
     };
+
     document.addEventListener('keydown', closeOnEscape);
     return () => {
       document.body.style.overflow = previousOverflow;
@@ -61,70 +39,90 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
   }, [sidebarOpen]);
 
   const handleLogout = async () => {
-    try { await logoutFromServer().unwrap(); } catch { /* Clear local session even if offline. */ }
+    try {
+      await logoutFromServer().unwrap();
+    } catch {
+      // The local session should still be cleared when the API is unavailable.
+    }
     dispatch(logout());
-    router.replace("/login");
+    router.replace('/login');
+  };
+
+  const closeSidebar = () => setSidebarOpen(false);
+  const viewportBelowNavbar = {
+    top: 'var(--app-navbar-height)',
+    height: 'calc(100dvh - var(--app-navbar-height))',
   };
 
   return (
     <ProtectedRoute allowedRoles={['admin']}>
-    <div className="flex min-h-screen min-w-0 max-w-full flex-col bg-gray-50 md:flex-row">
-      {/* Mobile Menu Toggle */}
-      <div className="flex justify-between items-center md:hidden p-4 bg-white shadow">
-        <h2 className="text-xl font-bold">Dashboard</h2>
-        <button type="button" aria-label={sidebarOpen ? 'Close dashboard menu' : 'Open dashboard menu'} onClick={() => setSidebarOpen(!sidebarOpen)}>
-          {sidebarOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-        </button>
-      </div>
+      <div className="grid min-h-[calc(100dvh-var(--app-navbar-height))] min-w-0 max-w-full grid-cols-1 bg-gray-50 md:grid-cols-[17rem_minmax(0,1fr)]">
+        <header
+          className="sticky z-30 flex min-w-0 items-center justify-between border-b border-gray-200 bg-white px-4 py-3 shadow-sm md:hidden"
+          style={{ top: 'var(--app-navbar-height)' }}
+        >
+          <h1 className="truncate text-lg font-bold text-gray-900">Admin Dashboard</h1>
+          <button
+            type="button"
+            aria-label="Open dashboard menu"
+            aria-expanded={sidebarOpen}
+            aria-controls="dashboard-mobile-sidebar"
+            onClick={() => setSidebarOpen(true)}
+            className="-mr-2 rounded-md p-2 text-gray-700 transition-colors hover:bg-gray-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-600"
+          >
+            <Menu className="h-6 w-6" aria-hidden="true" />
+          </button>
+        </header>
 
-      {sidebarOpen && (
+        <aside
+          className="sticky hidden self-start overflow-y-auto border-r border-gray-200 bg-white px-4 py-6 md:flex md:flex-col"
+          style={viewportBelowNavbar}
+        >
+          <h2 className="mb-6 px-3 text-2xl font-extrabold tracking-tight text-gray-900">
+            Dashboard
+          </h2>
+          <DashboardNavigation onLogout={handleLogout} />
+        </aside>
+
         <button
           type="button"
           aria-label="Close dashboard menu"
-          className="fixed inset-0 z-[60] bg-black/50 md:hidden"
-          onClick={() => setSidebarOpen(false)}
+          tabIndex={sidebarOpen ? 0 : -1}
+          className={`fixed inset-x-0 bottom-0 z-40 bg-black/50 transition-opacity duration-300 md:hidden ${
+            sidebarOpen ? 'pointer-events-auto opacity-100' : 'pointer-events-none opacity-0'
+          }`}
+          style={{ top: 'var(--app-navbar-height)' }}
+          onClick={closeSidebar}
         />
-      )}
 
-      {/* Sidebar */}
-      <aside
-        className={`${
-          sidebarOpen ? "flex" : "hidden"
-        } fixed inset-y-0 left-0 z-[70] w-72 max-w-[calc(100vw-2rem)] flex-col overflow-y-auto border-r border-gray-200 bg-white p-6 shadow-sm md:static md:flex md:min-h-screen md:max-w-none`}
-      >
-        <button type="button" aria-label="Close dashboard menu" className="mb-4 self-end rounded p-2 md:hidden" onClick={() => setSidebarOpen(false)}>
-          <X className="h-6 w-6" />
-        </button>
-        <h2 className="text-2xl font-extrabold tracking-tight mb-8 text-gray-900 hidden md:block">
-          Dashboard
-        </h2>
-        <nav className="flex flex-col space-y-2 text-gray-700 text-sm font-medium">
-          {navItems.map(({ href, label, icon: Icon }) => (
-            <Link
-              key={href}
-              href={href}
-              className="flex items-center gap-3 rounded-md px-3 py-2 hover:bg-gray-100 hover:text-gray-900 transition"
-              onClick={() => setSidebarOpen(false)}
+        <aside
+          id="dashboard-mobile-sidebar"
+          aria-label="Dashboard menu"
+          aria-hidden={!sidebarOpen}
+          inert={!sidebarOpen}
+          className={`fixed bottom-0 left-0 z-50 flex w-72 max-w-[calc(100vw-2rem)] flex-col overflow-y-auto border-r border-gray-200 bg-white px-4 py-4 shadow-xl transition-transform duration-300 ease-out md:hidden ${
+            sidebarOpen ? 'translate-x-0' : '-translate-x-full'
+          }`}
+          style={{ top: 'var(--app-navbar-height)' }}
+        >
+          <div className="mb-4 flex items-center justify-between gap-3 px-2">
+            <h2 className="truncate text-xl font-bold text-gray-900">Dashboard</h2>
+            <button
+              type="button"
+              aria-label="Close dashboard menu"
+              onClick={closeSidebar}
+              className="shrink-0 rounded-md p-2 text-gray-700 transition-colors hover:bg-gray-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-600"
             >
-              <Icon className="w-5 h-5" />
-              {label}
-            </Link>
-          ))}
-          <button
-            onClick={handleLogout}
-            className="flex items-center gap-3 rounded-md px-3 py-2 text-red-600 hover:bg-red-100 transition mt-4"
-          >
-            <LogOut className="w-5 h-5" />
-            Logout
-          </button>
-        </nav>
-      </aside>
+              <X className="h-6 w-6" aria-hidden="true" />
+            </button>
+          </div>
+          <DashboardNavigation onNavigate={closeSidebar} onLogout={handleLogout} />
+        </aside>
 
-      {/* Main Content */}
-      <main className="min-w-0 max-w-full flex-1 overflow-y-auto bg-white py-4 shadow-lg md:rounded-lg md:py-8">
-        {children}
-      </main>
-    </div>
+        <section aria-label="Dashboard content" className="min-w-0 max-w-full bg-white py-5 sm:py-7 md:py-8">
+          {children}
+        </section>
+      </div>
     </ProtectedRoute>
   );
 }

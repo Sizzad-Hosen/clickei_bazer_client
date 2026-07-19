@@ -15,6 +15,8 @@ import { useGetAllProductsBySearchQuery } from '@/redux/features/Products/produc
 import type { Product } from '@/types/products';
 import { useLogoutMutation } from '@/redux/features/auth/authApi';
 
+
+
 const Navbar = () => {
   const router = useRouter();
   const dispatch = useDispatch();
@@ -30,8 +32,27 @@ const Navbar = () => {
 
   const dropdownRefDesktop = useRef<HTMLDivElement>(null);
   const dropdownRefMobile = useRef<HTMLDivElement>(null);
+  const navbarRef = useRef<HTMLElement>(null);
 
   useEffect(() => setIsClient(true), []);
+
+  useEffect(() => {
+    const navbar = navbarRef.current;
+    if (!navbar) return;
+
+    const updateNavbarHeight = () => {
+      document.documentElement.style.setProperty(
+        '--app-navbar-height',
+        `${navbar.getBoundingClientRect().height}px`,
+      );
+    };
+
+    updateNavbarHeight();
+    const resizeObserver = new ResizeObserver(updateNavbarHeight);
+    resizeObserver.observe(navbar);
+
+    return () => resizeObserver.disconnect();
+  }, [isClient]);
 
   useEffect(() => {
     if (!sidebarOpen) return;
@@ -69,6 +90,7 @@ const Navbar = () => {
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [profileDropdownOpen]);
+
 
   const { data, isFetching } = useGetAllProductsBySearchQuery(
     debouncedQuery ? { title: debouncedQuery } : {},
@@ -128,12 +150,13 @@ const Navbar = () => {
   if (!isClient) return null;
 
   return (
-    <nav className="bg-gray-800 border-b border-gray-700 shadow-sm sticky top-0 z-50 w-full">
+    <nav ref={navbarRef} className="sticky top-0 z-[100] w-full border-b border-gray-700 bg-gray-800 shadow-sm">
       <div className="mx-auto max-w-7xl px-3 py-2 sm:px-4">
 
         {/* MOBILE NAVBAR */}
-        <div className="flex min-h-10 w-full items-center justify-between gap-3 md:hidden">
-          <Link href="/" className="flex min-w-0 items-center">
+        <div className="grid min-h-10 w-full grid-cols-[2.5rem_1fr_auto] items-center gap-2 md:hidden">
+          <span className="size-10" aria-hidden="true" />
+          <Link href="/" className="flex min-w-0 items-center justify-center justify-self-center">
             <Image src={logo} alt="ClickeiBazer Logo" width={100} height={40} className="object-contain" />
           </Link>
           {user ? (
@@ -167,7 +190,7 @@ const Navbar = () => {
 
         {/* MOBILE SIDEBAR */}
         {sidebarOpen && (
-          <div className="fixed inset-0 z-50 flex justify-end" role="dialog" aria-modal="true" aria-label="Account menu">
+          <div className="fixed inset-0 z-[110] flex justify-end" role="dialog" aria-modal="true" aria-label="Account menu">
             <button type="button" aria-label="Close account menu" className="fixed inset-0 bg-black/50" onClick={() => setSidebarOpen(false)} />
             <div id="mobile-sidebar" className="relative flex h-full w-64 max-w-[calc(100vw-2rem)] flex-col overflow-y-auto bg-white p-2 shadow-lg">
               <button type="button" aria-label="Close account menu" className="mb-4 self-end p-2" onClick={() => setSidebarOpen(false)}>

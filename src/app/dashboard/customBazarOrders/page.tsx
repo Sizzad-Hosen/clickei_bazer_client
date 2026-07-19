@@ -35,7 +35,9 @@ import Spinner from '@/components/Spinner';
 import {
   useDeleteCustomOrderByIdMutation,
   useGetAllCustomBazarOrdersQuery,
+  useGetAllCustomBazarProductsQuery,
   useUpdateCustomBazarOrderStatusMutation,
+  useUpdateCustomOrderItemsMutation,
   useUpdateCustomOrderPaymentStatusMutation,
 } from '@/redux/features/CustomBazar/customBazarApi';
 import { toast } from 'sonner';
@@ -43,7 +45,7 @@ import { MdDelete } from 'react-icons/md';
 import Swal from 'sweetalert2';
 import { TMeta } from '@/types/global';
 import { CUSTOM_ORDER_STATUSES, TCustomBazerOrder, TCustomOrderStatus, TPaymentStatus } from '@/types/CustomBazar';
-import { Plus } from 'lucide-react';
+import { Pencil, Plus } from 'lucide-react';
 import CustomBazarForm from '@/features/custom-bazar/CreateCustomBazar';
 
 const ORDERS_PER_PAGE = 10;
@@ -63,6 +65,20 @@ const AllCustomBazarOrders: React.FC = () => {
   const [updateStatus] = useUpdateCustomBazarOrderStatusMutation();
   const [updatePaymentStatus] = useUpdateCustomOrderPaymentStatusMutation();
   const [deleteOrder] = useDeleteCustomOrderByIdMutation();
+  const { data: customProductData } = useGetAllCustomBazarProductsQuery();
+  const customProducts = customProductData?.data ?? [];
+  const [updateCustomOrderItems, { isLoading: isUpdatingItems }] = useUpdateCustomOrderItemsMutation();
+  const [draftItems, setDraftItems] = useState<Array<{ product: string; subcategoryName: string; quantity: number }>>([]);
+
+  const saveCustomOrderItems = async (invoiceId: string) => {
+    try {
+      await updateCustomOrderItems({ invoiceId, orderItems: draftItems }).unwrap();
+      toast.success('Custom Bazar items updated');
+      refetch();
+    } catch {
+      toast.error('Failed to update Custom Bazar items');
+    }
+  };
 
   const handlePageChange = (newPage: number) => setPage(newPage);
 
@@ -242,7 +258,7 @@ const AllCustomBazarOrders: React.FC = () => {
                           <DialogHeader>
                             <DialogTitle>Order Details</DialogTitle>
                           </DialogHeader>
-                          <div className="space-y-2 text-sm max-h-[400px] overflow-y-auto">
+                          <div className="space-y-3 text-sm max-h-[70vh] overflow-y-auto pr-1">
                             <p><strong>Invoice:</strong> {order.invoiceId}</p>
                             <p><strong>Name:</strong> {order.user?.name}</p>
                             <p><strong>Email:</strong> {order.user?.email}</p>
@@ -255,9 +271,9 @@ const AllCustomBazarOrders: React.FC = () => {
                             <p><strong>OrderNote:</strong> {order.siteNote}</p>
                             <p><strong>Total:</strong> ৳{order.totalAmount?.toFixed(2)}</p>
                             <hr />
-                            <h4 className="font-medium mt-2">Items:</h4>
+                            <h4 className="font-semibold mt-2">Order items</h4>
                             {order.orderItems.map((item, idx) => (
-                              <div key={idx} className="border-b py-1">
+                              <article key={`${item.subcategoryName}-${idx}`} className="rounded-lg border bg-gray-50 p-3">
                                 <p>
                                   <strong>{item.subcategoryName}</strong> ({item.unit}) x {item.quantity}
                                 </p>
@@ -265,8 +281,134 @@ const AllCustomBazarOrders: React.FC = () => {
                                 <p>
                                   Price/unit: ৳{item.pricePerUnit} | Total: ৳{item.totalPrice}
                                 </p>
-                              </div>
+                              </article>
                             ))}
+                            <div className="rounded-lg bg-gray-900 p-3 text-right font-semibold text-white">
+                              Grand total: Tk {(order.totalAmount ?? 0).toFixed(2)}
+                            </div>
+                          </div>
+                        </DialogContent>
+                      </Dialog>
+
+                      <Dialog>
+                        <DialogTrigger asChild>
+                          <Button
+                            size="sm"
+                            className="gap-2"
+                            onClick={() => setDraftItems(order.orderItems.map((item) => ({
+                              product: typeof item.product === 'string' ? item.product : (item.product as { _id: string })._id,
+                              subcategoryName: item.subcategoryName,
+                              quantity: item.quantity,
+                            })))}
+                          >
+                            <Pencil className="h-4 w-4" /> Edit
+                          </Button>
+                        </DialogTrigger>
+                        <DialogContent className="max-w-md">
+                          <DialogHeader>
+                            <DialogTitle>Edit custom order - {order.invoiceId}</DialogTitle>
+                          </DialogHeader>
+                          <div className="space-y-5">
+                            <div className="space-y-2">
+                              <label className="text-sm font-medium">Order status</label>
+                              <Select
+                                value={order.status}
+                                onValueChange={(value) =>
+                                  handleStatusChange(order.invoiceId as string, value as TCustomOrderStatus, 'order')
+                                }
+                              >
+                                <SelectTrigger><SelectValue /></SelectTrigger>
+                                <SelectContent>
+                                  {CUSTOM_ORDER_STATUSES.map((status) => (
+                                    <SelectItem key={status} value={status}>{status}</SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            </div>
+                            <div className="space-y-2">
+                              <label className="text-sm font-medium">Payment status</label>
+                              <Select
+                                value={order.paymentStatus ?? 'pending'}
+                                onValueChange={(value) =>
+                                  handleStatusChange(order.invoiceId as string, value as TPaymentStatus, 'payment')
+                                }
+                              >
+                                <SelectTrigger><SelectValue /></SelectTrigger>
+                                <SelectContent>
+                                  {['pending', 'paid', 'success', 'failed'].map((status) => (
+                                    <SelectItem key={status} value={status}>{status}</SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            </div>
+                            <div className="space-y-3 border-t pt-4">
+                              <div className="flex items-center justify-between">
+                                <label className="text-sm font-semibold">Products and quantities</label>
+                                <Button
+                                  type="button"
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => {
+                                    const product = customProducts[0];
+                                    const subcategory = product?.subcategories?.[0];
+                                    if (product && subcategory) setDraftItems((items) => [...items, { product: product._id, subcategoryName: subcategory.name, quantity: 1 }]);
+                                  }}
+                                >
+                                  Add item
+                                </Button>
+                              </div>
+                              {draftItems.map((item, index) => {
+                                const selectedProduct = customProducts.find((product) => product._id === item.product);
+                                return (
+                                  <div key={index} className="space-y-2 rounded-md border p-2">
+                                    <div className="grid grid-cols-2 gap-2">
+                                      <select
+                                        className="rounded-md border px-3 py-2 text-sm"
+                                        value={item.product}
+                                        onChange={(event) => {
+                                          const product = customProducts.find((entry) => entry._id === event.target.value);
+                                          setDraftItems((items) => items.map((entry, itemIndex) => itemIndex === index ? { ...entry, product: event.target.value, subcategoryName: product?.subcategories?.[0]?.name ?? '' } : entry));
+                                        }}
+                                      >
+                                        {customProducts.map((product) => <option key={product._id} value={product._id}>{product.category}</option>)}
+                                      </select>
+                                      <select
+                                        className="rounded-md border px-3 py-2 text-sm"
+                                        value={item.subcategoryName}
+                                        onChange={(event) => setDraftItems((items) => items.map((entry, itemIndex) => itemIndex === index ? { ...entry, subcategoryName: event.target.value } : entry))}
+                                      >
+                                        {(selectedProduct?.subcategories ?? []).map((subcategory, subcategoryIndex) => (
+                                          <option
+                                            key={`${selectedProduct?._id}-${subcategory.name}-${subcategory.unit}-${subcategory.pricePerUnit}-${subcategoryIndex}`}
+                                            value={subcategory.name}
+                                          >
+                                            {subcategory.name} ({subcategory.unit})
+                                          </option>
+                                        ))}
+                                      </select>
+                                    </div>
+                                    <div className="grid grid-cols-[1fr_auto] gap-2">
+                                      <Input
+                                        type="number"
+                                        min={0.01}
+                                        step="any"
+                                        value={item.quantity}
+                                        onChange={(event) => setDraftItems((items) => items.map((entry, itemIndex) => itemIndex === index ? { ...entry, quantity: Math.max(0.01, Number(event.target.value)) } : entry))}
+                                      />
+                                      <Button type="button" variant="destructive" size="sm" onClick={() => setDraftItems((items) => items.filter((_, itemIndex) => itemIndex !== index))}>Remove</Button>
+                                    </div>
+                                  </div>
+                                );
+                              })}
+                              <Button
+                                type="button"
+                                className="w-full"
+                                disabled={isUpdatingItems || draftItems.length === 0}
+                                onClick={() => saveCustomOrderItems(order.invoiceId as string)}
+                              >
+                                {isUpdatingItems ? 'Saving...' : 'Save Custom Bazar items'}
+                              </Button>
+                            </div>
                           </div>
                         </DialogContent>
                       </Dialog>
