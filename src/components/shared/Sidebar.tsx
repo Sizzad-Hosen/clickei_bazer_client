@@ -68,7 +68,7 @@ export default function Sidebar({ onSelectSubcategory }: SidebarProps) {
         aria-label={mobileOpen ? 'Close services menu' : 'Open services menu'}
         onClick={() => setMobileOpen(!mobileOpen)}
         aria-expanded={mobileOpen}
-        className="fixed left-3 top-6 z-[999] flex size-10 items-center justify-center rounded-md bg-white shadow-md md:hidden"
+        className="fixed left-3 top-2 z-[999] flex size-10 items-center justify-center rounded-md bg-white shadow-md md:hidden"
       >
         {mobileOpen ? <X size={20} /> : <Menu size={24} />}
       </button>

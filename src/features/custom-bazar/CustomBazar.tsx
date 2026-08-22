@@ -64,9 +64,9 @@ const CustomBazarPage: React.FC = () => {
   if (isError) return <p className="text-red-500">Failed to load products.</p>;
 
   // Handlers
-  const handleAddProduct = (categoryId: string, subName: string) => {
+  const handleAddProduct = (categoryId: string, subcategoryIndex: number) => {
     const category = categories.find(cat => cat._id === categoryId);
-    const sub = category?.subcategories?.find(s => s.name === subName);
+    const sub = category?.subcategories?.[subcategoryIndex];
     if (!sub) return;
 
     setSelections(prev => {
@@ -220,12 +220,18 @@ const orderItems: TCustomBazerOrderItem[] = Object.entries(selections)
 
               <select
                 className="w-full border px-2 py-1 rounded"
-                onChange={e => handleAddProduct(category._id, e.target.value)}
+                onChange={e => {
+                  if (e.target.value === '') return;
+                  handleAddProduct(category._id, Number(e.target.value));
+                }}
                 defaultValue=""
               >
                 <option value="">Select Subcategory to Add</option>
-                {category.subcategories?.map(sub => (
-                  <option key={sub._id} value={sub.name}>
+                {category.subcategories?.map((sub, subcategoryIndex) => (
+                  <option
+                    key={`${category._id}-${subcategoryIndex}`}
+                    value={subcategoryIndex}
+                  >
                     {sub.name} - {sub.pricePerUnit}৳
                   </option>
                 ))}
