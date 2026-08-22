@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useDeleteProductMutation, useGetSingleProductQuery } from '@/redux/features/Products/productApi';
 import { useRouter, useParams } from 'next/navigation';
 import Image from 'next/image';
@@ -25,6 +25,12 @@ const ProductDetailsPage = () => {
 
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [deleteProduct, { isLoading: isDeleting }] = useDeleteProductMutation();
+
+  useEffect(() => {
+    if (new URLSearchParams(window.location.search).get('action') === 'edit') {
+      setIsEditOpen(true);
+    }
+  }, []);
 
   if (isLoading) return <Spinner />;
 
@@ -134,13 +140,14 @@ const ProductDetailsPage = () => {
         </p>
       </section>
 
-      <section className="flex gap-4">
+      <section className="flex flex-wrap gap-4" aria-label="Admin product actions">
         <Button
           onClick={() => setIsEditOpen(true)}
           aria-label="Edit product"
           className="px-6 py-2 flex items-center gap-2"
         >
           <MdEdit size={20} />
+          Edit product
         </Button>
         <Button
           variant="destructive"
@@ -150,6 +157,7 @@ const ProductDetailsPage = () => {
           className="px-6 py-2 flex items-center gap-2"
         >
           <MdDelete size={20} />
+          Delete product
         </Button>
       </section>
 

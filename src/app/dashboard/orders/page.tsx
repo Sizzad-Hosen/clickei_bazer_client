@@ -37,12 +37,16 @@ import {
   useDeleteOrderByIdMutation,
   useGetAllOrdersQuery,
   useUpdateOrderPaymentStatusMutation,
+  useUpdateOrderItemsMutation,
   useUpdateStatusMutation,
 } from "@/redux/features/Order/ordersApi";
+import { useGetAllProductsQuery } from "@/redux/features/Products/productApi";
 import { MdDelete } from "react-icons/md";
 import Swal from "sweetalert2";
 import { getOrderTotal, ORDER_STATUSES, Order, OrderStatus } from "@/types/order";
 import { TQueryParam } from "@/types/global";
+import Image from "next/image";
+import { Pencil } from "lucide-react";
 
 const ORDERS_PER_PAGE = 10;
 
@@ -67,6 +71,25 @@ const meta = data?.meta || { total: 0, totalPages: 0 };
   const [updateStatus] = useUpdateStatusMutation();
   const [updatePaymentStatus] = useUpdateOrderPaymentStatusMutation();
   const [deleteOrder] = useDeleteOrderByIdMutation();
+  const [updateOrderItems, { isLoading: isUpdatingItems }] = useUpdateOrderItemsMutation();
+  const { data: productData } = useGetAllProductsQuery({ page: 1, limit: 1000 });
+  const products = productData?.data ?? [];
+  type DraftOrderItem = {
+    productId: string;
+    quantity: number;
+    discount: number;
+    selectedSize?: { label: string; price: number };
+  };
+  const [draftItems, setDraftItems] = useState<DraftOrderItem[]>([]);
+
+  const saveOrderItems = async (invoiceId: string) => {
+    try {
+      await updateOrderItems({ invoiceId, items: draftItems }).unwrap();
+      toast.success("Order products updated");
+    } catch {
+      toast.error("Failed to update order products");
+    }
+  };
 
   const handlePageChange = (newPage: number) => setPage(newPage);
 
@@ -102,16 +125,18 @@ const meta = data?.meta || { total: 0, totalPages: 0 };
   // Build table rows with size, discount, subtotal
   const itemsHTML = order?.items
     ?.map((item, index) => {
-      const unitPrice = item.price * item.quantity
-      const discountAmount = (unitPrice * (item.discount ?? 0)) / 100;
-      const subtotal = (unitPrice - discountAmount) 
+      const discount = item.discount ?? 0;
+      const baseUnitPrice = item.selectedSize?.price ?? (discount < 100 ? item.price / (1 - discount / 100) : item.price);
+      const baseTotal = baseUnitPrice * item.quantity;
+      const subtotal = item.price * item.quantity;
+      const discountAmount = baseTotal - subtotal;
 
       return `
         <tr>
           <td>${index + 1}</td>
-          <td>${item.title}<br/><small>Size: ${item.selectedSize?.label} (৳${item.selectedSize?.price?.toFixed(2) ?? 0})</small></td>
+          <td>${item.title}<br/><small>Size: ${item.selectedSize?.label ?? 'N/A'}${item.selectedSize ? ` (৳${item.selectedSize.price.toFixed(2)})` : ''}</small></td>
           <td>${item.quantity}</td>
-          <td>৳${unitPrice.toFixed(2)}</td>
+          <td>৳${baseUnitPrice.toFixed(2)}</td>
           <td>৳${discountAmount.toFixed(2)}</td>
           <td>৳${subtotal.toFixed(2)}</td>
         </tr>
@@ -284,13 +309,153 @@ const meta = data?.meta || { total: 0, totalPages: 0 };
                   <TableCell className="flex gap-2">
                     <Dialog>
                       <DialogTrigger asChild>
+                        <Button
+                          className="gap-2"
+                          onClick={() => setDraftItems(order.items.map((item) => {
+                            const product = products.find((entry) => entry._id === String(item.productId));
+                            return {
+                              productId: String(item.productId),
+                              quantity: item.quantity,
+                              discount: item.discount ?? product?.discount ?? 0,
+                              selectedSize: item.selectedSize ?? product?.sizes?.[0],
+                            };
+                          }))}
+                        >
+                          <Pencil className="h-4 w-4" /> Edit
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent className="max-w-md">
+                        <DialogHeader>
+                          <DialogTitle>Edit order - {order.invoiceId}</DialogTitle>
+                        </DialogHeader>
+                        <div className="space-y-5">
+                          <div className="space-y-2">
+                            <label className="text-sm font-medium">Order status</label>
+                            <Select
+                              value={order.orderStatus}
+                              onValueChange={(value) =>
+                                handleUpdateStatus(order.invoiceId, value as OrderStatus)
+                              }
+                            >
+                              <SelectTrigger><SelectValue /></SelectTrigger>
+                              <SelectContent>
+                                {ORDER_STATUSES.map((status) => (
+                                  <SelectItem key={status} value={status}>{status}</SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          <div className="space-y-2">
+                            <label className="text-sm font-medium">Payment status</label>
+                            <Select
+                              value={order.paymentStatus}
+                              onValueChange={(value) =>
+                                handleUpdatePaymentStatus(order.invoiceId, value)
+                              }
+                            >
+                              <SelectTrigger><SelectValue /></SelectTrigger>
+                              <SelectContent>
+                                {["pending", "success", "failed"].map((status) => (
+                                  <SelectItem key={status} value={status}>{status}</SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          <div className="space-y-3 border-t pt-4">
+                            <div className="flex items-center justify-between">
+                              <label className="text-sm font-semibold">Products and quantities</label>
+                              <Button
+                                type="button"
+                                size="sm"
+                                variant="outline"
+                                onClick={() => products[0] && setDraftItems((items) => [...items, {
+                                  productId: products[0]._id,
+                                  quantity: 1,
+                                  discount: products[0].discount ?? 0,
+                                  selectedSize: products[0].sizes?.[0],
+                                }])}
+                              >
+                                Add product
+                              </Button>
+                            </div>
+                            {draftItems.map((item, index) => (
+                              <div key={index} className="grid gap-2 rounded-md border p-3 sm:grid-cols-2">
+                                <select
+                                  className="rounded-md border px-3 py-2 text-sm sm:col-span-2"
+                                  value={item.productId}
+                                  onChange={(event) => {
+                                    const product = products.find((entry) => entry._id === event.target.value);
+                                    setDraftItems((items) => items.map((entry, itemIndex) => itemIndex === index ? {
+                                      ...entry,
+                                      productId: event.target.value,
+                                      discount: product?.discount ?? 0,
+                                      selectedSize: product?.sizes?.[0],
+                                    } : entry));
+                                  }}
+                                >
+                                  {products.map((product) => <option key={product._id} value={product._id}>{product.title}</option>)}
+                                </select>
+                                <label className="space-y-1 text-xs font-medium">
+                                  <span>Quantity</span>
+                                  <Input
+                                    type="number"
+                                    min={1}
+                                    value={item.quantity}
+                                    onChange={(event) => setDraftItems((items) => items.map((entry, itemIndex) => itemIndex === index ? { ...entry, quantity: Math.max(1, Number(event.target.value)) } : entry))}
+                                  />
+                                </label>
+                                <label className="space-y-1 text-xs font-medium">
+                                  <span>Discount (%)</span>
+                                  <Input
+                                    type="number"
+                                    min={0}
+                                    max={100}
+                                    value={item.discount}
+                                    onChange={(event) => setDraftItems((items) => items.map((entry, itemIndex) => itemIndex === index ? { ...entry, discount: Math.min(100, Math.max(0, Number(event.target.value))) } : entry))}
+                                  />
+                                </label>
+                                {(() => {
+                                  const product = products.find((entry) => entry._id === item.productId);
+                                  return product?.sizes?.length ? (
+                                    <label className="space-y-1 text-xs font-medium sm:col-span-2">
+                                      <span>Size</span>
+                                      <select
+                                        className="w-full rounded-md border px-3 py-2 text-sm"
+                                        value={item.selectedSize?.label ?? ''}
+                                        onChange={(event) => {
+                                          const selectedSize = product.sizes?.find((size) => size.label === event.target.value);
+                                          setDraftItems((items) => items.map((entry, itemIndex) => itemIndex === index ? { ...entry, selectedSize } : entry));
+                                        }}
+                                      >
+                                        {product.sizes.map((size) => <option key={size.label} value={size.label}>{size.label} - Tk {size.price.toFixed(2)}</option>)}
+                                      </select>
+                                    </label>
+                                  ) : <p className="text-xs text-gray-500 sm:col-span-2">No sizes available for this product</p>;
+                                })()}
+                                <Button className="sm:col-span-2" type="button" variant="destructive" size="sm" onClick={() => setDraftItems((items) => items.filter((_, itemIndex) => itemIndex !== index))}>Remove</Button>
+                              </div>
+                            ))}
+                            <Button
+                              type="button"
+                              className="w-full"
+                              disabled={isUpdatingItems || draftItems.length === 0}
+                              onClick={() => saveOrderItems(order.invoiceId)}
+                            >
+                              {isUpdatingItems ? 'Saving...' : 'Save order products'}
+                            </Button>
+                          </div>
+                        </div>
+                      </DialogContent>
+                    </Dialog>
+                    <Dialog>
+                      <DialogTrigger asChild>
                         <Button variant="outline">Details</Button>
                       </DialogTrigger>
                       <DialogContent>
                         <DialogHeader>
                           <DialogTitle>Order - {order.invoiceId}</DialogTitle>
                         </DialogHeader>
-                        <div className="space-y-2 text-sm max-h-[400px] overflow-y-auto">
+                        <div className="space-y-3 text-sm max-h-[70vh] overflow-y-auto pr-1">
                           <p>
                             <strong>Name:</strong> {order.user?.name}
                           </p>
@@ -310,9 +475,15 @@ const meta = data?.meta || { total: 0, totalPages: 0 };
                             </p>
                           )}
                           <hr />
-                          <h4 className="font-semibold">Items:</h4>
+                          <h4 className="font-semibold">Order items</h4>
                           {order?.items?.map((item, idx) => (
-                            <div key={idx}>
+                            <article key={`${item.productId}-${idx}`} className="rounded-lg border bg-gray-50 p-3 [&>h1]:hidden">
+                              <div className="mb-2 flex items-center gap-3">
+                                <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-md bg-white">
+                                  <Image src={item.image || '/placeholder.png'} alt={item.title} fill className="object-cover" />
+                                </div>
+                                <strong className="break-words">{item.title}</strong>
+                              </div>
                               <p>
                                 {item.title} x {item.quantity} = ৳
                                 {item?.price* item.quantity}
@@ -332,8 +503,11 @@ const meta = data?.meta || { total: 0, totalPages: 0 };
             
 
 
-                            </div>
+                            </article>
                           ))}
+                          <div className="rounded-lg bg-gray-900 p-3 text-right font-semibold text-white">
+                            Grand total: Tk {getOrderTotal(order).toFixed(2)}
+                          </div>
                         </div>
                       </DialogContent>
                     </Dialog>

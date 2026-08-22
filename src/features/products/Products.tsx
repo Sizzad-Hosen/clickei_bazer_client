@@ -8,6 +8,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import Spinner from '@/components/Spinner';
 import { Product } from '@/types/products';
+import { Eye, Pencil } from 'lucide-react';
 
 const PAGE_SIZE = 10;
 
@@ -51,9 +52,18 @@ const meta = data?.meta;
               <p className="font-semibold text-amber-600">৳ {product.price}</p>
           
 
-              <Link href={`/dashboard/products/${product._id}`}>
-                <Button variant={"secondary"} className="mt-4 w-full">View Details</Button>
-              </Link>
+              <div className="mt-4 grid grid-cols-2 gap-2">
+                <Link href={`/dashboard/products/${product._id}`}>
+                  <Button variant="outline" className="w-full gap-2">
+                    <Eye className="h-4 w-4" /> Details
+                  </Button>
+                </Link>
+                <Link href={`/dashboard/products/${product._id}?action=edit`}>
+                  <Button variant="secondary" className="w-full gap-2">
+                    <Pencil className="h-4 w-4" /> Edit
+                  </Button>
+                </Link>
+              </div>
             </CardContent>
           </Card>
         ))}

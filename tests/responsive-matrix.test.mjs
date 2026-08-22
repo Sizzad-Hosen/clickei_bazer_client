@@ -44,6 +44,15 @@ test('mobile navigation supports keyboard dismissal', async () => {
   }
 });
 
+test('mobile header aligns service toggle, logo, and account menu', async () => {
+  const [navbar, sidebar] = await Promise.all([
+    read('src/components/shared/Navbar.tsx'),
+    read('src/components/shared/Sidebar.tsx'),
+  ]);
+  assert.match(navbar, /grid-cols-\[2\.5rem_1fr_auto\]/);
+  assert.match(sidebar, /fixed left-3 top-2/);
+});
+
 test('homepage product collections show two cards on mobile', async () => {
   const [recommended, wishlist] = await Promise.all([
     read('src/components/Home/SubCategoryWiseProducts.tsx'),

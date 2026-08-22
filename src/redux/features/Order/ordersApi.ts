@@ -95,6 +95,20 @@ updateStatus: builder.mutation<{ success: boolean; message: string },
   invalidatesTags: ["Orders"],
 }),
 
+updateOrderItems: builder.mutation<Order, { invoiceId: string; items: Array<{
+  productId: string;
+  quantity: number;
+  discount?: number;
+  selectedSize?: { label: string; price: number };
+}> }>({
+  query: ({ invoiceId, items }) => ({
+    url: `/orders/update-items/${invoiceId}`,
+    method: 'PATCH',
+    body: { items },
+  }),
+  invalidatesTags: ['Orders'],
+}),
+
     deleteOrderById: builder.mutation({
 
       query: (id: string) => ({
@@ -119,5 +133,6 @@ export const {
    useDeleteOrderByIdMutation,
    useAddOrderMutation,
    useGetAllOrdersCountQuery
+   ,useUpdateOrderItemsMutation
 
 } = ordersApi;

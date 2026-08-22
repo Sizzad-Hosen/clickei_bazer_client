@@ -16,6 +16,8 @@ interface SidebarProps {
   onSelectSubcategory?: (id: string) => void;
 }
 
+
+
 export default function Sidebar({ onSelectSubcategory }: SidebarProps) {
   const router = useRouter();
   const { data: serviceRes } = useGetAllServicesQuery({});
@@ -63,10 +65,10 @@ export default function Sidebar({ onSelectSubcategory }: SidebarProps) {
     <>
       {/* Mobile Toggle */}
       <button
-        aria-label="Toggle menu"
+        aria-label={mobileOpen ? 'Close services menu' : 'Open services menu'}
         onClick={() => setMobileOpen(!mobileOpen)}
         aria-expanded={mobileOpen}
-        className={`fixed left-3 z-[999] rounded-md bg-white p-2 shadow-md md:hidden ${mobileOpen ? 'top-2' : 'top-28'}`}
+        className="fixed left-3 top-6 z-[999] flex size-10 items-center justify-center rounded-md bg-white shadow-md md:hidden"
       >
         {mobileOpen ? <X size={20} /> : <Menu size={24} />}
       </button>
@@ -74,6 +76,7 @@ export default function Sidebar({ onSelectSubcategory }: SidebarProps) {
       {mobileOpen && (
         <button type="button" aria-label="Close services menu" onClick={() => setMobileOpen(false)} className="fixed inset-0 z-40 bg-black bg-opacity-40" />
       )}
+
 
       {/* Sidebar */}
       <aside className={`fixed top-0 left-0 z-50 h-full w-72 max-w-[calc(100vw-2rem)] transform overflow-y-auto border-r border-gray-200 bg-gray-100 p-3 shadow-md transition-transform duration-300 md:static md:max-w-none md:translate-x-0 ${mobileOpen ? 'translate-x-0' : '-translate-x-full'}`}>
