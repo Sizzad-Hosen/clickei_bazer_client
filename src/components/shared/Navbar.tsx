@@ -154,18 +154,18 @@ const Navbar = () => {
       <div className="mx-auto max-w-7xl px-3 py-2 sm:px-4">
 
         {/* MOBILE NAVBAR */}
-        <div className="grid min-h-10 w-full grid-cols-[2.5rem_1fr_auto] items-center gap-2 md:hidden">
-          <span className="size-10" aria-hidden="true" />
+        <div className="grid min-h-10 w-full grid-cols-[1fr_auto_1fr] items-center gap-2 md:hidden">
+          <span className="h-10 w-[4.25rem] justify-self-start" aria-hidden="true" />
           <Link href="/" className="flex min-w-0 items-center justify-center justify-self-center">
             <Image src={logo} alt="ClickeiBazer Logo" width={100} height={40} className="object-contain" />
           </Link>
           {user ? (
-            <button type="button" aria-label="Open account menu" className="flex size-10 shrink-0 items-center justify-center rounded-md" onClick={() => setSidebarOpen(true)}>
+            <button type="button" aria-label="Open account menu" className="flex h-10 w-[4.25rem] shrink-0 items-center justify-center justify-self-end rounded-md" onClick={() => setSidebarOpen(true)}>
               <MoreVertical size={24} className="text-white" />
             </button>
           ) : (
-            <Link href="/login">
-              <Button variant="secondary" className="px-3 py-1 text-sm">Login</Button>
+            <Link href="/login" className="h-10 w-[4.25rem] justify-self-end">
+              <Button variant="secondary" className="h-10 w-full px-3 text-sm">Login</Button>
             </Link>
           )}
         </div>

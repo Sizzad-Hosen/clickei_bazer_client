@@ -49,8 +49,10 @@ test('mobile header aligns service toggle, logo, and account menu', async () => 
     read('src/components/shared/Navbar.tsx'),
     read('src/components/shared/Sidebar.tsx'),
   ]);
-  assert.match(navbar, /grid-cols-\[2\.5rem_1fr_auto\]/);
-  assert.match(sidebar, /fixed left-3 top-2/);
+  assert.match(navbar, /grid-cols-\[1fr_auto_1fr\]/);
+  assert.match(navbar, /h-10 w-\[4\.25rem\]/);
+  assert.match(sidebar, /fixed left-3 top-6/);
+  assert.match(sidebar, /h-10 w-\[4\.25rem\]/);
 });
 
 test('mobile services drawer keeps Custom Bazar above the navbar layer', async () => {
