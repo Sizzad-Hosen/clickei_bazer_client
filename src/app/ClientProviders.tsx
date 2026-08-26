@@ -6,13 +6,14 @@ import { ReduxProvider } from "./Providers"; // Path correct
 import { Toaster } from "sonner";
 import Navbar from "@/components/shared/Navbar";
 import Footer from "@/components/shared/Footer";
-import Spinner from "@/components/Spinner";
 import { useGetMeQuery } from "@/redux/features/auth/authApi";
+import { useAppSelector } from "@/redux/hook";
+import { selectCurrentToken, selectCurrentUser } from "@/redux/features/auth/authSlices";
 
 function AppShell({ children }: { children: ReactNode }) {
-  const { isLoading } = useGetMeQuery();
-
-  if (isLoading) return <Spinner />;
+  const user = useAppSelector(selectCurrentUser);
+  const token = useAppSelector(selectCurrentToken);
+  useGetMeQuery(undefined, { skip: !user || Boolean(token) });
 
   return (
     <>

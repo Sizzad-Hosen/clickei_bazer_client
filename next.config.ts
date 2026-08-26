@@ -3,6 +3,7 @@ const nextConfig = {
   reactStrictMode: true,
   devIndicators: false,
   images: {
+    minimumCacheTTL: 86400,
     remotePatterns: [
       'https://example.com/**',
       'https://res.cloudinary.com/**',

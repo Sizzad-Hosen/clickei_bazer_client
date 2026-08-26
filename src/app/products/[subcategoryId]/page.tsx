@@ -76,8 +76,8 @@ const ProductListBySubcategory = () => {
       if (service && category && subcategory) {
         setBreadcrumbs([
           {
-            id: singleServiceData?.data?._id || service._id,
-            name: singleServiceData?.data?.name || service.name,
+            id: singleServiceData?.data?._id || service.service?._id || service.serviceId,
+            name: singleServiceData?.data?.name || service.service?.name || 'Service',
             type: 'service',
           },
           {

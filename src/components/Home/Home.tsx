@@ -1,15 +1,17 @@
 'use client';
 
 import { useState } from 'react';
+import dynamic from 'next/dynamic';
 import Sidebar from '../shared/Sidebar';
 import BannerSlider from './Banner';
 import WishlistHome from './HomeWishList';
-import CartDrawer from '../Carts/CartDrawer';
 import AllService from './AllService';
 import ProductsBySubcategoryPage from './SubCategoryWiseProducts';
 
 import { MessageCircle, Phone, MessageSquare, Mail } from 'lucide-react';
 import { FaWhatsapp } from "react-icons/fa";
+
+const CartDrawer = dynamic(() => import('../Carts/CartDrawer'), { ssr: false });
 
 export default function Home() {
   const [cartOpen, setCartOpen] = useState(false);

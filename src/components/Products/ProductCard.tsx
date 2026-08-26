@@ -34,12 +34,12 @@ export default function ProductCard({ product, onOpenCart }: Props) {
   const [isSizeModalOpen, setIsSizeModalOpen] = useState(false);
 
 
-  const { data: wishlistData } = useGetWishlistQuery(undefined);
+  const token = useAppSelector(selectCurrentToken);
+  const { data: wishlistData } = useGetWishlistQuery(undefined, { skip: !token });
   const [addToWishlist] = useAddToWishlistMutation();
   const [removeFromWishlist] = useRemoveFromWishlistMutation();
 
   const router = useRouter();
-  const token = useAppSelector(selectCurrentToken);
   const isAvailable = product.isPublished !== false && (product.quantity > 0 || product.stock === true);
   const basePrice = selectedSize?.price ?? product.price;
 
@@ -125,7 +125,7 @@ export default function ProductCard({ product, onOpenCart }: Props) {
           alt={product.title}
           fill
           className={`object-cover transition-transform duration-200 hover:scale-[1.02] ${!isAvailable ? "opacity-50" : ""}`}
-          sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+          sizes="(max-width: 640px) 50vw, (max-width: 1024px) 25vw, (max-width: 1280px) 20vw, 256px"
         />
 
         {/* Out of Stock Overlay */}

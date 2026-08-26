@@ -2,8 +2,7 @@
 
 import { useParams } from "next/navigation";
 import Link from "next/link";
-import { useState, useEffect, useCallback } from "react";
-import { useLazyServiceHomeFullTreeQuery } from "@/redux/features/Services/serviceApi";
+import { useServiceHomeFullTreeQuery } from "@/redux/features/Services/serviceApi";
 import Spinner from "@/components/Spinner";
 import Sidebar from "@/components/shared/Sidebar";
 
@@ -34,35 +33,10 @@ export default function ServicePage() {
   const serviceName = params?.serviceName as string;
   const serviceId = params?.serviceId as string;
 
-  const [fetchFullTree, { isFetching }] = useLazyServiceHomeFullTreeQuery();
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [activeService, setActiveService] = useState<string | null>(serviceId || null);
-
-  const fetchCategories = useCallback(
-    async (id: string) => {
-      try {
-        const res: ServiceResponse = await fetchFullTree(id).unwrap();
-        setCategories(res?.data?.categories || []);
-      } catch (err) {
-        console.error(err);
-      }
-    },
-    [fetchFullTree]
-  );
-
-  // Fetch categories when activeService changes
-  useEffect(() => {
-    if (activeService) fetchCategories(activeService);
-  }, [activeService, fetchCategories]);
-
-  // Force re-fetch if serviceId changes
-  useEffect(() => {
-    if (serviceId && serviceId !== activeService) {
-      setActiveService(serviceId);
-    } else if (serviceId) {
-      fetchCategories(serviceId);
-    }
-  }, [serviceId, fetchCategories, activeService]);
+  const { data, isFetching } = useServiceHomeFullTreeQuery(serviceId, {
+    skip: !serviceId,
+  });
+  const categories: Category[] = (data as ServiceResponse | undefined)?.data?.categories ?? [];
 
   if (isFetching) return <Spinner />;
 

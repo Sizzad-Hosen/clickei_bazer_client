@@ -10,16 +10,16 @@ import {
   REGISTER,
 } from 'redux-persist';
 
-import storage from 'redux-persist/lib/storage';
 import { persistStore } from 'redux-persist';
 
 import { baseApi } from './api/baseApi';
 
 import authReducer from './features/auth/authSlices'; 
+import { persistStorage } from './storage';
 
 const persistConfig = {
   key: 'auth-v2',
-  storage,
+  storage: persistStorage,
   // Access tokens remain in memory; the refresh token is an HttpOnly cookie.
   whitelist: ['user'],
 };
@@ -42,7 +42,7 @@ export const store = configureStore({
    
 });
 
-export const persistor = persistStore(store);
+export const persistor = typeof window === 'undefined' ? null : persistStore(store);
 
 export type RootState = ReturnType<typeof store.getState>;
 export type AppDispatch = typeof store.dispatch;

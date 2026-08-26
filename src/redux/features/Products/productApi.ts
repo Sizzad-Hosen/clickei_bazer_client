@@ -97,6 +97,7 @@ transformResponse: (response: ApiResponse<Product>) => ({
 }),
 
   providesTags: ['Products'],
+  keepUnusedDataFor: 300,
 }),
 
 
@@ -120,12 +121,14 @@ transformResponse: (response: ApiResponse<Product>) => ({
     };
   },
       providesTags: ['Products'],
+      keepUnusedDataFor: 300,
     }),
     
 getSingleProduct: builder.query<Product, string>({
   query: (id) => `/products/${id}`,
   transformResponse: (response: { data: Product }) => response.data,
   providesTags: (result, error, id) => [{ type: 'Products', id }],
+  keepUnusedDataFor: 300,
 }),
 
     deleteProduct: builder.mutation<void, string>({
@@ -160,6 +163,7 @@ getAllProductsBySubcategoryId: builder.query<
       meta: response.data.meta,
     };
   },
+  keepUnusedDataFor: 300,
 }),
 
 

@@ -13,6 +13,7 @@ const servicesApi = baseApi.injectEndpoints({
     getAllServices: builder.query({
       query: () => '/services',
       providesTags: ['Services'],
+      keepUnusedDataFor: 600,
     }),
 getSingelServices: builder.query({
   query: ({ serviceId }) => `/services/${serviceId}`,
@@ -36,13 +37,21 @@ updateService: builder.mutation({
   invalidatesTags: ['Services'],
 }),
 serviceFullTree: builder.query({
-  query: (id: string) => `/services/${id}/full-tree`,
+  query: (id: string) => ({
+    url: `/services/${id}/full-tree`,
+    params: { includeProducts: false },
+  }),
   providesTags: ['Services'],
+  keepUnusedDataFor: 300,
  
 }),
 serviceHomeFullTree: builder.query({
-  query: (id: string) => `/services/${id}/full-tree`,
+  query: (id: string) => ({
+    url: `/services/${id}/full-tree`,
+    params: { includeProducts: false },
+  }),
   providesTags: ['Services'],
+  keepUnusedDataFor: 300,
  
 }),
 
@@ -50,4 +59,4 @@ serviceHomeFullTree: builder.query({
   }),
 });
 
-export const { useAddServiceMutation ,useGetSingelServicesQuery,useGetAllServicesQuery , useDeleteServiceMutation , useUpdateServiceMutation,useLazyServiceHomeFullTreeQuery, useLazyServiceFullTreeQuery} = servicesApi;
+export const { useAddServiceMutation ,useGetSingelServicesQuery,useGetAllServicesQuery , useDeleteServiceMutation , useUpdateServiceMutation,useServiceHomeFullTreeQuery,useLazyServiceHomeFullTreeQuery, useLazyServiceFullTreeQuery} = servicesApi;

@@ -49,23 +49,15 @@ export default function BannerSlider() {
   return (
     <section aria-label="Featured offers" className="relative mx-auto mb-8 w-full max-w-7xl overflow-hidden rounded-lg shadow-lg sm:mb-12">
       <div className="relative aspect-[16/9] w-full sm:aspect-[16/7]">
-        {banners.map((banner, index) => (
-          <div
-            key={banner.id}
-            className={`absolute top-0 left-0 w-full h-full transition-opacity duration-1000 ${
-              index === currentIndex ? "opacity-100 z-20" : "opacity-0 z-10"
-            }`}
-          >
-            <Image
-              src={banner.imageUrl}
-              alt={banner.alt}
-              fill
-              style={{ objectFit: "cover" }}
-              sizes="100vw"
-              loading="lazy"
-            />
-          </div>
-        ))}
+        <Image
+          key={banners[currentIndex].id}
+          src={banners[currentIndex].imageUrl}
+          alt={banners[currentIndex].alt}
+          fill
+          className="object-cover"
+          sizes="(max-width: 1280px) calc(100vw - 1.5rem), 1280px"
+          priority={currentIndex === 0}
+        />
       </div>
 
       {/* Navigation Dots */}
