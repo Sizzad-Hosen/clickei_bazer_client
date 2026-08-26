@@ -195,7 +195,7 @@ export default function CartDrawer({
           </p>
 
           <Link href="/checkout">
-            <Button className="mt-4 w-full bg-green-600 hover:bg-green-700 text-white">
+            <Button className="mt-4 w-full">
               Place Order
             </Button>
           </Link>

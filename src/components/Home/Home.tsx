@@ -83,7 +83,7 @@ export default function Home() {
           aria-label={isFabOpen ? 'Close contact options' : 'Open contact options'}
           aria-expanded={isFabOpen}
           onClick={() => setIsFabOpen(!isFabOpen)}
-          className="w-14 h-14 flex items-center justify-center rounded-full bg-amber-500 text-white shadow-lg hover:bg-amber-700 transition"
+          className="flex h-14 w-14 items-center justify-center rounded-full border border-amber-600 bg-amber-500 text-gray-950 shadow-lg transition-colors hover:bg-amber-600"
         >
           <MessageCircle className="h-7 w-7" />
         </button>

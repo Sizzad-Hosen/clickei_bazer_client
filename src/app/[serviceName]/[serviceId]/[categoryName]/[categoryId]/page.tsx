@@ -142,7 +142,7 @@ export default function CategoryPage() {
             <h2 className="text-xl font-semibold mb-4">No products found!</h2>
             <button
               onClick={() => router.push("/")}
-              className="px-6 py-2 bg-amber-500 text-white rounded-lg hover:bg-amber-600 transition"
+              className="rounded-lg border border-amber-600 bg-amber-500 px-6 py-2 text-gray-950 shadow-sm transition-colors hover:bg-amber-600"
             >
               Continue Shopping
             </button>

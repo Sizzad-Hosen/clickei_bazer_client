@@ -171,7 +171,7 @@ export default function CustomBazarProductsPage() {
               <div className="flex gap-2">
                 <button
                   onClick={() => handleEditClick(categoryItem)}
-                  className="px-3 py-1 text-sm bg-blue-600 text-white rounded hover:bg-blue-700"
+                  className="rounded border border-amber-600 bg-amber-500 px-3 py-1 text-sm text-gray-950 shadow-sm transition-colors hover:bg-amber-600"
                 >
                   Edit
                 </button>
@@ -256,7 +256,7 @@ export default function CustomBazarProductsPage() {
               <h4 className="font-semibold">Subcategories</h4>
               <button
                 onClick={handleAddSubcategory}
-                className="text-sm px-3 py-1 bg-green-600 text-white rounded hover:bg-green-700"
+                className="rounded border border-amber-600 bg-amber-500 px-3 py-1 text-sm text-gray-950 shadow-sm transition-colors hover:bg-amber-600"
                 type="button"
               >
                 Add Subcategory

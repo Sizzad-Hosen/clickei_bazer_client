@@ -258,7 +258,7 @@ function ProfilePage() {
             <Button
               onClick={handleUpdate}
               disabled={isUpdating}
-              className="w-full bg-blue-600 text-white"
+              className="w-full"
             >
               {isUpdating ? "Saving..." : "✅ Save Changes"}
             </Button>
@@ -286,7 +286,7 @@ function ProfilePage() {
           </div>
           <Button
             onClick={() => setAddressModalOpen(false)}
-            className="w-full mt-4 bg-green-600 text-white"
+            className="mt-4 w-full"
           >
             ✅ Save Address
           </Button>

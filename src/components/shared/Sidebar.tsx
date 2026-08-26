@@ -94,7 +94,7 @@ export default function Sidebar({ onSelectSubcategory }: SidebarProps) {
             <div key={service._id}>
               <button
                 onClick={() => handleServiceClick(service._id)}
-                className={`w-full flex justify-between items-center px-3 md:px-4 py-2 md:py-3 rounded-md font-medium text-left transition-colors duration-200 ${activeServiceId === service._id ? 'bg-blue-100 text-amber-600' : 'hover:bg-gray-300 text-gray-800'}`}
+                className={`w-full flex justify-between items-center px-3 md:px-4 py-2 md:py-3 rounded-md font-medium text-left transition-colors duration-200 ${activeServiceId === service._id ? 'bg-amber-50 text-amber-700' : 'hover:bg-gray-300 text-gray-800'}`}
               >
                 <span className="text-sm md:text-base">{service.name}</span>
                 {activeServiceId === service._id ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
@@ -106,7 +106,7 @@ export default function Sidebar({ onSelectSubcategory }: SidebarProps) {
                     <div key={category._id}>
                       <button
                         onClick={() => setActiveCategoryId(activeCategoryId === category._id ? null : category._id)}
-                        className={`w-full flex justify-between items-center px-3 md:px-4 py-1 md:py-2 rounded-md text-xs md:text-sm font-medium text-left transition-colors duration-200 ${activeCategoryId === category._id ? 'bg-blue-50 text-amber-600' : 'hover:bg-gray-300 text-gray-700'}`}
+                        className={`w-full flex justify-between items-center px-3 md:px-4 py-1 md:py-2 rounded-md text-xs md:text-sm font-medium text-left transition-colors duration-200 ${activeCategoryId === category._id ? 'bg-amber-50 text-amber-700' : 'hover:bg-gray-300 text-gray-700'}`}
                       >
                         <span>{category.name}</span>
                         {activeCategoryId === category._id ? <ChevronDown size={14} /> : <ChevronRight size={14} />}

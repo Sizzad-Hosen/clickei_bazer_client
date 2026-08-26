@@ -448,7 +448,7 @@ const AllCustomBazarOrders: React.FC = () => {
 
                       <Button
                         variant="outline"
-                        className="border-green-600 text-green-600 hover:bg-green-600 hover:text-white transition-colors duration-300"
+                        className="border-amber-600 text-amber-700 transition-colors duration-300 hover:bg-amber-500 hover:text-gray-950"
                         size="sm"
                         onClick={() => handlePrintOrder(order)}
                       >

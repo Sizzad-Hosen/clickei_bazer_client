@@ -106,7 +106,7 @@ export default function ServicePage() {
             <h2 className="text-xl font-semibold mb-4">No categories found!</h2>
             <Link
               href="/"
-              className="px-6 py-2 bg-amber-500 text-white rounded-lg hover:bg-amber-600 transition"
+              className="rounded-lg border border-amber-600 bg-amber-500 px-6 py-2 text-gray-950 shadow-sm transition-colors hover:bg-amber-600"
             >
               Back to Home
             </Link>

@@ -210,7 +210,7 @@ const Navbar = () => {
                   </>
                 )
               ) : (
-                <Link  href="/login" className="px-4 py-2 border-amber-600 bg-amber-500 text-gray-700 hover:bg-amber-600 rounded">Login</Link>
+                <Link href="/login" className="rounded border border-amber-600 bg-amber-500 px-4 py-2 text-gray-950 shadow-sm transition-colors hover:bg-amber-600">Login</Link>
               )}
             </div>
           </div>
@@ -247,7 +247,7 @@ const Navbar = () => {
                 ) : 'User Home'}
               </Button>
             ) : (
-              <Link href="/login" className="px-4 py-2 border-amber-600 bg-amber-500 text-gray-700 hover:bg-amber-600 rounded">Login</Link>
+              <Link href="/login" className="rounded border border-amber-600 bg-amber-500 px-4 py-2 text-gray-950 shadow-sm transition-colors hover:bg-amber-600">Login</Link>
             )}
             {profileDropdownOpen && user && user.role !== 'admin' && (
               <div className="absolute right-0 mt-2 w-56 rounded-md border border-gray-200 bg-white shadow-lg z-50 overflow-auto max-h-96">

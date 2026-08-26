@@ -43,11 +43,11 @@ export default function TrackOrderPage() {
                 value={invoiceNumber}
                 onChange={(e) => setInvoiceNumber(e.target.value)}
                 placeholder="Enter your invoice number"
-                className="w-full border border-gray-300 rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+                className="w-full rounded border border-gray-300 px-4 py-2 transition focus:border-amber-500 focus:outline-none focus:ring-2 focus:ring-amber-500"
               />
               <button
                 onClick={handleSearch}
-                className="mt-4 w-full bg-blue-600 text-white py-3 rounded hover:bg-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                className="mt-4 w-full rounded border border-amber-600 bg-amber-500 py-3 text-gray-950 shadow-sm transition-colors hover:bg-amber-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500/40 disabled:cursor-not-allowed disabled:opacity-50"
                 disabled={isLoading}
                 aria-disabled={isLoading}
               >

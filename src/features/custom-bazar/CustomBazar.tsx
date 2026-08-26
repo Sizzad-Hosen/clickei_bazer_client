@@ -255,7 +255,7 @@ const orderItems: TCustomBazerOrderItem[] = Object.entries(selections)
                     <div className="flex items-center gap-1 justify-self-end sm:justify-self-auto">
                       <button
                         type="button"
-                        className="bg-red-500 text-white px-2 rounded"
+                        className="rounded border border-amber-600 bg-amber-500 px-2 text-gray-950 transition-colors hover:bg-amber-600 disabled:opacity-50"
                         onClick={() => handleQuantityChange(category._id, idx, -1)}
                         disabled={sel.quantity <= 1}
                       >
@@ -264,7 +264,7 @@ const orderItems: TCustomBazerOrderItem[] = Object.entries(selections)
                       <span>{sel.quantity}</span>
                       <button
                         type="button"
-                        className="bg-green-500 text-white px-2 rounded"
+                        className="rounded border border-amber-600 bg-amber-500 px-2 text-gray-950 transition-colors hover:bg-amber-600"
                         onClick={() => handleQuantityChange(category._id, idx, 1)}
                       >
                         +
@@ -428,7 +428,7 @@ const orderItems: TCustomBazerOrderItem[] = Object.entries(selections)
           </div>
           <button
             type="submit"
-            className="mt-3 w-full rounded bg-blue-600 px-5 py-2 text-white transition hover:bg-blue-700 disabled:opacity-50 sm:w-auto"
+            className="mt-3 w-full rounded border border-amber-600 bg-amber-500 px-5 py-2 text-gray-950 shadow-sm transition-colors hover:bg-amber-600 disabled:opacity-50 sm:w-auto"
             disabled={isSubmitting}
           >
             {isSubmitting ? 'অর্ডার সাবমিট করা হচ্ছে...' : 'অর্ডার সাবমিট করুন'}

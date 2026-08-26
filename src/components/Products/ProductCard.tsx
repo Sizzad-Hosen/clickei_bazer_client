@@ -232,7 +232,7 @@ export default function ProductCard({ product, onOpenCart }: Props) {
                   }}
                   className={`flex items-center justify-between w-full px-4 py-3 rounded-lg border text-sm font-medium transition ${
                     isActive
-                      ? "border-blue-600 bg-blue-50 text-blue-700"
+                      ? "border-amber-600 bg-amber-50 text-amber-800"
                       : "border-gray-300 hover:bg-gray-100"
                   }`}
                 >
@@ -281,7 +281,7 @@ export default function ProductCard({ product, onOpenCart }: Props) {
                       <button
                         key={size.label}
                         className={`px-3 py-1 border rounded-full text-sm font-medium ${
-                          selectedSize?.label === size.label ? 'bg-blue-500 text-white' : 'bg-gray-100 text-gray-800'
+                          selectedSize?.label === size.label ? 'bg-amber-500 text-gray-950' : 'bg-gray-100 text-gray-800'
                         }`}
                         onClick={() => setSelectedSize(size)}
                       >
