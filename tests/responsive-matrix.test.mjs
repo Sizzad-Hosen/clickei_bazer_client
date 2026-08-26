@@ -53,6 +53,19 @@ test('mobile header aligns service toggle, logo, and account menu', async () => 
   assert.match(sidebar, /fixed left-3 top-2/);
 });
 
+test('mobile services drawer keeps Custom Bazar above the navbar layer', async () => {
+  const sidebar = await read('src/components/shared/Sidebar.tsx');
+  assert.match(sidebar, /href="\/customBazar"/);
+  assert.match(sidebar, /z-\[120\]/);
+  assert.match(sidebar, /pt-14/);
+});
+
+test('site metadata uses ClickeiBazer branding for browser icons', async () => {
+  const appLayout = await read('src/app/layout.tsx');
+  assert.match(appLayout, /icon:\s*"\/clickeiBazer-png\.png"/);
+  assert.doesNotMatch(appLayout, /next\.svg/);
+});
+
 test('homepage product collections show two cards on mobile', async () => {
   const [recommended, wishlist] = await Promise.all([
     read('src/components/Home/SubCategoryWiseProducts.tsx'),
